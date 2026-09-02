@@ -1,0 +1,7 @@
+<svg viewBox="0 0 508 506" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <g id="icon-shop-link">
+    <rect id="background" x="2" width="506" height="506" rx="103" fill="white"/>
+    <path id="rectangle" d="M243 158H137V371H350V264H368V389H118V139H243V158Z" fill="black"/>
+    <path id="arrow" d="M410.685 90V209H392.685V120.455L250.728 262.412L238 249.685L379.685 108H291.685V90H410.685Z" fill="black"/>
+    </g>
+</svg>

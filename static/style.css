@@ -10,3 +10,28 @@
     box-sizing: border-box;
     font-family: 'Inter', sans-serif;
 }
+
+
+header {
+    width: 60.5%;
+    margin: 0 auto;
+}
+
+
+
+.product-grid {
+
+    @media (max-width: 768px) {
+
+    }
+
+    & ul {
+
+
+    }
+
+    & li {
+
+
+    }
+}
