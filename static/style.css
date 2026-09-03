@@ -1,4 +1,8 @@
-/* ————————————— fonts ————————————— */
+* {
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
+}
+
 @font-face  {
     font-family: "Inter";
     src: url("https://fonts.googleapis.com/css2?family=Inter&display=swap"), format("woff2");
@@ -6,32 +10,194 @@
     font-weight: 100;
 }
 
-* {
-    box-sizing: border-box;
-    font-family: 'Inter', sans-serif;
+/* ————————————— variables ————————————— */
+:root {  
+  --text-color-RGB: 50, 50, 50;
+  --link-color-RGB: 0, 100, 255;
+  --hover-color-RGB: 0, 215, 100; 
+  --background-color-RGB: 255, 255, 255; 
+  --surface-color-RGB: 240, 240, 240; 
+}
+
+.vertical-space.S {
+  height: 1em;
+  
+  @media (max-width: 768px) {
+    height: 0.5em;    
+  }
+}
+
+.vertical-space.M {
+  height: 2em;
+
+  @media (max-width: 768px) {
+    height: 1em;    
+  }
+}
+
+.vertical-space.L {
+  height: 4em;
+  @media (max-width: 768px) {
+    height: 2em;    
+  }
+}
+
+.vertical-space.XL {
+  height: 9em;
+  @media (max-width: 768px) {
+    height: 4em;    
+  }
+}
+
+.text-width {
+  width: 80%;
+  
+  @media (max-width: 768px) {
+    width: 100%;
+  }
+}
+
+/* ————————————— variables ————————————— */
+
+html {  
+    font-size: 18px;
+
+    /* --mobile-viewport-min: 320;
+    --mobile-desktop-breakpoint: 768;
+    --desktop-viewport-max: 1500;
+
+    --mobile-font-size-min: 14;
+    --mobile-font-size-max: 32;
+
+    --desktop-font-size-min: 12.5;
+    --desktop-font-size-max: 24;
+
+    font-size: calc(var(--mobile-font-size-min) * 1px);
+
+    @media screen and (min-width: 320px) {    
+    font-size: calc(var(--mobile-font-size-min) * 1px + (var(--mobile-font-size-max) - var(--mobile-font-size-min)) * ((100vw - var(--mobile-viewport-min) * 1px) / (var(--mobile-desktop-breakpoint) - var(--mobile-viewport-min))));
+    }
+
+    @media screen and (min-width: 768px) {    
+    font-size: calc(var(--desktop-font-size-min) * 1px + (var(--desktop-font-size-max) - var(--desktop-font-size-min)) * ((100vw - var(--mobile-desktop-breakpoint) * 1px) / (var(--desktop-viewport-max) - var(--mobile-desktop-breakpoint))));
+    }
+
+    @media screen and (min-width: 1500px) {    
+    font-size: calc(var(--desktop-font-size-max) * 1px);
+    } */
+
+}
+
+body {
+  font-family: "Inter";
+  margin: 0;
+  color: rgba(var(--text-color-RGB),1);
+  background-color: rgba(var(--background-color-RGB), 1);
 }
 
 
-header {
-    width: 60.5%;
+
+
+img {
+  display: block;
+  width: 100%;
+}
+
+
+h1 {
+    font-size: 3.3em;
+    margin: 0;
+    font-weight: 300;
+    letter-spacing: 0.01em;
+
+}
+
+p {
+    margin: 0;
+}
+
+
+.chapter {
+    width: 55%;
     margin: 0 auto;
+
+    @media (max-width: 768px) {
+        width: 100%;
+        padding: 0 1em;
+    }
+}
+
+header {
+    width: 55%;
+    margin: 0 auto;
+
+    @media (max-width: 768px) {
+        width: 100%;
+        padding: 0 1em;
+    }
+
+    & div {
+        display: flex;
+        gap: 1em;
+        align-items: baseline;
+
+        & p {
+            font-size: 1.2em;
+            /* border: solid 1px rgba(var(--text-color-RGB),1);
+            padding: 0.4em;
+            border-radius: 0.6em; */
+        }
+    }
 }
 
 
 
 .product-grid {
 
-    @media (max-width: 768px) {
-
-    }
-
     & ul {
+        list-style: none;
+        display: flex;
+        flex-wrap: wrap;
+        /* margin-bottom: 1em; */
+        margin: 0;
+        padding: 0;
 
+        --gap: 0.5em;
+        --columns: 3;
+        --gap-number: calc(var(--columns) - 1);
 
+        gap: var(--gap);
+
+        @media (max-width: 768px) {
+            --columns: 2;
+        }
     }
 
     & li {
+        position: relative;
+        width: calc((100% - var(--gap-number) * var(--gap)) / (var(--columns)));
+        padding: 1em;
+    }
 
+    & img {
+        height: 18em;
+        /* height: 45%; */
+        object-fit: cover;
+        border-radius: 1em;
+    }
 
+    & .shop-link {
+        width: 3em;
+        /* background-color: black; */
+        position: absolute;
+        top: 1.5em;
+        left: 1.5em;
+    }
+
+    & .add-wishlist {
+        width: 3em;
+        position: absolute;
+        top: 1.5em;
+        right: 1.5em;
     }
 }
