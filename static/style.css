@@ -13,17 +13,19 @@
 /* ————————————— variables ————————————— */
 :root {  
   --text-color-RGB: 50, 50, 50;
+  --text-color-inverse-RGB: 255, 255, 255;
   --link-color-RGB: 0, 100, 255;
   --hover-color-RGB: 0, 215, 100; 
   --background-color-RGB: 255, 255, 255; 
   --surface-color-RGB: 240, 240, 240; 
+  --product-done-color-RGB: 50, 160, 90;
 }
 
 .vertical-space.S {
   height: 1em;
   
   @media (max-width: 768px) {
-    height: 0.5em;    
+    height: 0.5em;  
   }
 }
 
@@ -95,27 +97,45 @@ body {
   background-color: rgba(var(--background-color-RGB), 1);
 }
 
-
-
-
 img {
   display: block;
   width: 100%;
 }
 
-
 h1 {
-    font-size: 3.3em;
-    margin: 0;
-    font-weight: 300;
-    letter-spacing: 0.01em;
+  font-size: 3.3em;
+  margin: 0;
+  font-weight: 300;
+  letter-spacing: 0.01em;
 
 }
 
 p {
-    margin: 0;
+  margin: 0;
 }
 
+h5 {
+  font-size: 1.2em;
+  margin: 0;
+  font-weight: 400;
+}
+
+a {
+  color: rgba(var(--link-color-RGB),1);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.15em;
+  text-decoration-color: rgba(var(--link-color-RGB),0.3);
+
+  transition: color 0.5s ease, text-decoration-color 0.5s ease;
+}
+
+a:hover {
+  color: rgba(var(--hover-color-RGB),1);
+  text-decoration-color: rgba(var(--hover-color-RGB),0.3);
+
+  transition: color 0s ease, text-decoration-color 0s ease;
+}
 
 .chapter {
     width: 55%;
@@ -152,6 +172,7 @@ header {
 
 
 
+
 .product-grid {
 
     & ul {
@@ -162,7 +183,7 @@ header {
         margin: 0;
         padding: 0;
 
-        --gap: 0.5em;
+        --gap: 0.2em;
         --columns: 3;
         --gap-number: calc(var(--columns) - 1);
 
@@ -176,7 +197,16 @@ header {
     & li {
         position: relative;
         width: calc((100% - var(--gap-number) * var(--gap)) / (var(--columns)));
-        padding: 1em;
+        padding: 0.5em;
+    }
+
+    & div {
+      position: relative;
+
+      & a {
+        padding: 0;
+        text-decoration: none;
+      }
     }
 
     & img {
@@ -187,17 +217,38 @@ header {
     }
 
     & .shop-link {
-        width: 3em;
+        width: 2.5em;
         /* background-color: black; */
         position: absolute;
-        top: 1.5em;
-        left: 1.5em;
+        bottom: 0.5em;
+        left: 0.5em;
     }
 
     & .add-wishlist {
-        width: 3em;
+        width: 2.5em;
         position: absolute;
-        top: 1.5em;
-        right: 1.5em;
+        top: 0.5em;
+        right: 0.5em;
+    }
+
+    & .product-done {
+      background-color: rgba(var(--product-done-color-RGB), 1);
+      border-radius: 1.4em;
+      color: rgba(var(--text-color-inverse-RGB), 1);
+    }
+
+    & hgroup {
+      padding: 0 0.8em 1em;
+
+      & a {
+        /* display: block; */
+        font-size: 1.2em;
+        /* padding: 0.6em 0 0 0; */
+        font-weight: 400;
+      }
+    }
+
+    & h5 {
+      margin: 0.6em 0 0 0;
     }
 }
