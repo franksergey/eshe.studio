@@ -138,7 +138,7 @@ a:hover {
 }
 
 .chapter {
-    width: 55%;
+    width: 53%;
     margin: 0 auto;
 
     @media (max-width: 768px) {
@@ -148,7 +148,7 @@ a:hover {
 }
 
 header {
-    width: 55%;
+    width: 53%;
     margin: 0 auto;
 
     @media (max-width: 768px) {
@@ -174,7 +174,6 @@ header {
 
 
 .product-grid {
-
     & ul {
         list-style: none;
         display: flex;
@@ -195,6 +194,7 @@ header {
     }
 
     & li {
+        font-size: 1.1em;
         position: relative;
         width: calc((100% - var(--gap-number) * var(--gap)) / (var(--columns)));
         padding: 0.5em;
@@ -210,7 +210,7 @@ header {
     }
 
     & img {
-        height: 18em;
+        height: 20em;
         /* height: 45%; */
         object-fit: cover;
         border-radius: 1em;
@@ -231,24 +231,47 @@ header {
         right: 0.5em;
     }
 
+    & hgroup {
+      padding: 0.6em 0.8em 1em;
+
+      & a {
+        font-weight: 400;
+        color: rgba(var(--text-color-RGB),1);
+        text-decoration-color: rgba(var(--text-color-RGB),0.3);
+      }
+
+      & .price {
+        margin: 1em 0 0 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5em;
+      }
+
+      & span {
+        /* display: block; */
+        border: solid 1px rgba(var(--text-color-RGB),1);
+        padding: 0.1em 0.6em;
+        border-radius: 0.4em;
+      } 
+    }
+
     & .product-done {
       background-color: rgba(var(--product-done-color-RGB), 1);
       border-radius: 1.4em;
       color: rgba(var(--text-color-inverse-RGB), 1);
-    }
-
-    & hgroup {
-      padding: 0 0.8em 1em;
 
       & a {
-        /* display: block; */
-        font-size: 1.2em;
-        /* padding: 0.6em 0 0 0; */
-        font-weight: 400;
+        font-weight: 300;
+        color: rgba(var(--text-color-inverse-RGB), 1);
+        text-decoration-color: rgba(var(--text-color-inverse-RGB),0.3);
       }
-    }
+      
+      & span {
+        border: solid 1px rgba(var(--text-color-inverse-RGB),1);
+      }
 
-    & h5 {
-      margin: 0.6em 0 0 0;
+      & p {
+        font-weight: 300;
+      }
     }
 }
