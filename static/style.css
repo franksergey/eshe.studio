@@ -106,7 +106,7 @@ img {
 h1 {
   font-size: 3.5em;
   margin: 0;
-  font-weight: 300;
+  font-weight: 400;
   letter-spacing: 0.01em;
 
 }
@@ -116,8 +116,8 @@ p {
 }
 
 h3 {
-  font-size: 2em;
-  margin: 0em 0 1em;
+  font-size: 2.5em;
+  margin: 0em 0 0.5em;
   font-weight: 500;
 }
 
@@ -174,17 +174,57 @@ a:hover {
   & nav {
     flex: 1 1 0;
     min-width: 0;
-    
-    
-    & ul {
+
+    & div {
       position: sticky;
+      top: 2em;
+      max-height: calc(100vh - 4em);
+      overflow: hidden;
+      padding: 0 2em 0 1em;
+    }
+
+      & ul{
       list-style: none;
       padding: 0;
       margin: 0;
+      will-change: transform;
     }
 
-    & li{
-      padding: 0 0 0 1.5em;
+    & details{
+      list-style: none;
+      padding: 0 0 1em 0;
+      margin: 0;
+    }
+
+    & li {
+      /* padding: 0 0 0 0.6em; */
+      padding: 0 0 0 1em;
+    }
+
+    & summary {
+      display: flex;
+      align-items: center;
+      list-style: none;
+      cursor: pointer;
+
+
+      font-weight: 600;
+    }
+
+    & summary::-webkit-details-marker {
+      display: none;
+    }
+
+    & summary::after {
+      content: '▼';
+      font-size: 0.6em;
+      margin-left: auto;
+      padding-right: 0.7em;
+      transition: transform 0.3s ease;
+    }
+
+    & details[open] > summary::after {
+      transform: rotate(180deg);
     }
 
     & a {
@@ -192,6 +232,8 @@ a:hover {
       text-decoration: none;
 
       display: block;
+      flex: 1;
+      min-width: 0;
       border-radius: 0.4em;
       padding: 0.4em 0.7em 0.4em;
       margin: 0 0 0.1em;
@@ -223,7 +265,7 @@ header {
     align-items: baseline;
 
     & p {
-      font-size: 1.2em;
+      /* font-size: 1.2em; */
     }
   }
 }
@@ -271,25 +313,44 @@ header {
   }
 
   & img {
-      height: 20em;
-      /* height: 45%; */
-      object-fit: cover;
-      border-radius: 1em;
-  }
-
-  & .shop-link {
-      width: 2.5em;
-      /* background-color: black; */
-      position: absolute;
-      bottom: 0.5em;
-      left: 0.5em;
+    height: 20svw;
+    /* height: 45%; */
+    object-fit: cover;
+    border-radius: 1em;
   }
 
   & .add-wishlist {
-      width: 2.5em;
-      position: absolute;
-      top: 0.5em;
-      right: 0.5em;
+    width: 2.5em;
+    position: absolute;
+    top: 0.5em;
+    right: 0.5em;
+  }
+
+  & .comments {
+    display: flex;
+    align-items: flex-end;
+    gap: 0.3em;    
+
+    position: absolute;
+    bottom: 0.6em;
+    left: 0.6em;
+    right: 0.6em;
+
+    font-size: 0.9em;
+    font-weight: 400;
+
+    & svg {
+      width: 2em;
+      flex-shrink: 0;
+    }
+
+    & p {
+      display: block;
+      margin: 0;
+      background-color: rgba(var(--background-color-RGB), 0.9);
+      border-radius: 0.5em;
+      padding: 0.3em 0.5em 0.4em 0.5em;
+    }
   }
 
   & hgroup {
@@ -299,6 +360,11 @@ header {
       font-weight: 400;
       color: rgba(var(--text-color-RGB),1);
       text-decoration-color: rgba(var(--text-color-RGB),0.3);
+    }
+
+    & a:hover {
+      color: rgba(var(--link-color-RGB),1);
+      text-decoration-color: rgba(var(--link-color-RGB),0.3);
     }
 
     & .price {
