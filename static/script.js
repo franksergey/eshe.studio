@@ -41,3 +41,10 @@
 
   measure();
 })();
+
+document.addEventListener('click', (event) => {
+  const button = event.target.closest('.add-wishlist');
+  if (!button) return;
+
+  button.closest('li')?.classList.toggle('product-select');
+});
