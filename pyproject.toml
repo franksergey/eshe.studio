@@ -31,7 +31,7 @@ dependencies = [
     "alembic~=1.19.2",
     "fastapi[standard]~=0.141.0",
     "python-json-logger~=4.2",
-    "sqlalchemy~=2.0.52",
+    "sqlalchemy[aiosqlite]~=2.0.52",
     "uvloop>=0.22.1 ; sys_platform == 'linux'",
     "winloop>=0.6.3 ; sys_platform == 'win32'",
 ]
@@ -39,6 +39,9 @@ dependencies = [
 [project.optional-dependencies]
 rich = [
     "rich~=15.0",
+]
+postgres = [
+    "sqlalchemy[postgresql-psycopgbinary]~=2.0.52",
 ]
 
 [dependency-groups]
@@ -156,3 +159,25 @@ preset = "strict"
 
 [tool.pyrefly.errors]
 redundant-cast = "warn"
+
+# ================
+# Alembic settings
+# ================
+[tool.alembic]
+# https://alembic.sqlalchemy.org/en/latest/tutorial.html#editing-the-ini-file
+script_location = "%(here)s/alembic"
+file_template = "%%(rev)s_%%(slug)s"
+prepend_sys_path = [".", "src"]
+
+# Эти хуки исполняются после генерации ревизий
+[[tool.alembic.post_write_hooks]]
+name = "ruff-check"
+type = "module"
+module = "ruff"
+options = "check --fix-only REVISION_SCRIPT_FILENAME"
+
+[[tool.alembic.post_write_hooks]]
+name = "ruff-format"
+type = "module"
+module = "ruff"
+options = "format REVISION_SCRIPT_FILENAME"
