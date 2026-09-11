@@ -123,7 +123,7 @@ class AppSettings(BaseSettings):
     LOGGINGFORMAT: Literal["rich", "console", "structured"] = "console"
     DEBUG: bool = False
 
-    db: DatabaseConfig
+    db: DatabaseConfig = DatabaseConfig()
 
     model_config = SettingsConfigDict(
         env_file=".env",
