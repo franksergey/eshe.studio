@@ -282,6 +282,13 @@ header {
     display: none;
   }
 
+  & .link-group {
+    display: flex;
+    flex-wrap: wrap;
+    --gap: 0.5em;
+    gap: var(--gap);
+  }
+
   & div {
     display: flex;
     gap: 1em;
