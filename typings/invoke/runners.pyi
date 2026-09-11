@@ -1,0 +1,193 @@
+from collections.abc import Callable, Generator, Iterable, Mapping
+from typing import IO, Any, Literal, Self, TextIO, TypedDict, Unpack, overload
+
+from invoke.context import Context
+from invoke.util import ExceptionHandlingThread
+from invoke.watchers import StreamWatcher
+
+type _Hide = (
+    Literal[True, False, "out", "stdout", "err", "stderr", "both"] | None
+)
+
+class _RunKwargs(TypedDict, total=False):
+    dry: bool
+    echo: bool
+    echo_format: str | None
+    echo_stdin: bool | None
+    encoding: str | None
+    err_stream: TextIO | None
+    env: Mapping[str, str]
+    fallback: bool
+    hide: _Hide
+    in_stream: TextIO | bool | None
+    out_stream: TextIO | None
+    pty: bool
+    replace_env: bool
+    shell: str
+    timeout: float | None
+    warn: bool
+    watchers: Iterable[StreamWatcher]
+
+class Runner:
+    read_chunk_size: int
+    input_sleep: float
+    context: Any
+    program_finished: Any
+    warned_about_pty_fallback: bool
+    watchers: Any
+    opts: dict[str, Any]
+    using_pty: bool
+
+    def __init__(self, context: Context) -> None: ...
+    # If disown is True (default=False), returns None
+    @overload
+    def run(
+        self,
+        command: str,
+        *,
+        asynchronous: bool = ...,
+        disown: Literal[True],
+        **kwargs: Unpack[_RunKwargs],
+    ) -> None: ...
+    # If disown is False (the default), and asynchronous is True
+    # (default=False) returns Promise
+    @overload
+    def run(
+        self,
+        command: str,
+        *,
+        asynchronous: Literal[True],
+        disown: Literal[False] = False,
+        **kwargs: Unpack[_RunKwargs],
+    ) -> Promise: ...
+    # If disown and asynchronous are both False (the defaults), returns Result
+    @overload
+    def run(
+        self,
+        command: str,
+        *,
+        asynchronous: Literal[False] = False,
+        disown: Literal[False] = False,
+        **kwargs: Unpack[_RunKwargs],
+    ) -> Result: ...
+    # Fallback overload: return Any
+    @overload
+    def run(
+        self,
+        command: str,
+        *,
+        asynchronous: bool,
+        disown: bool,
+        **kwargs: Unpack[_RunKwargs],
+    ) -> Any: ...  # noqa: ANN401
+    def echo(self, command: str) -> None: ...
+    def make_promise(self) -> Promise: ...
+    def create_io_threads(
+        self,
+    ) -> tuple[
+        dict[Callable[..., Any], ExceptionHandlingThread], list[str], list[str]
+    ]: ...
+    def generate_result(self, **kwargs: object) -> Result: ...
+    def read_proc_output(
+        self, reader: Callable[..., Any]
+    ) -> Generator[str]: ...
+    def write_our_output(self, stream: IO[str], string: str) -> None: ...
+    def handle_stdout(
+        self, buffer_: list[str], hide: bool, output: IO[str]
+    ) -> None: ...
+    def handle_stderr(
+        self, buffer_: list[str], hide: bool, output: IO[str]
+    ) -> None: ...
+    def read_our_stdin(self, input_: IO[str]) -> str | None: ...
+    def handle_stdin(
+        self, input_: IO[str], output: IO[str], echo: bool = ...
+    ) -> None: ...
+    def should_echo_stdin(self, input_: IO[str], output: IO[str]) -> bool: ...
+    def respond(self, buffer_: list[str]) -> None: ...
+    def generate_env(
+        self, env: dict[str, Any], replace_env: bool
+    ) -> dict[str, Any]: ...
+    def should_use_pty(self, pty: bool, fallback: bool) -> bool: ...
+    @property
+    def has_dead_threads(self) -> bool: ...
+    def wait(self) -> None: ...
+    def write_proc_stdin(self, data: str) -> None: ...
+    def decode(self, data: bytes) -> str: ...
+    @property
+    def process_is_finished(self) -> bool: ...
+    def start(self, command: str, shell: str, env: dict[str, Any]) -> None: ...
+    def start_timer(self, timeout: int) -> None: ...
+    def read_proc_stdout(self, num_bytes: int) -> bytes | None: ...
+    def read_proc_stderr(self, num_bytes: int) -> bytes | None: ...
+    def close_proc_stdin(self) -> None: ...
+    def default_encoding(self) -> str: ...
+    def send_interrupt(self, interrupt: KeyboardInterrupt) -> None: ...
+    def returncode(self) -> int | None: ...
+    def stop(self) -> None: ...
+    def kill(self) -> None: ...
+    @property
+    def timed_out(self) -> bool: ...
+
+class Local(Runner):
+    status: Any
+    process: Any
+    def __init__(self, context: Context) -> None: ...
+    def should_use_pty(
+        self, pty: bool = ..., fallback: bool = ...
+    ) -> bool: ...
+    def read_proc_stdout(self, num_bytes: int) -> bytes | None: ...
+    def read_proc_stderr(self, num_bytes: int) -> bytes | None: ...
+    def close_proc_stdin(self) -> None: ...
+    def start(self, command: str, shell: str, env: dict[str, Any]) -> None: ...
+    def kill(self) -> None: ...
+    @property
+    def process_is_finished(self) -> bool: ...
+    def returncode(self) -> int | None: ...
+    def stop(self) -> None: ...
+
+class Result:
+    stdout: str
+    stderr: str
+    encoding: str
+    command: str
+    shell: Any
+    env: dict[str, Any]
+    exited: int
+    pty: bool
+    hide: tuple[Literal["stdout", "stderr"], ...]
+    def __init__(
+        self,
+        stdout: str = ...,
+        stderr: str = ...,
+        encoding: str | None = ...,
+        command: str = ...,
+        shell: str = ...,
+        env: dict[str, Any] | None = ...,
+        exited: int = ...,
+        pty: bool = ...,
+        hide: tuple[str, ...] = ...,
+    ) -> None: ...
+    @property
+    def return_code(self) -> int: ...
+    def __bool__(self) -> bool: ...
+    @property
+    def ok(self) -> bool: ...
+    @property
+    def failed(self) -> bool: ...
+    def tail(self, stream: str, count: int = ...) -> str: ...
+
+class Promise(Result):
+    runner: Any
+    def __init__(self, runner: Runner) -> None: ...
+    def join(self) -> Result: ...
+    def __enter__(self) -> Self: ...
+    def __exit__(
+        self, exc_type: object, exc_value: object, exc_tb: object
+    ) -> None: ...
+
+def normalize_hide(
+    val: str | bool | None,
+    out_stream: str | None = ...,
+    err_stream: str | None = ...,
+) -> tuple[str, ...]: ...
+def default_encoding() -> str: ...

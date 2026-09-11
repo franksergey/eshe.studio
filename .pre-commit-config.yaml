@@ -1,0 +1,20 @@
+repos:
+  - repo: local
+    hooks:
+      - id: pyrefly-check
+        name: Pyrefly Check
+        entry: uv run --dev pyrefly check
+        language: system
+        pass_filenames: false
+
+      - id: ruff-check
+        name: Ruff Check
+        entry: uv run --dev ruff check
+        language: system
+        files: .*[.]py[i]?$
+      
+      - id: ruff-format
+        name: Ruff Format
+        entry: uv run --dev ruff format --check
+        language: system
+        files: .*[.]py[i]?$

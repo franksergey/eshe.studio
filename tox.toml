@@ -1,0 +1,17 @@
+env_list = ["3.14", "lint"]
+
+[env_run_base]
+description = "Run the test suite with pytest"
+dependency_groups = ["dev", "tests"]
+commands = [
+    ["pyright"],
+    ["pyrefly", "check"]
+]
+
+[env.lint]
+description = "Run linters"
+dependency_groups = ["dev"]
+commands = [
+    ["ruff", "check"],
+    ["ruff", "format", "--check"]
+]
