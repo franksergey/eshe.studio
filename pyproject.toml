@@ -102,6 +102,7 @@ ignore = [
     "TD003",  # Inserting Link issues
     "FIX",    # Consider resolving issue -- usually very annoying
     "COM812", # Redundant with formatter
+    "CPY001",
 ]
 extend-safe-fixes = ["TC", "PYI021"]
 future-annotations = true
