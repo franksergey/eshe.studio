@@ -1,5 +1,4 @@
 import logging
-from abc import ABC
 from contextlib import AbstractAsyncContextManager
 from textwrap import dedent
 from typing import TYPE_CHECKING, Any, Self, override
@@ -33,7 +32,7 @@ class DatabaseSchemaMismatchError(Exception):
             self.add_note(f"NOTE: Database URL is:\n    {db_url}")
 
 
-class Database(AbstractAsyncContextManager["Database"], ABC):
+class Database(AbstractAsyncContextManager["Database"]):
     url: sqlalchemy.URL
 
     engine: AsyncEngine
