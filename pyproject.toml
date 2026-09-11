@@ -96,7 +96,7 @@ skip-magic-trailing-comma = true
 # https://docs.astral.sh/ruff/rules
 select = ["ALL"]
 ignore = [
-    # "D",      # TIP: Uncomment if you intend to write documentation from the start
+    "D",      # TIP: Uncomment if you intend to write documentation from the start
     "ARG",    # flake8-unused-arguments (sometimes useful for refactoring)
     "RUF001",
     "RUF002",
