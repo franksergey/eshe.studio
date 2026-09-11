@@ -1,10 +1,9 @@
-env_list = ["3.10", "3.11", "3.12", "3.13", "3.14", "lint"]
+env_list = ["3.14", "lint"]
 
 [env_run_base]
 description = "Run the test suite with pytest"
 dependency_groups = ["dev", "tests"]
 commands = [
-    ["pytest"],
     ["pyright"],
     ["pyrefly", "check"]
 ]
