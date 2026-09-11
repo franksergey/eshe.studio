@@ -5,11 +5,93 @@ file. Every setting uses a prefix `APP_` in its name when is loaded from
 environment or `.env` file.
 """
 
+from functools import cached_property
 from pathlib import Path
-from typing import Literal
+from typing import Literal, Self
 
-from pydantic import DirectoryPath
+from pydantic import BaseModel, DirectoryPath, FilePath, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from sqlalchemy import URL, make_url
+
+
+class DatabaseConfig(BaseModel):
+    """Конфигурация подключения к базе данных.
+
+    Attributes:
+        DIALECT: `$APP_DB_DIALECT`. SQL-диалект. По умолчанию `sqlite`.
+        DRIVER: `$APP_DB_DRIVER`. Драйвер для подключения к БД. Должен
+            поддерживать асинхронную работу с SQLAlchemy.
+        USERNAME: `$APP_DB_USERNAME`. Имя пользователя базы данных.
+        PASSWORD: `$APP_DB_PASSWORD`. Пароль для подключения к БД.
+        PASSWORDFILE: `$APP_DB_PASSWORDFILE`. Файл с паролем для
+            подключения к базе данных.
+        HOST: `$APP_DB_HOST`. Адрес хоста базы данных.
+        PORT: `$APP_DB_PORT`. Порт для подключения к базе данных.
+        DATABASE: `$APP_DB_DATABASE`. Имя базы данных.
+        ECHO: `$APP_DB_ECHO`. Если True, SQLAlchemy будет логировать все
+            SQL-запросы. Полезно для отладки. По умолчанию False.
+        CHECKSCHEMA: `$APP_DB_CHECKSCHEMA`. Проверять схему базы данных
+            на расхождения с базой данных? По умолчанию True.
+    """
+
+    DIALECT: str = "sqlite"
+    DRIVER: str = "aiosqlite"
+    USERNAME: str | None = None
+    PASSWORD: SecretStr | None = None
+    PASSWORDFILE: FilePath | None = None
+    HOST: str | None = None
+    PORT: int | None = None
+    DATABASE: str | None = None  # TODO(@soucelover): Implement subfolder /data
+
+    ECHO: bool = False
+    CHECKSCHEMA: bool = True
+
+    @cached_property
+    def database_url(self) -> URL:
+        """DSN (URL) адрес для подключения к БД.
+
+        Автоматически собирает URL-объект из отдельных атрибутов этого
+        класса.
+
+        Returns:
+            URL адрес для инициализации движка базы данных.
+        """
+        if self.PASSWORD:
+            password = self.PASSWORD.get_secret_value()
+        elif self.PASSWORDFILE is not None:
+            password = self.PASSWORDFILE.read_text()
+        else:
+            password = None
+
+        return URL.create(
+            drivername=f"{self.DIALECT}+{self.DRIVER}",
+            username=self.USERNAME,
+            password=password,
+            host=self.HOST,
+            port=self.PORT,
+            database=self.DATABASE,
+        )
+
+    @classmethod
+    def from_url(
+        cls, url: URL | str, *, echo: bool = False, checkschema: bool = True
+    ) -> Self:
+        url = make_url(url)
+        dialect, driver = url.drivername.split("+")
+
+        return cls(
+            DIALECT=dialect,
+            DRIVER=driver,
+            USERNAME=url.username,
+            PASSWORD=SecretStr(url.password)
+            if url.password is not None
+            else url.password,
+            HOST=url.host,
+            PORT=url.port,
+            DATABASE=url.database,
+            ECHO=echo,
+            CHECKSCHEMA=checkschema,
+        )
 
 
 class AppSettings(BaseSettings):
@@ -40,6 +122,8 @@ class AppSettings(BaseSettings):
     GRACEFULSHUTDOWNTIMEOUT: int = 10
     LOGGINGFORMAT: Literal["rich", "console", "structured"] = "console"
     DEBUG: bool = False
+
+    db: DatabaseConfig
 
     model_config = SettingsConfigDict(
         env_file=".env",
