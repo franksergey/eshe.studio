@@ -1,0 +1,32 @@
+# The schema is defined in logging docs:
+# https://docs.python.org/library/logging.config.html#dictionary-schema-details
+
+version: 1
+disable_existing_loggers: false
+
+formatters:
+  rich:
+    format: "%(message)s"
+    datefmt: "[%X]"
+
+handlers:
+  default:
+    class: rich.logging.RichHandler
+    formatter: rich
+    rich_tracebacks: true
+    markup: true
+    show_path: false
+
+root:
+  level: DEBUG
+  handlers: [default]
+
+loggers:
+  uvicorn:
+    level: INFO
+    handlers: [default]
+    propagate: false
+  uvicorn.error:
+    level: INFO
+  uvicorn.access:
+    level: INFO

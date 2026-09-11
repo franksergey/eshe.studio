@@ -1,0 +1,43 @@
+# The schema is defined in logging docs:
+# https://docs.python.org/library/logging.config.html#dictionary-schema-details
+
+version: 1
+disable_existing_loggers: false
+
+formatters:
+  default:
+    class: uvicorn.logging.DefaultFormatter
+    format: "%(levelprefix)s %(name)s - %(message)s"
+    datefmt: "%Y-%m-%d %H:%M:%S"
+    use_colors: null
+
+  access:
+    class: uvicorn.logging.AccessFormatter
+    format: '%(levelprefix)s %(client_addr)s - "%(request_line)s" %(status_code)s'
+
+handlers:
+  default:
+    class: logging.StreamHandler
+    formatter: default
+    stream: ext://sys.stdout
+  
+  access:
+    class: logging.StreamHandler
+    formatter: access
+    stream: ext://sys.stdout
+
+root:
+  level: DEBUG
+  handlers: [default]
+
+loggers:
+  uvicorn:
+    level: INFO
+    handlers: [default]
+    propagate: false
+  uvicorn.error:
+    level: INFO
+  uvicorn.access:
+    level: INFO
+    handlers: [access]
+    propagate: false
