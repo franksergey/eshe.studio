@@ -1,1 +1,16 @@
+# Python-generated files
+__pycache__/
+*.py[codz]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+.python-version
+
+# tests-related files
+.coverage
+
 .DS_Store
