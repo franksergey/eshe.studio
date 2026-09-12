@@ -3,6 +3,7 @@ from typing import ClassVar
 
 from sqlalchemy import (
     CheckConstraint,
+    Enum,
     ForeignKey,
     MetaData,
     Numeric,
@@ -40,6 +41,7 @@ class SpecificationTagDB(Base):
 
 
 PYDANTIC_MAX_URL_LENGTH = 2083
+CURRENCY_CODE_ENUM = Enum(CurrencyCode, name="currency_code_enum")
 
 
 class SpecificationItemDB(Base):
@@ -55,7 +57,9 @@ class SpecificationItemDB(Base):
     price: Mapped[Decimal | None] = mapped_column(
         Numeric(precision=12, scale=2)
     )
-    price_currency: Mapped[CurrencyCode | None]
+    price_currency: Mapped[CurrencyCode | None] = mapped_column(
+        CURRENCY_CODE_ENUM
+    )
 
     __table_args__ = (
         CheckConstraint(

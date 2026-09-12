@@ -14,3 +14,4 @@ wheels/
 .coverage
 
 .DS_Store
+.env
