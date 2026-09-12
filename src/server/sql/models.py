@@ -92,12 +92,37 @@ class SpecificationItemCategoryDB(Base):
     __tablename__ = "specification_items_categories"
 
     id: Mapped[int] = mapped_column(primary_key=True)
+    room_id: Mapped[int] = mapped_column(
+        ForeignKey("specification_rooms.id", ondelete="CASCADE")
+    )
 
     name: Mapped[str] = mapped_column(String(1024))
+    ordinal_no: Mapped[int] = mapped_column()
 
     # Relations
     items: Mapped[SpecificationItemDB] = relationship(
         back_populates="category",
+        cascade="all, delete, delete-orphan",
+        passive_deletes=True,
+    )
+    room: Mapped[SpecificationRoomDB] = relationship(
+        back_populates="categories",
+        cascade="all, delete, delete-orphan",
+        passive_deletes=True,
+    )
+
+
+class SpecificationRoomDB(Base):
+    __tablename__ = "specification_rooms"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+
+    name: Mapped[str] = mapped_column(String(256))
+    ordinal_no: Mapped[int] = mapped_column()
+
+    # Relations
+    categories: Mapped[SpecificationItemCategoryDB] = relationship(
+        back_populates="room",
         cascade="all, delete, delete-orphan",
         passive_deletes=True,
     )

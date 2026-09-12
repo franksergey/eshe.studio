@@ -32,3 +32,11 @@ class SpecificationItemCategory(BaseModel):
     name: Annotated[str, Field(min_length=1, max_length=1024)]
 
     items: Annotated[SpecificationItem, Field(min_length=1, max_length=32)]
+
+
+class SpecificationRoom(BaseModel):
+    name: Annotated[str, Field(min_length=1, max_length=256)]
+
+    categories: Annotated[
+        SpecificationItemCategory, Field(min_length=1, max_length=32)
+    ]
