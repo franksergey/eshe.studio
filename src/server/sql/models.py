@@ -100,7 +100,7 @@ class SpecificationItemCategoryDB(Base):
     ordinal_no: Mapped[int] = mapped_column()
 
     # Relations
-    items: Mapped[SpecificationItemDB] = relationship(
+    items: Mapped[list[SpecificationItemDB]] = relationship(
         back_populates="category",
         cascade="all, delete, delete-orphan",
         passive_deletes=True,
@@ -121,8 +121,27 @@ class SpecificationRoomDB(Base):
     ordinal_no: Mapped[int] = mapped_column()
 
     # Relations
-    categories: Mapped[SpecificationItemCategoryDB] = relationship(
+    categories: Mapped[list[SpecificationItemCategoryDB]] = relationship(
         back_populates="room",
+        cascade="all, delete, delete-orphan",
+        passive_deletes=True,
+    )
+    specification: Mapped[SpecificationDB] = relationship(
+        back_populates="rooms"
+    )
+
+
+class SpecificationDB(Base):
+    __tablename__ = "specifications"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+
+    # Or location?
+    name: Mapped[str] = mapped_column(String(256))
+
+    # Relations
+    rooms: Mapped[list[SpecificationRoomDB]] = relationship(
+        back_populates="specification",
         cascade="all, delete, delete-orphan",
         passive_deletes=True,
     )
