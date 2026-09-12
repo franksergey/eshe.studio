@@ -6,6 +6,9 @@ import sys
 
 import uvicorn
 
+from server.sql.database import Database, DatabaseChecker
+from server.sql.models import Base
+
 from . import __version__ as version
 from .config import settings
 from .logging import get_config_path, setup_logging
@@ -54,10 +57,27 @@ def launch_server() -> None:
     logger.info("Main ASGI server runner has exited.")
 
 
+async def perform_checks() -> None:
+    logger.info("Performing an initial health check")
+
+    async with Database(
+        db_url=settings.db.database_url, echo=settings.db.ECHO
+    ) as database:
+        if settings.db.CHECKSCHEMA:
+            checker = DatabaseChecker(Base, database)
+            await checker.raise_for_differences()
+
+    logger.info("Initial health check has been finished")
+
+
 def main() -> None:
     """Entry point of the whole FastAPI backend."""
     setup_logging()
     logger.info("Backend version: %s", version)
+
+    with asyncio.Runner(loop_factory=create_asyncio_event_loop) as runner:
+        runner.run(perform_checks())
+
     launch_server()
 
 

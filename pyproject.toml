@@ -28,8 +28,10 @@ keywords = []
 # NOTE: If you narrow, modify .github/workflows/quality-assurance.yaml and tox.toml
 requires-python = ">=3.14,<3.15"
 dependencies = [
+    "alembic~=1.19.2",
     "fastapi[standard]~=0.141.0",
     "python-json-logger~=4.2",
+    "sqlalchemy[aiosqlite]~=2.0.52",
     "uvloop>=0.22.1 ; sys_platform == 'linux'",
     "winloop>=0.6.3 ; sys_platform == 'win32'",
 ]
@@ -37,6 +39,9 @@ dependencies = [
 [project.optional-dependencies]
 rich = [
     "rich~=15.0",
+]
+postgres = [
+    "sqlalchemy[postgresql-psycopgbinary]~=2.0.52",
 ]
 
 [dependency-groups]
@@ -94,7 +99,7 @@ skip-magic-trailing-comma = true
 # https://docs.astral.sh/ruff/rules
 select = ["ALL"]
 ignore = [
-    # "D",      # TIP: Uncomment if you intend to write documentation from the start
+    "D",      # TIP: Uncomment if you intend to write documentation from the start
     "ARG",    # flake8-unused-arguments (sometimes useful for refactoring)
     "RUF001",
     "RUF002",
@@ -121,6 +126,7 @@ convention = "google"
 runtime-evaluated-base-classes = [
     "pydantic.BaseModel",
     "pydantic_settings.BaseSettings",
+    "server.sql.models.Base",
 ]
 runtime-evaluated-decorators = [
     "invoke.tasks.task",
@@ -132,6 +138,7 @@ runtime-evaluated-decorators = [
     "fastapi.APIRouter.head",
     "fastapi.APIRouter.patch",
     "fastapi.APIRouter.trace",
+    "server.api.dependencies.dependency",
 ]
 
 # ================
@@ -154,3 +161,25 @@ preset = "strict"
 
 [tool.pyrefly.errors]
 redundant-cast = "warn"
+
+# ================
+# Alembic settings
+# ================
+[tool.alembic]
+# https://alembic.sqlalchemy.org/en/latest/tutorial.html#editing-the-ini-file
+script_location = "%(here)s/alembic"
+file_template = "%%(rev)s_%%(slug)s"
+prepend_sys_path = [".", "src"]
+
+# Эти хуки исполняются после генерации ревизий
+[[tool.alembic.post_write_hooks]]
+name = "ruff-check"
+type = "module"
+module = "ruff"
+options = "check --fix-only REVISION_SCRIPT_FILENAME"
+
+[[tool.alembic.post_write_hooks]]
+name = "ruff-format"
+type = "module"
+module = "ruff"
+options = "format REVISION_SCRIPT_FILENAME"

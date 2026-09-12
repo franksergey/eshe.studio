@@ -1,14 +1,24 @@
 """Creation and the setup of application object of ASGI server."""
 
 import logging
+from contextlib import asynccontextmanager
 from pathlib import Path
+from typing import TYPE_CHECKING, TypedDict
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.staticfiles import StaticFiles
 
+from server.api.container import container_getter
+from server.sql.database import Database
+
 from . import __version__ as version
 from .config import settings
+
+if TYPE_CHECKING:
+    from collections.abc import AsyncGenerator
+
+    from server.api.container import ContainerGetter
 
 logger = logging.getLogger(__name__)
 
@@ -61,3 +71,20 @@ def setup_middlewares(app: FastAPI) -> None:
         allow_headers=["*"],
     )
     logger.debug("Using Middleware CORSMiddleware")
+
+
+class AppInitialState(TypedDict):
+    get_container: ContainerGetter
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncGenerator[AppInitialState]:
+    async with Database(
+        db_url=settings.db.database_url, echo=settings.db.ECHO
+    ) as database:
+        get_container = container_getter(database.get_session)
+
+        logger.info("Сервер полностью настроен и готов к началу работы.")
+        yield {"get_container": get_container}
+
+        logger.info("Сервер останавливает свою работу...")
