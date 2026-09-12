@@ -126,6 +126,7 @@ convention = "google"
 runtime-evaluated-base-classes = [
     "pydantic.BaseModel",
     "pydantic_settings.BaseSettings",
+    "server.sql.models.Base",
 ]
 runtime-evaluated-decorators = [
     "invoke.tasks.task",
@@ -137,6 +138,7 @@ runtime-evaluated-decorators = [
     "fastapi.APIRouter.head",
     "fastapi.APIRouter.patch",
     "fastapi.APIRouter.trace",
+    "server.api.dependencies.dependency",
 ]
 
 # ================

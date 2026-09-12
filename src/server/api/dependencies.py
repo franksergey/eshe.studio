@@ -1,14 +1,9 @@
 from collections.abc import AsyncGenerator, Callable
-from typing import TYPE_CHECKING, Annotated, Any
+from typing import Annotated, Any
 
-from fastapi import Depends
+from fastapi import Depends, Request
 
-from server.api.container import ServiceContainer
-
-if TYPE_CHECKING:
-    from fastapi import Request
-
-    from server.api.container import ContainerGetter
+from server.api.container import ContainerGetter, ServiceContainer
 
 
 def dependency[FuncT: Callable[..., Any]](function: FuncT) -> FuncT:
