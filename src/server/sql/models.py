@@ -10,7 +10,7 @@ from sqlalchemy import (
     SmallInteger,
     String,
 )
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 from server.services.schemas import CurrencyCode
 
@@ -33,11 +33,15 @@ class SpecificationTagDB(Base):
     __tablename__ = "specification_tag"
 
     item_id: Mapped[int] = mapped_column(
-        ForeignKey("specification_items.id"), primary_key=True
+        ForeignKey("specification_items.id", ondelete="CASCADE"),
+        primary_key=True,
     )
     ordinal_no: Mapped[int] = mapped_column(primary_key=True)
 
     tag: Mapped[str] = mapped_column(String(255))
+
+    # Relations
+    item: Mapped[SpecificationItemDB] = relationship(back_populates="tags")
 
 
 PYDANTIC_MAX_URL_LENGTH = 2083
@@ -61,6 +65,14 @@ class SpecificationItemDB(Base):
         CURRENCY_CODE_ENUM
     )
 
+    # Relations
+    tags: Mapped[list[SpecificationTagDB]] = relationship(
+        back_populates="item",
+        cascade="all, delete, delete-orphan",
+        passive_deletes=True,
+    )
+
+    # Constraints
     __table_args__ = (
         CheckConstraint(
             "(price IS NULL AND price_currency IS NULL) "
