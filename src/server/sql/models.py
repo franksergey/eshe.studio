@@ -52,6 +52,9 @@ class SpecificationItemDB(Base):
     __tablename__ = "specification_items"
 
     id: Mapped[int] = mapped_column(primary_key=True)
+    category_id: Mapped[int] = mapped_column(
+        ForeignKey("specification_items_categories.id", ondelete="CASCADE")
+    )
 
     name: Mapped[str] = mapped_column(String(1024))
     count: Mapped[int] = mapped_column(SmallInteger)
@@ -71,6 +74,9 @@ class SpecificationItemDB(Base):
         cascade="all, delete, delete-orphan",
         passive_deletes=True,
     )
+    category: Mapped[SpecificationItemCategoryDB] = relationship(
+        back_populates="items"
+    )
 
     # Constraints
     __table_args__ = (
@@ -79,4 +85,19 @@ class SpecificationItemDB(Base):
             "OR NOT(price IS NULL OR price_currency IS NULL)",
             name="ux_c_email_or_phone_required",
         ),
+    )
+
+
+class SpecificationItemCategoryDB(Base):
+    __tablename__ = "specification_items_categories"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+
+    name: Mapped[str] = mapped_column(String(1024))
+
+    # Relations
+    items: Mapped[SpecificationItemDB] = relationship(
+        back_populates="category",
+        cascade="all, delete, delete-orphan",
+        passive_deletes=True,
     )
