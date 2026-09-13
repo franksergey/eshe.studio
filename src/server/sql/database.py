@@ -69,7 +69,7 @@ class Database(AbstractAsyncContextManager["Database"]):
             echo=echo,  # Логирование SQL-запросов
             future=True,
             pool_pre_ping=True,  # Проверка соединения перед использованием
-            connect_args=connect_args,
+            connect_args=connect_args or {},
         )
 
     @override
