@@ -100,7 +100,6 @@ class _WindowsLinkLogRender:
 
 class WindowsRichHandler(RichHandler):
     def __init__(self, *args: object, **kwargs: object) -> None:
-        super().__init__(*args, **kwargs)  # pyrefly: ignore [bad-argument-type]
+        super().__init__(*args, **kwargs)  # type: ignore [bad-argument-type]
 
-        # pyrefly: ignore [bad-assignment]
-        self._log_render = _WindowsLinkLogRender(self._log_render)
+        self._log_render = _WindowsLinkLogRender(self._log_render)  # type: ignore [bad-assignment]
