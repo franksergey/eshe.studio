@@ -11,11 +11,11 @@ formatters:
 
 handlers:
   default:
-    class: rich.logging.RichHandler
+    class: server.logging.WindowsRichHandler
     formatter: rich
     rich_tracebacks: true
     markup: true
-    show_path: false
+    # show_path: false
 
 root:
   level: DEBUG
@@ -29,4 +29,8 @@ loggers:
   uvicorn.error:
     level: INFO
   uvicorn.access:
+    level: INFO
+  aiosqlite:
+    level: INFO
+  watchfiles.main:
     level: INFO
