@@ -8,11 +8,15 @@ from typing import TYPE_CHECKING, cast, override
 
 import yaml
 from pythonjsonlogger.json import JsonFormatter
+from rich.logging import RichHandler
 
 from .config import settings
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
     from pathlib import Path
+
+    from rich.console import ConsoleRenderable
 
 
 def setup_logging() -> None:
@@ -77,3 +81,26 @@ class JsonAccessFormatter(JsonFormatter):
         )
 
         return super().format(recordcopy)
+
+
+class _WindowsLinkLogRender:
+    def __init__(self, delegate: Callable[..., ConsoleRenderable]) -> None:
+        self._delegate = delegate
+
+    def __call__(self, *args: object, **kwargs: object) -> ConsoleRenderable:
+        link_path = kwargs.get("link_path")
+
+        if isinstance(link_path, str):
+            kwargs["link_path"] = "/" + link_path.replace("\\", "/").lstrip(
+                "/"
+            )
+
+        return self._delegate(*args, **kwargs)
+
+
+class WindowsRichHandler(RichHandler):
+    def __init__(self, *args: object, **kwargs: object) -> None:
+        super().__init__(*args, **kwargs)  # pyrefly: ignore [bad-argument-type]
+
+        # pyrefly: ignore [bad-assignment]
+        self._log_render = _WindowsLinkLogRender(self._log_render)
