@@ -41,3 +41,7 @@ loggers:
     level: INFO
     handlers: [access]
     propagate: false
+  aiosqlite:
+    level: INFO
+  watchfiles.main:
+    level: INFO
