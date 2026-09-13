@@ -30,3 +30,7 @@ loggers:
     level: INFO
   uvicorn.access:
     level: INFO
+  aiosqlite:
+    level: INFO
+  watchfiles.main:
+    level: INFO
