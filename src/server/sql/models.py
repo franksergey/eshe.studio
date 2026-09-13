@@ -41,14 +41,16 @@ class SpecificationTagDB(Base):
     tag: Mapped[str] = mapped_column(String(255))
 
     # Relations
-    item: Mapped[SpecificationItemDB] = relationship(back_populates="tags")
+    item: Mapped[ItemDB] = relationship(back_populates="tags")
 
 
 PYDANTIC_MAX_URL_LENGTH = 2083
 CURRENCY_CODE_ENUM = Enum(CurrencyCode, name="currency_code_enum")
 
 
-class SpecificationItemDB(Base):
+class ItemDB(Base):
+    """Вариант предмета в таблице комплектации."""
+
     __tablename__ = "specification_items"
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -74,9 +76,7 @@ class SpecificationItemDB(Base):
         cascade="all, delete, delete-orphan",
         passive_deletes=True,
     )
-    category: Mapped[SpecificationItemCategoryDB] = relationship(
-        back_populates="items"
-    )
+    category: Mapped[CategoryDB] = relationship(back_populates="items")
 
     # Constraints
     __table_args__ = (
@@ -88,7 +88,9 @@ class SpecificationItemDB(Base):
     )
 
 
-class SpecificationItemCategoryDB(Base):
+class CategoryDB(Base):
+    """Категория предметов в таблице комплектации."""
+
     __tablename__ = "specification_items_categories"
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -100,19 +102,21 @@ class SpecificationItemCategoryDB(Base):
     ordinal_no: Mapped[int] = mapped_column()
 
     # Relations
-    items: Mapped[list[SpecificationItemDB]] = relationship(
+    items: Mapped[list[ItemDB]] = relationship(
         back_populates="category",
         cascade="all, delete, delete-orphan",
         passive_deletes=True,
     )
-    room: Mapped[SpecificationRoomDB] = relationship(
+    room: Mapped[RoomDB] = relationship(
         back_populates="categories",
         cascade="all, delete, delete-orphan",
         passive_deletes=True,
     )
 
 
-class SpecificationRoomDB(Base):
+class RoomDB(Base):
+    """Комната, для которой выбираются предметы в таблице комплектации."""
+
     __tablename__ = "specification_rooms"
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -121,7 +125,7 @@ class SpecificationRoomDB(Base):
     ordinal_no: Mapped[int] = mapped_column()
 
     # Relations
-    categories: Mapped[list[SpecificationItemCategoryDB]] = relationship(
+    categories: Mapped[list[CategoryDB]] = relationship(
         back_populates="room",
         cascade="all, delete, delete-orphan",
         passive_deletes=True,
@@ -132,6 +136,8 @@ class SpecificationRoomDB(Base):
 
 
 class SpecificationDB(Base):
+    """Таблица комплектации."""
+
     __tablename__ = "specifications"
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -140,7 +146,7 @@ class SpecificationDB(Base):
     name: Mapped[str] = mapped_column(String(256))
 
     # Relations
-    rooms: Mapped[list[SpecificationRoomDB]] = relationship(
+    rooms: Mapped[list[RoomDB]] = relationship(
         back_populates="specification",
         cascade="all, delete, delete-orphan",
         passive_deletes=True,

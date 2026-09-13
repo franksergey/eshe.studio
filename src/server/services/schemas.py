@@ -16,7 +16,9 @@ class MoneyType(BaseModel):
     currency: CurrencyCode | None
 
 
-class SpecificationItem(BaseModel):
+class Item(BaseModel):
+    """Вариант предмета в таблице комплектации."""
+
     name: Annotated[str, Field(min_length=1, max_length=1024)]
     count: Annotated[int, Field(ge=1, le=256)]
 
@@ -28,25 +30,25 @@ class SpecificationItem(BaseModel):
     model_config = ConfigDict(use_enum_values=True)
 
 
-class SpecificationItemCategory(BaseModel):
+class Category(BaseModel):
+    """Категория предметов в таблице комплектации."""
+
     name: Annotated[str, Field(min_length=1, max_length=1024)]
 
-    items: Annotated[
-        list[SpecificationItem], Field(min_length=1, max_length=32)
-    ]
+    items: Annotated[list[Item], Field(min_length=1, max_length=32)]
 
 
-class SpecificationRoom(BaseModel):
+class Room(BaseModel):
+    """Комната, для которой выбираются предметы в таблице комплектации."""
+
     name: Annotated[str, Field(min_length=1, max_length=256)]
 
-    categories: Annotated[
-        list[SpecificationItemCategory], Field(min_length=1, max_length=64)
-    ]
+    categories: Annotated[list[Category], Field(min_length=1, max_length=64)]
 
 
 class Specification(BaseModel):
+    """Таблица комплектации."""
+
     name: Annotated[str, Field(min_length=1, max_length=256)]
 
-    rooms: Annotated[
-        list[SpecificationRoom], Field(min_length=1, max_length=64)
-    ]
+    rooms: Annotated[list[Room], Field(min_length=1, max_length=64)]
