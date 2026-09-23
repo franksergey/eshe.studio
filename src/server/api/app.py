@@ -7,13 +7,19 @@ from typing import TYPE_CHECKING, TypedDict
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi_problem.handler import (
+    add_exception_handler,
+    new_exception_handler,
+)
 from starlette.staticfiles import StaticFiles
+from starlette_problem.cors import CorsConfiguration
 
+from server import __version__ as version
 from server.api.container import container_getter
+from server.config import settings
 from server.sql.database import Database
 
-from . import __version__ as version
-from .config import settings
+from .errors import logger as errors_logger
 
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator
@@ -21,6 +27,13 @@ if TYPE_CHECKING:
     from server.api.container import ContainerGetter
 
 logger = logging.getLogger(__name__)
+
+cors_configuration = CorsConfiguration(
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 def setup_app() -> FastAPI:
@@ -38,6 +51,7 @@ def setup_app() -> FastAPI:
 
     setup_routers(app)
     setup_middlewares(app)
+    setup_exception_handlers(app)
 
     return app
 
@@ -61,16 +75,30 @@ def setup_middlewares(app: FastAPI) -> None:
     """FastAPI middlewares configuration.
 
     Args:
-        app: Application object
+        app: Application object.
     """
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["*"],
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
+        allow_origins=cors_configuration.allow_origins,
+        allow_credentials=cors_configuration.allow_credentials,
+        allow_methods=cors_configuration.allow_methods,
+        allow_headers=cors_configuration.allow_headers,
     )
     logger.debug("Using Middleware CORSMiddleware")
+
+
+def setup_exception_handlers(app: FastAPI) -> None:
+    """FastAPI exception handlers configuration
+
+    Args:
+        app: Application object.
+    """
+    eh = new_exception_handler(logger=errors_logger, cors=cors_configuration)
+    add_exception_handler(app, eh)
+    logger.debug("Using fastapi-problem as errors handler")
+
+
+# TODO(@soucelover): Implement custom request validation error handler
 
 
 class AppInitialState(TypedDict):
