@@ -98,6 +98,9 @@ def setup_exception_handlers(app: FastAPI) -> None:
     logger.debug("Using fastapi-problem as errors handler")
 
 
+# TODO(@soucelover): Implement custom request validation error handler
+
+
 class AppInitialState(TypedDict):
     get_container: ContainerGetter
 
