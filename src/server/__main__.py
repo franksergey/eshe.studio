@@ -42,7 +42,7 @@ def launch_server() -> None:
     """Launch ASGI server."""
     logger.info("Launching main ASGI server runner.")
     uvicorn.run(
-        "server.app:setup_app",
+        "server.api.app:setup_app",
         factory=True,
         host=settings.HOST,
         port=settings.PORT,
