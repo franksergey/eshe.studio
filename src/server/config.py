@@ -13,6 +13,8 @@ from pydantic import BaseModel, DirectoryPath, FilePath, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from sqlalchemy import URL, make_url
 
+DATA_FOLDER_SENTIEL = ":DATA_FOLDER:"
+
 
 class DatabaseConfig(BaseModel):
     """Конфигурация подключения к базе данных.
@@ -41,7 +43,8 @@ class DatabaseConfig(BaseModel):
     PASSWORDFILE: FilePath | None = None
     HOST: str | None = None
     PORT: int | None = None
-    DATABASE: str | None = None  # TODO(@soucelover): Implement subfolder /data
+    DATABASE: str | None = DATA_FOLDER_SENTIEL
+    DATAFOLDER: Path | None = None
 
     ECHO: bool = False
     CHECKSCHEMA: bool = True
@@ -69,8 +72,26 @@ class DatabaseConfig(BaseModel):
             password=password,
             host=self.HOST,
             port=self.PORT,
-            database=self.DATABASE,
+            database=self.get_database(),
         )
+
+    def get_database(self) -> str | None:
+        if self.DATABASE != DATA_FOLDER_SENTIEL:
+            return self.DATABASE
+
+        folder = self.DATAFOLDER
+
+        if folder is None:
+            folder = Path.cwd() / "data"
+
+        folder.mkdir(parents=True, exist_ok=True)
+        gitignore = folder / ".gitignore"
+
+        if not gitignore.is_file():
+            gitignore.write_text("*\n")
+
+        path = folder / "db.sqlite"
+        return str(path.absolute())
 
     @classmethod
     def from_url(
