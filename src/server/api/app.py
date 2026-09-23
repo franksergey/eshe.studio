@@ -9,11 +9,10 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.staticfiles import StaticFiles
 
+from server import __version__ as version
 from server.api.container import container_getter
+from server.config import settings
 from server.sql.database import Database
-
-from . import __version__ as version
-from .config import settings
 
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator
