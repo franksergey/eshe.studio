@@ -38,7 +38,7 @@ def setup_app() -> FastAPI:
         A set up and ready to use application object.
     """
     logger.info("Setting up a FastAPI application object")
-    app = FastAPI(debug=settings.DEBUG, version=version)
+    app = FastAPI(debug=settings.DEBUG, version=version, lifespan=lifespan)
 
     setup_routers(app)
     setup_middlewares(app)
