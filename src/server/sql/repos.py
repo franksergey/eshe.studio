@@ -1,5 +1,6 @@
 from typing import TYPE_CHECKING, cast, override
 
+from pydantic import HttpUrl
 from sqlalchemy import select
 from sqlalchemy.orm import lazyload
 
@@ -38,8 +39,8 @@ class SpecificationRepo(AbstractSpecificationRepo):
         return Item(
             name=obj.name,
             count=obj.count,
-            link=obj.link,
-            tags=(tag.tag for tag in obj.tags),
+            link=HttpUrl(obj.link) if obj.link is not None else None,
+            tags=[tag.tag for tag in obj.tags],
             price=price,
         )
 
@@ -47,16 +48,16 @@ class SpecificationRepo(AbstractSpecificationRepo):
     def _validate_category(cls, obj: CategoryDB) -> Category:
         return Category(
             name=obj.name,
-            items=(cls._validate_item(item) for item in obj.items),
+            items=[cls._validate_item(item) for item in obj.items],
         )
 
     @classmethod
     def _validate_room(cls, obj: RoomDB) -> Room:
         return Room(
             name=obj.name,
-            categories=(
+            categories=[
                 cls._validate_category(category) for category in obj.categories
-            ),
+            ],
         )
 
     @classmethod
@@ -64,7 +65,7 @@ class SpecificationRepo(AbstractSpecificationRepo):
         return Specification(
             id=obj.id,
             name=obj.name,
-            rooms=(cls._validate_room(room) for room in obj.rooms),
+            rooms=[cls._validate_room(room) for room in obj.rooms],
         )
 
     @staticmethod
