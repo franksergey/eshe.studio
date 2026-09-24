@@ -1,7 +1,6 @@
 import asyncio
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
-from functools import cached_property
 from typing import TYPE_CHECKING, Protocol
 
 from server.services.specification import SpecificationService
@@ -17,14 +16,15 @@ if TYPE_CHECKING:
 @dataclass(eq=False, slots=True)
 class ServiceContainer:
     session: AsyncSession
+    _specification_service: SpecificationService | None = None
 
-    @cached_property
-    def _specification_repo(self) -> SpecificationRepo:
-        return SpecificationRepo(self.session)
-
-    @cached_property
+    @property
     def specifications(self) -> SpecificationService:
-        return SpecificationService(self._specification_repo)
+        if self._specification_service is None:
+            repo = SpecificationRepo(self.session)
+            self._specification_service = SpecificationService(repo)
+
+        return self._specification_service
 
 
 class ContainerGetter(Protocol):
