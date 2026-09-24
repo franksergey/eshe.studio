@@ -7,33 +7,23 @@ from typing import TYPE_CHECKING, TypedDict
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi_problem.handler import (
-    add_exception_handler,
-    new_exception_handler,
-)
+from fastapi_problem.handler import add_exception_handler
 from starlette.staticfiles import StaticFiles
-from starlette_problem.cors import CorsConfiguration
 
 from server import __version__ as version
-from server.api.container import container_getter
 from server.config import settings
 from server.sql.database import Database
 
-from .errors import logger as errors_logger
+from . import cors_configuration
+from .container import container_getter
+from .errors import error_handler
 
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator
 
-    from server.api.container import ContainerGetter
+    from .container import ContainerGetter
 
 logger = logging.getLogger(__name__)
-
-cors_configuration = CorsConfiguration(
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 
 def setup_app() -> FastAPI:
@@ -93,8 +83,7 @@ def setup_exception_handlers(app: FastAPI) -> None:
     Args:
         app: Application object.
     """
-    eh = new_exception_handler(logger=errors_logger, cors=cors_configuration)
-    add_exception_handler(app, eh)
+    add_exception_handler(app, error_handler)
     logger.debug("Using fastapi-problem as errors handler")
 
 
