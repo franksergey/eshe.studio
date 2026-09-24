@@ -42,7 +42,7 @@ class SpecificationPure(SpecificationBase):
 class Specification(SpecificationPure):
     """Таблица комплектации."""
 
-    rooms: Annotated[list[Room], Field(min_length=1, max_length=64)]
+    rooms: Annotated[list[Room], Field(max_length=64)]
 
 
 class CurrencyCode(StrEnum):
