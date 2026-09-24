@@ -107,11 +107,7 @@ class CategoryDB(Base):
         cascade="all, delete, delete-orphan",
         passive_deletes=True,
     )
-    room: Mapped[RoomDB] = relationship(
-        back_populates="categories",
-        cascade="all, delete, delete-orphan",
-        passive_deletes=True,
-    )
+    room: Mapped[RoomDB] = relationship(back_populates="categories")
 
 
 class RoomDB(Base):
@@ -120,6 +116,9 @@ class RoomDB(Base):
     __tablename__ = "specification_rooms"
 
     id: Mapped[int] = mapped_column(primary_key=True)
+    specification_id: Mapped[int] = mapped_column(
+        ForeignKey("specifications.id", ondelete="CASCADE")
+    )
 
     name: Mapped[str] = mapped_column(String(256))
     ordinal_no: Mapped[int] = mapped_column()
