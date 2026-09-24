@@ -52,8 +52,8 @@ class CurrencyCode(StrEnum):
 
 
 class MoneyType(BaseModel):
-    amount: Annotated[Decimal | None, Field(ge=Decimal(0))]
-    currency: CurrencyCode | None
+    amount: Annotated[Decimal, Field(ge=Decimal(0))]
+    currency: CurrencyCode
 
 
 class Item(BaseModel):

@@ -61,7 +61,7 @@ class ItemDB(Base):
     name: Mapped[str] = mapped_column(String(1024))
     count: Mapped[int] = mapped_column(SmallInteger)
 
-    link: Mapped[str] = mapped_column(String(PYDANTIC_MAX_URL_LENGTH))
+    link: Mapped[str | None] = mapped_column(String(PYDANTIC_MAX_URL_LENGTH))
 
     price: Mapped[Decimal | None] = mapped_column(
         Numeric(precision=12, scale=2)
