@@ -75,6 +75,7 @@ class ItemDB(Base):
         back_populates="item",
         cascade="all, delete, delete-orphan",
         passive_deletes=True,
+        lazy="joined",
     )
     category: Mapped[CategoryDB] = relationship(back_populates="items")
 
@@ -106,6 +107,7 @@ class CategoryDB(Base):
         back_populates="category",
         cascade="all, delete, delete-orphan",
         passive_deletes=True,
+        lazy="joined",
     )
     room: Mapped[RoomDB] = relationship(back_populates="categories")
 
@@ -128,6 +130,7 @@ class RoomDB(Base):
         back_populates="room",
         cascade="all, delete, delete-orphan",
         passive_deletes=True,
+        lazy="joined",
     )
     specification: Mapped[SpecificationDB] = relationship(
         back_populates="rooms"
@@ -149,4 +152,5 @@ class SpecificationDB(Base):
         back_populates="specification",
         cascade="all, delete, delete-orphan",
         passive_deletes=True,
+        lazy="joined",
     )

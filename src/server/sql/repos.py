@@ -1,6 +1,7 @@
 from typing import TYPE_CHECKING, override
 
 from sqlalchemy import select
+from sqlalchemy.orm import lazyload
 
 from server.services.ports import AbstractSpecificationRepo
 from server.services.schemas import (
@@ -78,7 +79,9 @@ class SpecificationRepo(AbstractSpecificationRepo):
 
         return [self._to_domain_schema(obj) for obj in objs]
 
-    GET_ALL_PURE_STMT = select(SpecificationDB)
+    GET_ALL_PURE_STMT = select(SpecificationDB).options(
+        lazyload(SpecificationDB.rooms)
+    )
 
     @override
     async def get_all_pure(self) -> list[SpecificationPure]:
