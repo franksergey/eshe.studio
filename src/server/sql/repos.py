@@ -3,8 +3,14 @@ from typing import TYPE_CHECKING, override
 from sqlalchemy import select
 
 from server.services.ports import AbstractSpecificationRepo
-from server.services.schemas import Specification, SpecificationPure
-from server.sql.models import SpecificationDB
+from server.services.schemas import (
+    Category,
+    Item,
+    Room,
+    Specification,
+    SpecificationPure,
+)
+from server.sql.models import CategoryDB, ItemDB, RoomDB, SpecificationDB
 
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession
@@ -16,9 +22,39 @@ class SpecificationRepo(AbstractSpecificationRepo):
     def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
-    @staticmethod
-    def _to_domain_schema(obj: SpecificationDB) -> Specification:
-        return Specification(id=obj.id, name=obj.name, rooms=obj.rooms)
+    @classmethod
+    def _validate_item(cls, obj: ItemDB) -> Item:
+        return Item(
+            name=obj.name,
+            count=obj.count,
+            link=obj.link,
+            tags=(tag.tag for tag in obj.tags),
+            price=obj.price,
+        )
+
+    @classmethod
+    def _validate_category(cls, obj: CategoryDB) -> Category:
+        return Category(
+            name=obj.name,
+            items=(cls._validate_item(item) for item in obj.items),
+        )
+
+    @classmethod
+    def _validate_room(cls, obj: RoomDB) -> Room:
+        return Room(
+            name=obj.name,
+            categories=(
+                cls._validate_category(category) for category in obj.categories
+            ),
+        )
+
+    @classmethod
+    def _to_domain_schema(cls, obj: SpecificationDB) -> Specification:
+        return Specification(
+            id=obj.id,
+            name=obj.name,
+            rooms=(cls._validate_room(room) for room in obj.rooms),
+        )
 
     @staticmethod
     def _to_domain_schema_pure(obj: SpecificationDB) -> SpecificationPure:
