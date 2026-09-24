@@ -67,20 +67,24 @@ class Item(BaseModel):
 
     price: MoneyType | None
 
-    model_config = ConfigDict(use_enum_values=True)
+    model_config = ConfigDict(
+        use_enum_values=True, from_attributes=True, serialize_by_alias=True
+    )
 
 
 class Category(BaseModel):
     """Категория предметов в таблице комплектации."""
 
     name: Annotated[str, Field(min_length=1, max_length=1024)]
-
     items: Annotated[list[Item], Field(min_length=1, max_length=32)]
+
+    model_config = ConfigDict(from_attributes=True, serialize_by_alias=True)
 
 
 class Room(BaseModel):
     """Комната, для которой выбираются предметы в таблице комплектации."""
 
     name: Annotated[str, Field(min_length=1, max_length=256)]
-
     categories: Annotated[list[Category], Field(min_length=1, max_length=64)]
+
+    model_config = ConfigDict(from_attributes=True, serialize_by_alias=True)
