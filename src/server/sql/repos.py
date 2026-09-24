@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, override
+from typing import TYPE_CHECKING, cast, override
 
 from sqlalchemy import select
 from sqlalchemy.orm import lazyload
@@ -6,7 +6,9 @@ from sqlalchemy.orm import lazyload
 from server.services.ports import AbstractSpecificationRepo
 from server.services.schemas import (
     Category,
+    CurrencyCode,
     Item,
+    MoneyType,
     Room,
     Specification,
     SpecificationPure,
@@ -25,12 +27,20 @@ class SpecificationRepo(AbstractSpecificationRepo):
 
     @classmethod
     def _validate_item(cls, obj: ItemDB) -> Item:
+        if obj.price is None:
+            price = None
+        else:
+            price = MoneyType(
+                amount=obj.price,
+                currency=cast("CurrencyCode", obj.price_currency),
+            )
+
         return Item(
             name=obj.name,
             count=obj.count,
             link=obj.link,
             tags=(tag.tag for tag in obj.tags),
-            price=obj.price,
+            price=price,
         )
 
     @classmethod
