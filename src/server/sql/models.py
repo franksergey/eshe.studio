@@ -57,6 +57,7 @@ class ItemDB(Base):
     category_id: Mapped[int] = mapped_column(
         ForeignKey("specification_items_categories.id", ondelete="CASCADE")
     )
+    ordinal_no: Mapped[int] = mapped_column()
 
     name: Mapped[str] = mapped_column(String(1024))
     count: Mapped[int] = mapped_column(SmallInteger)
@@ -76,6 +77,7 @@ class ItemDB(Base):
         cascade="all, delete, delete-orphan",
         passive_deletes=True,
         lazy="joined",
+        order_by=SpecificationTagDB.ordinal_no,
     )
     category: Mapped[CategoryDB] = relationship(back_populates="items")
 
@@ -108,6 +110,7 @@ class CategoryDB(Base):
         cascade="all, delete, delete-orphan",
         passive_deletes=True,
         lazy="joined",
+        order_by=ItemDB.ordinal_no,
     )
     room: Mapped[RoomDB] = relationship(back_populates="categories")
 
@@ -131,6 +134,7 @@ class RoomDB(Base):
         cascade="all, delete, delete-orphan",
         passive_deletes=True,
         lazy="joined",
+        order_by=CategoryDB.ordinal_no,
     )
     specification: Mapped[SpecificationDB] = relationship(
         back_populates="rooms"
@@ -153,4 +157,5 @@ class SpecificationDB(Base):
         cascade="all, delete, delete-orphan",
         passive_deletes=True,
         lazy="joined",
+        order_by=RoomDB.ordinal_no,
     )
