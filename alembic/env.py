@@ -1,7 +1,6 @@
 # noqa: INP001
 import asyncio
-from logging.config import fileConfig
-from pathlib import Path
+import logging
 from typing import TYPE_CHECKING
 
 from sqlalchemy import pool
@@ -9,6 +8,7 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from alembic import context
 from server.config import settings
+from server.logging import setup_logging
 from server.sql.models import Base
 
 if TYPE_CHECKING:
@@ -18,8 +18,8 @@ if TYPE_CHECKING:
 # access to the values within the .ini file in use.
 config = context.config
 
-logging_config_file = Path(__file__).parent / "alembic.ini"
-fileConfig(logging_config_file)
+if not logging.getLogger().hasHandlers():
+    setup_logging()
 
 target_metadata = Base.metadata
 
@@ -41,6 +41,8 @@ def run_migrations_offline() -> None:
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
+        compare_type=True,
+        compare_server_default=True,
     )
 
     with context.begin_transaction():
@@ -52,6 +54,8 @@ def do_run_migrations(connection: Connection) -> None:
         connection=connection,
         target_metadata=target_metadata,
         render_as_batch=True,
+        compare_type=True,
+        compare_server_default=True,
     )
 
     with context.begin_transaction():
@@ -80,6 +84,12 @@ async def run_async_migrations() -> None:
 
 def run_migrations_online() -> None:
     """Run migrations in 'online' mode."""
+
+    connection = config.attributes.get("connection")
+
+    if connection is not None:
+        do_run_migrations(connection)
+        return
 
     asyncio.run(run_async_migrations())
 

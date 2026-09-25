@@ -5,6 +5,7 @@ import logging
 import sys
 
 import uvicorn
+from alembic.config import Config
 
 from server.sql.database import Database, DatabaseChecker
 from server.sql.models import Base
@@ -64,8 +65,12 @@ async def perform_checks() -> None:
         db_url=settings.db.database_url, echo=settings.db.ECHO
     ) as database:
         if settings.db.CHECKSCHEMA:
-            checker = DatabaseChecker(Base, database)
-            await checker.raise_for_differences()
+            alembic_config = Config(toml_file=settings.PYPROJECT)
+
+            checker = DatabaseChecker(Base, database, alembic_config)
+            await checker.raise_for_differences(
+                upgrade_if_empty=settings.db.UPGRADEIFEMPTY
+            )
 
     logger.info("Initial health check has been finished")
 
