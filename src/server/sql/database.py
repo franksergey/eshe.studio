@@ -156,7 +156,12 @@ class DatabaseChecker:
     ) -> bool:
         inspector = inspect(connection)
 
-        tables = inspector.get_table_names(schema=schema)
+        tables = [
+            t
+            for t in inspector.get_table_names(schema=schema)
+            if t != "alembic_version"
+        ]
+
         logger.debug("В базе данных найдено %i таблиц.", len(tables))
 
         return not tables
