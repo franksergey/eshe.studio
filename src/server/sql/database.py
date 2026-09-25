@@ -148,10 +148,11 @@ class DatabaseChecker:
             True if an upgrade has been performed.
             False if the database is not empty.
         """
-        async with self.database.engine.connect() as connection:
+        async with self.database.engine.begin() as connection:
             if not await connection.run_sync(self._check_tables_empty):
                 return False
 
+            logger.info("The database is empty, trying to apply migrations.")
             await connection.run_sync(self._upgrade_database_schema)
 
         return True
