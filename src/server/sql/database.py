@@ -66,10 +66,15 @@ class Database(AbstractAsyncContextManager["Database"]):
             msg = "Method `init_engine` must be called only once"
             raise RuntimeError(msg)
 
+        if connect_args is None:
+            connect_args = {}
+
+        if self.url.drivername == "sqlite+aiosqlite":
+            connect_args.setdefault("autocommit", False)
+
         self.engine = create_async_engine(
             self.url,
             echo=echo,  # Логирование SQL-запросов
-            future=True,
             pool_pre_ping=True,  # Проверка соединения перед использованием
             connect_args=connect_args or {},
         )
