@@ -54,12 +54,21 @@ COPY --chown=appuser:appgroup ./static ./static/
 COPY --chown=appuser:appgroup ./alembic ./alembic/
 COPY --chown=appuser:appgroup README.md pyproject.toml ./
 
-ENV APP_LOGGING_DOCKER=True
-
 USER appuser
 
-ENV APP_API_HOST=0.0.0.0 \
-    APP_API_PORT=8000
+ENV APP_HOST=0.0.0.0 \
+    APP_PORT=8000
 EXPOSE 8000
+
+ENV APP_RELOAD="False" \
+    APP_STATICFILES="/app/static/" \
+    APP_GRACEFULSHUTDOWNTIMEOUT="10" \
+    APP_LOGGINGFORMAT="structured" \
+    APP_DEBUG="False"
+
+ENV APP_DB_DIALECT="" \
+    APP_DB_DRIVER="" \
+    APP_DB_ECHO="False" \
+    APP_DB_CHECKSCHEMA="True"
 
 CMD ["server"]

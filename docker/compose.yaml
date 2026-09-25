@@ -1,0 +1,18 @@
+name: eshe-studio
+
+networks:
+  backend-network:
+    driver: bridge
+
+services:
+  backend:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      target: production
+    pull_policy: missing
+    image: franksergey/eshe.studio
+    restart: unless-stopped
+
+    networks:
+      - backend-network
