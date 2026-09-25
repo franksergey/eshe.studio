@@ -5,17 +5,20 @@ from typing import TYPE_CHECKING, Any, Self, override
 
 from alembic.autogenerate import compare_metadata
 from alembic.runtime.migration import MigrationContext
-from sqlalchemy import Connection, make_url
+from sqlalchemy import Connection, inspect, make_url
 from sqlalchemy.ext.asyncio import (
     AsyncSession,
     async_sessionmaker,
     create_async_engine,
 )
 
+from alembic import command
+
 if TYPE_CHECKING:
     from types import TracebackType
 
     import sqlalchemy
+    from alembic.config import Config
     from sqlalchemy.engine.url import URL
     from sqlalchemy.ext.asyncio import AsyncEngine
     from sqlalchemy.orm import DeclarativeBase
@@ -93,12 +96,17 @@ class Database(AbstractAsyncContextManager["Database"]):
 class DatabaseChecker:
     declarative_base: type[DeclarativeBase]
     database: Database
+    config: Config
 
     def __init__(
-        self, base: type[DeclarativeBase], database: Database
+        self,
+        base: type[DeclarativeBase],
+        database: Database,
+        alembic_config: Config,
     ) -> None:
         self.declarative_base = base
         self.database = database
+        self.config = alembic_config
 
     def compare_metadata(self, connection: Connection) -> list[Any]:
         return self._compare_metadata(connection)
@@ -133,14 +141,50 @@ class DatabaseChecker:
 
         return result
 
-    async def raise_for_differences(self) -> None:
-        if not await self.check_schema():
-            msg = dedent("""\
+    async def upgrade_if_empty(self) -> bool:
+        """Upgrade if the database is the database is empty.
+
+        Returns:
+            True if an upgrade has been performed.
+            False if the database is not empty.
+        """
+        async with self.database.engine.connect() as connection:
+            if not await connection.run_sync(self._check_tables_empty):
+                return False
+
+            await connection.run_sync(self._upgrade_database_schema)
+
+        return True
+
+    def _check_tables_empty(
+        self, connection: Connection, *, schema: str | None = None
+    ) -> bool:
+        inspector = inspect(connection)
+
+        tables = inspector.get_table_names(schema=schema)
+        logger.debug("В базе данных найдено %i таблиц.", len(tables))
+
+        return not tables
+
+    def _upgrade_database_schema(self, connection: Connection) -> None:
+        self.config.attributes["connection"] = connection
+        command.upgrade(self.config, "head")
+
+    async def raise_for_differences(
+        self, *, upgrade_if_empty: bool = False
+    ) -> None:
+        if await self.check_schema():
+            return
+
+        if upgrade_if_empty and await self.upgrade_if_empty():
+            return
+
+        msg = dedent("""\
             База данных не соответствует схеме.
 
             Это значит, что вы изменили содержимое модуля adapters.db.models
             без создания или применения необходимых миграций. Используйте
             команду alembic revision для генерации миграций. Используйте
             alembic upgrade для их применения.
-            """)
-            raise DatabaseSchemaMismatchError(msg, db_url=self.database.url)
+        """)
+        raise DatabaseSchemaMismatchError(msg, db_url=self.database.url)

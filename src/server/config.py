@@ -30,10 +30,14 @@ class DatabaseConfig(BaseModel):
         HOST: `$APP_DB_HOST`. Адрес хоста базы данных.
         PORT: `$APP_DB_PORT`. Порт для подключения к базе данных.
         DATABASE: `$APP_DB_DATABASE`. Имя базы данных.
+        DATAFOLDER: `$APP_DB_DATAFOLDER`. Путь к папке с SQLite базой
+            данных. По умолчанию `./data`.
         ECHO: `$APP_DB_ECHO`. Если True, SQLAlchemy будет логировать все
             SQL-запросы. Полезно для отладки. По умолчанию False.
         CHECKSCHEMA: `$APP_DB_CHECKSCHEMA`. Проверять схему базы данных
             на расхождения с базой данных? По умолчанию True.
+        UPGRADEIFEMPTY: `$APP_DB_UPGRADEIFEMPTY`. Выполнять ли миграции,
+            если база данных пуста? По умолчанию да.
     """
 
     DIALECT: str = "sqlite"
@@ -48,6 +52,7 @@ class DatabaseConfig(BaseModel):
 
     ECHO: bool = False
     CHECKSCHEMA: bool = True
+    UPGRADEIFEMPTY: bool = True
 
     @cached_property
     def database_url(self) -> URL:
@@ -134,6 +139,7 @@ class AppSettings(BaseSettings):
             Determines which logging configuration will be used. Console
             is used by default.
         DEBUG: `$APP_DEBUG`. Debug mode. Defaults to False.
+        PYPROJECT: `$APP_PYPROJECT`. Path to `pyproject.toml`.
     """
 
     HOST: str = "0.0.0.0"  # noqa: S104
@@ -143,6 +149,7 @@ class AppSettings(BaseSettings):
     GRACEFULSHUTDOWNTIMEOUT: int = 10
     LOGGINGFORMAT: Literal["rich", "console", "structured"] = "console"
     DEBUG: bool = False
+    PYPROJECT: FilePath = Path.cwd() / "pyproject.toml"
 
     db: DatabaseConfig = DatabaseConfig()
 
