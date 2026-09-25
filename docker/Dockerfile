@@ -54,6 +54,15 @@ COPY --chown=appuser:appgroup ./static ./static/
 COPY --chown=appuser:appgroup ./alembic ./alembic/
 COPY --chown=appuser:appgroup README.md pyproject.toml ./
 
+ENV APP_DB_DIALECT="" \
+    APP_DB_DRIVER="" \
+    APP_DB_DATAFOLDER="/data/eshe-studio/" \
+    APP_DB_ECHO="False" \
+    APP_DB_CHECKSCHEMA="True"
+
+RUN mkdir "${APP_DB_DATAFOLDER}" -p && \
+    chown -R appuser:appgroup "${APP_DB_DATAFOLDER}"
+
 USER appuser
 
 ENV APP_HOST=0.0.0.0 \
@@ -65,10 +74,5 @@ ENV APP_RELOAD="False" \
     APP_GRACEFULSHUTDOWNTIMEOUT="10" \
     APP_LOGGINGFORMAT="structured" \
     APP_DEBUG="False"
-
-ENV APP_DB_DIALECT="" \
-    APP_DB_DRIVER="" \
-    APP_DB_ECHO="False" \
-    APP_DB_CHECKSCHEMA="True"
 
 CMD ["server"]
