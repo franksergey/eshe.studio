@@ -142,6 +142,9 @@ runtime-evaluated-decorators = [
     "server.api.dependencies.dependency",
 ]
 
+[tool.ruff.lint.flake8-builtins]
+ignorelist = ["id"]
+
 # ================
 # Pyright Settings
 # ================

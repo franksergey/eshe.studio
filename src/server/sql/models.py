@@ -41,22 +41,28 @@ class SpecificationTagDB(Base):
     tag: Mapped[str] = mapped_column(String(255))
 
     # Relations
-    item: Mapped[SpecificationItemDB] = relationship(back_populates="tags")
+    item: Mapped[ItemDB] = relationship(back_populates="tags")
 
 
 PYDANTIC_MAX_URL_LENGTH = 2083
 CURRENCY_CODE_ENUM = Enum(CurrencyCode, name="currency_code_enum")
 
 
-class SpecificationItemDB(Base):
+class ItemDB(Base):
+    """Вариант предмета в таблице комплектации."""
+
     __tablename__ = "specification_items"
 
     id: Mapped[int] = mapped_column(primary_key=True)
+    category_id: Mapped[int] = mapped_column(
+        ForeignKey("specification_items_categories.id", ondelete="CASCADE")
+    )
+    ordinal_no: Mapped[int] = mapped_column()
 
     name: Mapped[str] = mapped_column(String(1024))
     count: Mapped[int] = mapped_column(SmallInteger)
 
-    link: Mapped[str] = mapped_column(String(PYDANTIC_MAX_URL_LENGTH))
+    link: Mapped[str | None] = mapped_column(String(PYDANTIC_MAX_URL_LENGTH))
 
     price: Mapped[Decimal | None] = mapped_column(
         Numeric(precision=12, scale=2)
@@ -70,7 +76,10 @@ class SpecificationItemDB(Base):
         back_populates="item",
         cascade="all, delete, delete-orphan",
         passive_deletes=True,
+        lazy="joined",
+        order_by=SpecificationTagDB.ordinal_no,
     )
+    category: Mapped[CategoryDB] = relationship(back_populates="items")
 
     # Constraints
     __table_args__ = (
@@ -79,4 +88,74 @@ class SpecificationItemDB(Base):
             "OR NOT(price IS NULL OR price_currency IS NULL)",
             name="ux_c_email_or_phone_required",
         ),
+    )
+
+
+class CategoryDB(Base):
+    """Категория предметов в таблице комплектации."""
+
+    __tablename__ = "specification_items_categories"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    room_id: Mapped[int] = mapped_column(
+        ForeignKey("specification_rooms.id", ondelete="CASCADE")
+    )
+
+    name: Mapped[str] = mapped_column(String(1024))
+    ordinal_no: Mapped[int] = mapped_column()
+
+    # Relations
+    items: Mapped[list[ItemDB]] = relationship(
+        back_populates="category",
+        cascade="all, delete, delete-orphan",
+        passive_deletes=True,
+        lazy="joined",
+        order_by=ItemDB.ordinal_no,
+    )
+    room: Mapped[RoomDB] = relationship(back_populates="categories")
+
+
+class RoomDB(Base):
+    """Комната, для которой выбираются предметы в таблице комплектации."""
+
+    __tablename__ = "specification_rooms"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    specification_id: Mapped[int] = mapped_column(
+        ForeignKey("specifications.id", ondelete="CASCADE")
+    )
+
+    name: Mapped[str] = mapped_column(String(256))
+    ordinal_no: Mapped[int] = mapped_column()
+
+    # Relations
+    categories: Mapped[list[CategoryDB]] = relationship(
+        back_populates="room",
+        cascade="all, delete, delete-orphan",
+        passive_deletes=True,
+        lazy="joined",
+        order_by=CategoryDB.ordinal_no,
+    )
+    specification: Mapped[SpecificationDB] = relationship(
+        back_populates="rooms"
+    )
+
+
+class SpecificationDB(Base):
+    """Таблица комплектации."""
+
+    __tablename__ = "specifications"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+
+    # Or location?
+    name: Mapped[str] = mapped_column(String(256))
+
+    # Relations
+    rooms: Mapped[list[RoomDB]] = relationship(
+        back_populates="specification",
+        cascade="all, delete, delete-orphan",
+        passive_deletes=True,
+        lazy="joined",
+        order_by=RoomDB.ordinal_no,
     )
