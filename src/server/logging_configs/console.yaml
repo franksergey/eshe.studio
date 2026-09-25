@@ -45,3 +45,7 @@ loggers:
     level: INFO
   watchfiles.main:
     level: INFO
+  alembic:
+    level: INFO
+  alembic.runtime.plugins:
+    level: WARNING
