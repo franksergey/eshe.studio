@@ -3,9 +3,7 @@
 from importlib import metadata
 
 __all__ = ["__version__"]
-# TIP: Change it to the name of your repository
-# NOTE: It has to match what you've written in pyproject.toml
-PACKAGE_NAME = "static-site-template"
+PACKAGE_NAME = "eshe-studio-site"
 
 try:
     __version__ = metadata.version(PACKAGE_NAME)
