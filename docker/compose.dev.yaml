@@ -40,6 +40,8 @@ services:
 
     ports:
       - "5678:5678" # Debugging port
+      - "${APP_PORT:-8000}:8000"
+
     volumes:
       - ../:/app # Volume mount из локальной директории
       - uv_cache:/appuser/.cache/uv
