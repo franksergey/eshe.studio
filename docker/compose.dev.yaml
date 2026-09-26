@@ -23,6 +23,17 @@ services:
       - APP_DB_HOST=postgres
       - APP_DB_PORT=5432
       - APP_DB_DATABASE=eshe-studio
+      - APP_DB_ECHO=${APP_DB_ECHO:-False}
+      - APP_DB_CHECKSCHEMA=${APP_DB_CHECKSCHEMA:-True}
+      - APP_DB_UPGRADEIFEMPTY=${APP_DB_UPGRADEIFEMPTY:-True}
+      - APP_RELOAD=${APP_RELOAD:-True}
+      - APP_STATICFILES=${APP_STATICFILES:-/app/static/}
+      - APP_LOGGINGFORMAT=${APP_LOGGINGFORMAT:-rich}
+      - APP_DEBUG=${APP_DEBUG:-True}
+
+    env_file:
+      - path: .env
+        required: false
 
     secrets:
       - db_password
