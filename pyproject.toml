@@ -45,6 +45,7 @@ postgres = [
 
 [dependency-groups]
 dev = [
+    "debugpy>=1.8.22",
     "invoke>=3.0",
     "pre-commit>=4.6",
     "pyrefly>=1.3",
