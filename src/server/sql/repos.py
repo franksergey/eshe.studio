@@ -4,10 +4,12 @@ from pydantic import HttpUrl
 from sqlalchemy import select
 from sqlalchemy.orm import lazyload
 
+from server.api.errors import ItemNotFoundError
 from server.services.ports import AbstractSpecificationRepo
 from server.services.schemas import (
     Category,
     Comment,
+    CommentCreate,
     CurrencyCode,
     Item,
     MoneyType,
@@ -35,7 +37,7 @@ class SpecificationRepo(AbstractSpecificationRepo):
 
     @classmethod
     def _validate_comment(cls, obj: CommentDB) -> Comment:
-        return Comment(text=obj.text, created_at=obj.created_at)
+        return Comment(id=obj.id, text=obj.text, created_at=obj.created_at)
 
     @classmethod
     def _validate_item(cls, obj: ItemDB) -> Item:
@@ -113,3 +115,25 @@ class SpecificationRepo(AbstractSpecificationRepo):
         objs = (await self.session.scalars(self.GET_ALL_PURE_STMT)).all()
 
         return [self._to_domain_schema_pure(obj) for obj in objs]
+
+    @override
+    async def get_item_comments(self, item_id: int) -> list[Comment]:
+        stmt = select(CommentDB).where(CommentDB.item_id == item_id)
+        objs = (await self.session.scalars(stmt)).all()
+
+        return [self._validate_comment(comment) for comment in objs]
+
+    # NOTE: Should it return new data of ItemDB?
+    @override
+    async def add_comment(self, item_id: int, data: CommentCreate) -> Comment:
+        stmt = select(ItemDB).where(ItemDB.id == item_id)
+        item = await self.session.scalar(stmt)
+
+        if item is None:
+            raise ItemNotFoundError
+
+        obj = CommentDB(text=data.text)
+        item.comments.append(obj)
+        await self.session.flush((item,))
+
+        return self._validate_comment(obj)

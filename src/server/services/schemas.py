@@ -56,8 +56,20 @@ class MoneyType(BaseModel):
     currency: CurrencyCode
 
 
-class Comment(BaseModel):
+class CommentBase(BaseModel):
+    """Базовая модель комментария."""
+
     text: Annotated[str, Field(min_length=1, max_length=4096)]
+
+
+class CommentCreate(CommentBase):
+    """Модель создания комментария."""
+
+
+class Comment(CommentBase):
+    """Комментарий к элементу комплектации."""
+
+    id: int
 
     created_at: AwareDatetime
 
