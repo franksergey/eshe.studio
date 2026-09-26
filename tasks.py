@@ -38,17 +38,21 @@ class Target(TypedDict):
     main_service: str
 
 
-PROJECT_ROOT = Path(__file__).parent
-DOCKER_FOLDER = PROJECT_ROOT / "docker"
+DOCKER_FOLDER = Path(__file__).parent / "docker"
+PROJECT_ROOT = DOCKER_FOLDER
 TARGETS: dict[DockerTarget, Target] = {
     "dev": {
-        "compose_files": [DOCKER_FOLDER / "./compose.yaml"],
+        "compose_files": [
+            DOCKER_FOLDER / "./compose.yaml",
+            DOCKER_FOLDER / "./compose.dev.yaml",
+        ],
         "displayed_name": "The development container",
         "main_service": "backend",
     },
     "prod": {
         "compose_files": [
-            DOCKER_FOLDER / "./compose.yaml"
+            DOCKER_FOLDER / "./compose.yaml",
+            DOCKER_FOLDER / "./compose.sqlite.yaml",
             # TIP: Write an nginx configuration for your site
             # DOCKER_FOLDER / "./compose.nginx.yaml",
         ],
@@ -165,6 +169,35 @@ def start(ctx: Context, target: DockerTarget = "prod") -> None:
 
     docker_compose = get_docker_compose(target_obj)
     subprocess.run([*docker_compose, "start"], check=False)  # noqa: S603
+
+
+@task()
+def start_debug(ctx: Context) -> None:
+    """Docker: Запускает дебаггинг в dev контейнере."""
+    target_obj = get_target("dev")
+
+    start_message("Starting debugging session for %s", target_obj)
+
+    docker_compose = get_docker_compose(target_obj)
+    subprocess.run([*docker_compose, "up", "-d", "--no-recreate"], check=False)  # noqa: S603
+
+    service = target_obj["main_service"]
+    command = ["bash", "./src/scripts/start-debug.sh"]
+    subprocess.run([*docker_compose, "exec", service, *command], check=False)  # noqa: S603
+
+
+@task()
+def stop_debug(ctx: Context) -> None:
+    """Docker: Завершает дебаггинг в dev контейнере."""
+    target_obj = get_target("dev")
+
+    start_message("Stopping debugging session for %s", target_obj)
+
+    docker_compose = get_docker_compose(target_obj)
+
+    service = target_obj["main_service"]
+    command = ["pkill", "-INT", "-u", "appuser", "-f", "python.*app"]
+    subprocess.run([*docker_compose, "exec", service, *command], check=False)  # noqa: S603
 
 
 @task(

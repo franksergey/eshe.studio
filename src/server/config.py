@@ -64,10 +64,14 @@ class DatabaseConfig(BaseModel):
         Returns:
             URL адрес для инициализации движка базы данных.
         """
+        if not self.DIALECT or not self.DRIVER:
+            msg = "$APP_DB_DIALECT and $APP_DB_DRIVER must be set"
+            raise ValueError(msg)
+
         if self.PASSWORD:
             password = self.PASSWORD.get_secret_value()
         elif self.PASSWORDFILE is not None:
-            password = self.PASSWORDFILE.read_text()
+            password = self.PASSWORDFILE.read_text().strip()
         else:
             password = None
 

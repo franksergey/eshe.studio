@@ -1,0 +1,14 @@
+# Override over compose.yaml
+
+volumes:
+  sqlite_data:
+
+services:
+  backend:
+    environment:
+      - APP_DB_DIALECT=sqlite
+      - APP_DB_DRIVER=aiosqlite
+      - APP_DB_DATAFOLDER=/data/eshe-studio/
+
+    volumes:
+      - sqlite_data:/data/eshe-studio/

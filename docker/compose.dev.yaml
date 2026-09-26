@@ -1,0 +1,66 @@
+# Override over compose.yaml
+name: eshe-studio-dev
+
+secrets:
+  db_password:
+    file: ../.secrets/db_password.txt
+
+volumes:
+  postgres_data:
+  uv_cache:
+
+services:
+  backend:
+    build:
+      target: development
+
+    environment:
+      - APP_DB_DIALECT=postgresql
+      - APP_DB_DRIVER=psycopg
+      - APP_DB_USERNAME=eshe-studio
+      - APP_DB_PASSWORD=
+      - APP_DB_PASSWORDFILE=/run/secrets/db_password
+      - APP_DB_HOST=postgres
+      - APP_DB_PORT=5432
+      - APP_DB_DATABASE=eshe-studio
+      - APP_DB_ECHO=${APP_DB_ECHO:-False}
+      - APP_DB_CHECKSCHEMA=${APP_DB_CHECKSCHEMA:-True}
+      - APP_DB_UPGRADEIFEMPTY=${APP_DB_UPGRADEIFEMPTY:-True}
+      - APP_RELOAD=${APP_RELOAD:-True}
+      - APP_STATICFILES=${APP_STATICFILES:-/app/static/}
+      - APP_LOGGINGFORMAT=${APP_LOGGINGFORMAT:-rich}
+      - APP_DEBUG=${APP_DEBUG:-True}
+
+    env_file:
+      - path: .env
+        required: false
+
+    secrets:
+      - db_password
+
+    ports:
+      - "5678:5678" # Debugging port
+    volumes:
+      - ../:/app # Volume mount из локальной директории
+      - uv_cache:/appuser/.cache/uv
+
+  postgres:
+    image: postgres:18-alpine
+    restart: unless-stopped
+
+    environment:
+      - POSTGRES_USER=eshe-studio
+      - POSTGRES_DB=eshe-studio
+      - POSTGRES_PASSWORD_FILE=/run/secrets/db_password
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/
+
+    secrets:
+      - db_password
+
+    networks:
+      - backend-network
+
+    ports:
+      - "5432:5432"
