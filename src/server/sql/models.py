@@ -44,6 +44,20 @@ class SpecificationTagDB(Base):
     item: Mapped[ItemDB] = relationship(back_populates="tags")
 
 
+class CommentDB(Base):
+    __tablename__ = "specification_item_comments"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    item_id: Mapped[int] = mapped_column(
+        ForeignKey("specification_items.id", ondelete="CASCADE")
+    )
+
+    text: Mapped[str] = mapped_column(String(4096))
+
+    # Relations
+    item: Mapped[ItemDB] = relationship(back_populates="comments")
+
+
 PYDANTIC_MAX_URL_LENGTH = 2083
 CURRENCY_CODE_ENUM = Enum(CurrencyCode, name="currency_code_enum")
 
@@ -78,6 +92,12 @@ class ItemDB(Base):
         passive_deletes=True,
         lazy="joined",
         order_by=SpecificationTagDB.ordinal_no,
+    )
+    comments: Mapped[list[CommentDB]] = relationship(
+        back_populates="item",
+        cascade="all, delete, delete-orphan",
+        passive_deletes=True,
+        lazy="joined",
     )
     category: Mapped[CategoryDB] = relationship(back_populates="items")
 
