@@ -56,6 +56,10 @@ class MoneyType(BaseModel):
     currency: CurrencyCode
 
 
+class Comment(BaseModel):
+    text: Annotated[str, Field(min_length=1, max_length=4096)]
+
+
 class Item(BaseModel):
     """Вариант предмета в таблице комплектации."""
 
@@ -66,6 +70,7 @@ class Item(BaseModel):
     tags: Annotated[list[str], Field(max_length=16)]
 
     price: MoneyType | None
+    comments: list[Comment]
 
     model_config = ConfigDict(
         use_enum_values=True, from_attributes=True, serialize_by_alias=True

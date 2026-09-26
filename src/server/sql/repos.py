@@ -7,6 +7,7 @@ from sqlalchemy.orm import lazyload
 from server.services.ports import AbstractSpecificationRepo
 from server.services.schemas import (
     Category,
+    Comment,
     CurrencyCode,
     Item,
     MoneyType,
@@ -14,7 +15,13 @@ from server.services.schemas import (
     Specification,
     SpecificationPure,
 )
-from server.sql.models import CategoryDB, ItemDB, RoomDB, SpecificationDB
+from server.sql.models import (
+    CategoryDB,
+    CommentDB,
+    ItemDB,
+    RoomDB,
+    SpecificationDB,
+)
 
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession
@@ -25,6 +32,10 @@ class SpecificationRepo(AbstractSpecificationRepo):
 
     def __init__(self, session: AsyncSession) -> None:
         self.session = session
+
+    @classmethod
+    def _validate_comment(cls, obj: CommentDB) -> Comment:
+        return Comment(text=obj.text)
 
     @classmethod
     def _validate_item(cls, obj: ItemDB) -> Item:
@@ -42,6 +53,9 @@ class SpecificationRepo(AbstractSpecificationRepo):
             link=HttpUrl(obj.link) if obj.link is not None else None,
             tags=[tag.tag for tag in obj.tags],
             price=price,
+            comments=[
+                cls._validate_comment(comment) for comment in obj.comments
+            ],
         )
 
     @classmethod
