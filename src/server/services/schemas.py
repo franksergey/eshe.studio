@@ -60,6 +60,7 @@ class CommentBase(BaseModel):
     """Базовая модель комментария."""
 
     text: Annotated[str, Field(min_length=1, max_length=4096)]
+    author_name: Annotated[str, Field(min_length=1)]
 
 
 class CommentCreate(CommentBase):

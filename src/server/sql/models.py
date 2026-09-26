@@ -54,6 +54,7 @@ class CommentDB(Base, CreatedAtMixin):
     )
 
     text: Mapped[str] = mapped_column(String(4096))
+    author_name: Mapped[str] = mapped_column(String(128))
 
     # Relations
     item: Mapped[ItemDB] = relationship(back_populates="comments")
