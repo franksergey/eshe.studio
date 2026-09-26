@@ -71,7 +71,7 @@ class DatabaseConfig(BaseModel):
         if self.PASSWORD:
             password = self.PASSWORD.get_secret_value()
         elif self.PASSWORDFILE is not None:
-            password = self.PASSWORDFILE.read_text()
+            password = self.PASSWORDFILE.read_text().strip()
         else:
             password = None
 
