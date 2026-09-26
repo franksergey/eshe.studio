@@ -35,7 +35,7 @@ class SpecificationRepo(AbstractSpecificationRepo):
 
     @classmethod
     def _validate_comment(cls, obj: CommentDB) -> Comment:
-        return Comment(text=obj.text)
+        return Comment(text=obj.text, created_at=obj.created_at)
 
     @classmethod
     def _validate_item(cls, obj: ItemDB) -> Item:

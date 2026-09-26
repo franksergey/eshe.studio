@@ -2,7 +2,7 @@ from decimal import Decimal
 from enum import StrEnum
 from typing import Annotated
 
-from pydantic import BaseModel, ConfigDict, Field, HttpUrl
+from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, HttpUrl
 
 # =============================
 # Aggregate Root: Specification
@@ -58,6 +58,8 @@ class MoneyType(BaseModel):
 
 class Comment(BaseModel):
     text: Annotated[str, Field(min_length=1, max_length=4096)]
+
+    created_at: AwareDatetime
 
 
 class Item(BaseModel):
