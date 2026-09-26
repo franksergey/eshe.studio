@@ -13,6 +13,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 from server.services.schemas import CurrencyCode
+from server.sql.mixins import CreatedAtMixin
 
 
 class Base(DeclarativeBase):
@@ -44,7 +45,7 @@ class SpecificationTagDB(Base):
     item: Mapped[ItemDB] = relationship(back_populates="tags")
 
 
-class CommentDB(Base):
+class CommentDB(Base, CreatedAtMixin):
     __tablename__ = "specification_item_comments"
 
     id: Mapped[int] = mapped_column(primary_key=True)
