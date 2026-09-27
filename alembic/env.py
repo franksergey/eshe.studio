@@ -7,6 +7,7 @@ from sqlalchemy import pool
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from alembic import context
+from server.__main__ import create_asyncio_event_loop
 from server.config import settings
 from server.logging import setup_logging
 from server.sql.models import Base
@@ -91,7 +92,8 @@ def run_migrations_online() -> None:
         do_run_migrations(connection)
         return
 
-    asyncio.run(run_async_migrations())
+    with asyncio.Runner(loop_factory=create_asyncio_event_loop) as runner:
+        runner.run(run_async_migrations())
 
 
 if context.is_offline_mode():
