@@ -55,7 +55,7 @@ class SpecificationTagDB(Base):
 class CommentDB(Base, CreatedAtMixin):
     __tablename__ = "specification_item_comments"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(IDENTITY, primary_key=True)
     item_id: Mapped[int] = mapped_column(
         ForeignKey("specification_items.id", ondelete="CASCADE")
     )
