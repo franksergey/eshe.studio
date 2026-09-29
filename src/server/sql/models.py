@@ -5,6 +5,7 @@ from sqlalchemy import (
     CheckConstraint,
     Enum,
     ForeignKey,
+    Identity,
     MetaData,
     Numeric,
     SmallInteger,
@@ -12,6 +13,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
+from server.config import settings
 from server.services.schemas import CurrencyCode
 
 
@@ -27,6 +29,11 @@ class Base(DeclarativeBase):
             "pk": "pk_%(table_name)s",
         }
     )
+
+
+IDENTITY = (
+    Identity(always=True) if settings.db.DIALECT == "postgresql" else None
+)
 
 
 class SpecificationTagDB(Base):
@@ -53,7 +60,7 @@ class ItemDB(Base):
 
     __tablename__ = "specification_items"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(IDENTITY, primary_key=True)
     category_id: Mapped[int] = mapped_column(
         ForeignKey("specification_items_categories.id", ondelete="CASCADE")
     )
@@ -96,7 +103,7 @@ class CategoryDB(Base):
 
     __tablename__ = "specification_items_categories"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(IDENTITY, primary_key=True)
     room_id: Mapped[int] = mapped_column(
         ForeignKey("specification_rooms.id", ondelete="CASCADE")
     )
@@ -120,7 +127,7 @@ class RoomDB(Base):
 
     __tablename__ = "specification_rooms"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(IDENTITY, primary_key=True)
     specification_id: Mapped[int] = mapped_column(
         ForeignKey("specifications.id", ondelete="CASCADE")
     )
@@ -146,7 +153,7 @@ class SpecificationDB(Base):
 
     __tablename__ = "specifications"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(IDENTITY, primary_key=True)
 
     # Or location?
     name: Mapped[str] = mapped_column(String(256))

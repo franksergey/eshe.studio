@@ -26,11 +26,11 @@ keywords = []
 # ===================
 requires-python = ">=3.14,<3.15"
 dependencies = [
-    "alembic~=1.19.2",
+    "alembic~=1.20.0",
     "fastapi-problem~=0.12.1",
     "fastapi[standard]~=0.141.0",
     "python-json-logger~=4.2",
-    "sqlalchemy[aiosqlite]~=2.0.52",
+    "sqlalchemy[aiosqlite]~=2.1.0",
     "uvloop>=0.22.1 ; sys_platform == 'linux'",
     "winloop>=0.6.3 ; sys_platform == 'win32'",
 ]
@@ -40,7 +40,7 @@ rich = [
     "rich~=15.0",
 ]
 postgres = [
-    "sqlalchemy[postgresql-psycopgbinary]~=2.0.52",
+    "sqlalchemy[postgresql-psycopgbinary]~=2.1.0",
 ]
 
 [dependency-groups]
