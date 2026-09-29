@@ -74,6 +74,7 @@ async def run_async_migrations() -> None:
         configuration,
         url=settings.db.database_url,
         prefix="sqlalchemy.",
+        echo=settings.db.ECHO,
         poolclass=pool.NullPool,
     )
 
