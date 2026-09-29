@@ -11,7 +11,9 @@
 }
 
 /* ————————————— variables ————————————— */
-:root {  
+:root {
+  --width-main-content: 53;
+
   --text-color-RGB: 50, 50, 50;
   --text-color-inverse-RGB: 255, 255, 255;
   --link-color-RGB: 0, 100, 255;
@@ -108,16 +110,16 @@ img {
   width: 100%;
 }
 
+p {
+  margin: 0;
+}
+
 h1 {
   font-size: 3.5em;
   margin: 0;
   font-weight: 400;
   letter-spacing: 0.01em;
 
-}
-
-p {
-  margin: 0;
 }
 
 h3 {
@@ -131,12 +133,6 @@ h4 {
   margin: 0 0 1em;
   font-weight: 500;
 }
-
-/* h5 {
-  font-size: 1.2em;
-  margin: 0;
-  font-weight: 400;
-} */
 
 a {
   color: rgba(var(--link-color-RGB),1);
@@ -155,11 +151,22 @@ a:hover {
   transition: color 0s ease, text-decoration-color 0s ease;
 }
 
+ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* ————————————— item ————————————— */
+
 .chapter {
-  margin: 0 1em;
+  --chapter-width: 90;
+
+  margin: auto;
   display: flex;
-  /* width: 100%; */
-  gap: 1em;
+  width: calc(var(--chapter-width) * 1%);
+  gap: 2em;
+  position: relative;
 
   @media (max-width: 768px) {
     width: 100%;
@@ -169,9 +176,10 @@ a:hover {
     display: block;
   }
 
-  & section {
-    flex: 0 0 53%;
-    width: 53%;
+  & section { /* Контент */
+    /* ширина .chapter — --chapter-width% от вьюпорта, а section должна занимать --width-main-content% от вьюпорта (как header) — пересчитываем в проценты от .chapter */
+    flex: 0 0 calc(var(--width-main-content) / var(--chapter-width) * 100%);
+    width: calc(var(--width-main-content) / var(--chapter-width) * 100%);
 
     @media (max-width: 768px) {
       width: 100%;
@@ -179,7 +187,7 @@ a:hover {
     }
   }
 
-  & .basket {
+  & .cart-panel {
     flex: 1 1 0;
     min-width: 0;
 
@@ -202,51 +210,17 @@ a:hover {
       top: 2em;
       max-height: calc(100vh - 4em);
       overflow: hidden;
-      padding: 0 2em 0 1em;
+      /* padding: 0 2em 0 1em; */
     }
 
-      & ul{
-      list-style: none;
-      padding: 0;
-      margin: 0;
+    & ul{
       will-change: transform;
     }
 
-    & details{
-      list-style: none;
-      padding: 0 0 1em 0;
-      margin: 0;
-    }
 
     & li {
       /* padding: 0 0 0 0.6em; */
       padding: 0 0 0 1em;
-    }
-
-    & summary {
-      display: flex;
-      align-items: center;
-      list-style: none;
-      cursor: pointer;
-
-
-      font-weight: 600;
-    }
-
-    & summary::-webkit-details-marker {
-      display: none;
-    }
-
-    & summary::after {
-      content: '▼';
-      font-size: 0.6em;
-      margin-left: auto;
-      padding-right: 0.7em;
-      transition: transform 0.3s ease;
-    }
-
-    & details[open] > summary::after {
-      transform: rotate(180deg);
     }
 
     & a {
@@ -272,8 +246,10 @@ a:hover {
   }
 }
 
+
+
 header {
-  width: 53%;
+  width: calc(var(--width-main-content) * 1%);
   margin: 0 auto;
 
   @media (max-width: 768px) {
@@ -301,11 +277,8 @@ header {
 }
 
 
-
-
 .product-grid {
   & ul {
-    list-style: none;
     display: flex;
     flex-wrap: wrap;
     /* margin-bottom: 1em; */
@@ -404,7 +377,6 @@ header {
 
   & li.product-select .add-wishlist::after {
     content: 'Выбрано';
-    /* margin: 0 0.8em; */
     padding: 0 0.8em;
 
 
@@ -526,5 +498,93 @@ header {
     background-color: rgba(var(--product-hover-color-RGB), 0.4);
 
     transition: background-color 0s ease, text-decoration-color 0s ease;
+  }
+}
+
+.cart-panel {
+
+  padding: 2em 0;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+
+  position: sticky;
+  height: 100vh;
+  top: 0;
+
+  & .cart-items-approved {
+    height: 30%;
+    overflow-y: auto;
+
+    & li {
+      display: block;
+    }
+
+    &::after {
+      content: '';
+      display: block;
+      position: sticky;
+      bottom: 0;
+      height: 5em;
+      margin-top: -1.5em;
+      background: linear-gradient(to bottom, rgba(var(--background-color-RGB), 0), rgba(var(--background-color-RGB), 1));
+      pointer-events: none;
+    }
+  }
+
+  & .cart-items-done {
+    height: 60%;
+    overflow-y: auto;
+
+    &::after {
+      content: '';
+      display: block;
+      position: sticky;
+      bottom: 0;
+      height: 5em;
+      margin-top: -1.5em;
+      background: linear-gradient(to bottom, rgba(var(--background-color-RGB), 0), rgba(var(--background-color-RGB), 1));
+      pointer-events: none;
+    }
+  }
+
+
+  & ul {
+    font-size: 0.75em;  
+    margin-top: 0.5em;
+  }
+
+  & li {
+    display: flex;
+    justify-content: space-between;
+
+    padding: 0.4em 0.7em 0.4em 0;
+    margin: 0 0 0.1em;
+    border-radius: 0.4em;
+
+    color: rgba(var(--text-color-RGB),0.7);
+
+    & a{
+      color: rgba(var(--text-color-RGB), 1);
+      text-decoration: none;
+    }
+
+    & .price {
+      color: rgba(var(--text-color-RGB), 1);
+      font-weight: 600;
+    }
+
+    p {
+      padding: 0.3em 0 0 0;
+    }
+
+    & div {
+      display: block;
+    }
+
+    & button {
+      
+    }
   }
 }
