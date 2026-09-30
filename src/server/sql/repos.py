@@ -1,10 +1,9 @@
 from typing import TYPE_CHECKING, cast, override
 
 from pydantic import HttpUrl
-from sqlalchemy import select
-from sqlalchemy.orm import lazyload
+from sqlalchemy import exists, select
+from sqlalchemy.orm import lazyload, load_only, selectinload
 
-from server.api.errors import ItemNotFoundError
 from server.services.ports import AbstractSpecificationRepo
 from server.services.schemas import (
     Category,
@@ -122,22 +121,36 @@ class SpecificationRepo(AbstractSpecificationRepo):
         return [self._to_domain_schema_pure(obj) for obj in objs]
 
     @override
-    async def get_item_comments(self, item_id: int) -> list[Comment]:
-        stmt = select(CommentDB).where(CommentDB.item_id == item_id)
-        objs = (await self.session.scalars(stmt)).all()
+    async def check_item_exists(self, item_id: int) -> bool:
+        stmt = select(exists(ItemDB).where(ItemDB.id == item_id))
+        return (await self.session.execute(stmt)).scalar_one()
 
-        return [self._validate_comment(comment) for comment in objs]
+    @override
+    async def get_item_comments(self, item_id: int) -> list[Comment] | None:
+        stmt = (
+            select(ItemDB)
+            .options(load_only(ItemDB.id), selectinload(ItemDB.comments))
+            .where(ItemDB.id == item_id)
+        )
+        obj = await self.session.scalar(stmt)
+
+        if obj is None:
+            return None
+
+        return [self._validate_comment(comment) for comment in obj.comments]
 
     # NOTE: Should it return new data of ItemDB?
     @override
-    async def add_comment(self, item_id: int, data: CommentCreate) -> Comment:
+    async def add_comment(
+        self, item_id: int, data: CommentCreate
+    ) -> Comment | None:
         stmt = select(ItemDB).where(ItemDB.id == item_id)
         item = await self.session.scalar(stmt)
 
         if item is None:
-            raise ItemNotFoundError
+            return None
 
-        obj = CommentDB(text=data.text)
+        obj = CommentDB(text=data.text, author_name=data.author_name)
         item.comments.append(obj)
         await self.session.flush((item,))
 
