@@ -1,11 +1,16 @@
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from server.api.errors import SpecificationNotFoundError
+from server.api.errors import ItemNotFoundError, SpecificationNotFoundError
 
 if TYPE_CHECKING:
     from server.services.ports import AbstractSpecificationRepo
-    from server.services.schemas import Specification, SpecificationPure
+    from server.services.schemas import (
+        Comment,
+        CommentCreate,
+        Specification,
+        SpecificationPure,
+    )
 
 
 @dataclass(eq=False, slots=True)
@@ -25,3 +30,19 @@ class SpecificationService:
 
     async def get_all_pure(self) -> list[SpecificationPure]:
         return await self.repo.get_all_pure()
+
+    async def get_item_comments(self, item_id: int) -> list[Comment]:
+        objs = await self.repo.get_item_comments(item_id)
+
+        if objs is None:
+            raise ItemNotFoundError
+
+        return objs
+
+    async def add_comment(self, item_id: int, data: CommentCreate) -> Comment:
+        obj = await self.repo.add_comment(item_id, data)
+
+        if obj is None:
+            raise ItemNotFoundError
+
+        return obj

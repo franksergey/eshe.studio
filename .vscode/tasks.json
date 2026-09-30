@@ -1,0 +1,102 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            // This is just a wrapper for correct errors handling by VS Code
+            "detail": "Build and run Docker container, then start debug session.",
+            "label": "docker-run",
+            "dependsOn": [
+                "docker-run: debug"
+            ],
+            "dependsOrder": "sequence"
+        },
+        {
+            "label": "docker-run: debug",
+            "type": "shell",
+            "command": "uv",
+            "args": [
+                "run",
+                "inv",
+                "start-debug"
+            ],
+            "linux": {
+                "command": "~/.local/bin/uv",
+                "args": [
+                    "run",
+                    "inv",
+                    "start-debug"
+                ]
+            },
+            "isBackground": true,
+            "problemMatcher": {
+                "pattern": [
+                    {
+                        "regexp": ".*(DEBUGGER: Ready and waiting for client connection on port \\d+).*",
+                        "file": 2,
+                        "line": 3,
+                        "message": 1
+                    }
+                ],
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": ".*Starting debugging session for.*",
+                    "endsPattern": ".*DEBUGGER: Ready and waiting for client connection.*"
+                    // If task is ended before "endPattern" is matched,
+                    // VS Code considers it as fail 
+                }
+            },
+        },
+        {
+            "label": "docker-stop: debug",
+            "type": "shell",
+            "command": "uv",
+            "args": [
+                "run",
+                "inv",
+                "stop-debug"
+            ],
+            "linux": {
+                "command": "~/.local/bin/uv",
+                "args": [
+                    "run",
+                    "inv",
+                    "stop-debug"
+                ],
+            },
+            "problemMatcher": [],
+        },
+        {
+            "label": "pytest: Run ALL tests (sqlite in-memory)",
+            "type": "shell",
+            "command": "uv",
+            "args": [
+                "run",
+                "pytest",
+                "--db-mode=sqlite"
+            ],
+            "group": "test",
+            "presentation": {
+                "reveal": "always"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "pytest: Run ALL tests (postgres container)",
+            "type": "shell",
+            "command": "uv",
+            "args": [
+                "run",
+                "pytest",
+                "--db-mode=postgres"
+            ],
+            "group": {
+                "kind": "test",
+                "isDefault": true
+            },
+            "presentation": {
+                "reveal": "always"
+            },
+            "problemMatcher": []
+        }
+    ]
+}

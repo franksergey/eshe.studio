@@ -139,6 +139,7 @@ runtime-evaluated-decorators = [
     "fastapi.APIRouter.patch",
     "fastapi.APIRouter.trace",
     "server.api.dependencies.dependency",
+    "sqlalchemy.orm.declarative_mixin",
 ]
 
 [tool.ruff.lint.flake8-builtins]
