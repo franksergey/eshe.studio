@@ -16,6 +16,20 @@
                 <rect id="background" x="2" width="506" height="506" rx="253" fill="currentColor"/>
                 <path id="plas" d="M267 241H405V266H267V403H242V266H105V241H242V103H267V241Z" fill="black"/>
             </symbol>
+
+            <symbol id="icon-buttom-comments" viewBox="0 0 508 506">
+                <rect id="background" x="2" width="506" height="506" rx="253" fill="white"/>
+                <path id="Union" d="M258.565 94C176.88 94 110.662 159.802 110.661 240.973C110.661 265.166 116.546 287.993 126.968 308.121C128.237 310.572 128.413 313.458 127.347 316.003L100.727 379.566C97.5396 387.178 105.422 394.708 112.88 391.177L169.9 364.181C172.796 362.81 176.192 363.1 178.896 364.821C201.891 379.458 229.23 387.946 258.565 387.946C340.249 387.946 406.468 322.144 406.468 240.973C406.468 159.802 340.249 94 258.565 94Z" fill="white"/>
+                <path id="Union (Stroke)" d="M135.661 240.973C135.662 174.283 189.684 119.856 256.973 119.01L258.565 119C326.591 119 381.468 173.757 381.468 240.973C381.468 308.188 326.591 362.946 258.565 362.946V387.946C340.249 387.946 406.468 322.144 406.468 240.973C406.468 159.802 340.249 94 258.565 94C176.88 94 110.662 159.802 110.661 240.973C110.661 265.166 116.546 287.994 126.968 308.121C128.237 310.572 128.413 313.458 127.347 316.004L100.727 379.566C97.5892 387.059 105.179 394.474 112.531 391.335L112.88 391.178L169.9 364.181C172.796 362.809 176.192 363.1 178.896 364.821C201.89 379.458 229.23 387.946 258.565 387.946V362.946C234.118 362.946 211.416 355.887 192.321 343.731C182.929 337.753 170.684 336.376 159.723 341.344L159.201 341.586L139.912 350.718L150.406 325.66C154.486 315.918 153.655 305.291 149.168 296.626L148.37 295.057C140.24 278.779 135.661 260.438 135.661 240.973Z" fill="black"/>
+                <path id="Ellipse 33" d="M350 252.5C350 263.27 341.27 272 330.5 272C319.73 272 311 263.27 311 252.5C311 241.73 319.73 233 330.5 233C341.27 233 350 241.73 350 252.5Z" fill="black"/>
+                <path id="Ellipse 34" d="M283 252.5C283 263.27 274.27 272 263.5 272C252.73 272 244 263.27 244 252.5C244 241.73 252.73 233 263.5 233C274.27 233 283 241.73 283 252.5Z" fill="black"/>
+                <path id="Ellipse 35" d="M216 252.5C216 263.27 207.27 272 196.5 272C185.73 272 177 263.27 177 252.5C177 241.73 185.73 233 196.5 233C207.27 233 216 241.73 216 252.5Z" fill="black"/>
+            </symbol>
+
+            <symbol id="icon-send-comment" viewBox="0 0 508 506">
+                <rect id="background" x="2" width="506" height="506" rx="253" fill="white"/>
+                <path id="arrow" d="M209 163L299 253L209 343" stroke="black" stroke-width="40" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+            </symbol>
         </svg>
 
         <div class="vertical-space XL"></div>
@@ -193,20 +207,30 @@
                                 <button type="button" class="add-wishlist">
                                     <svg class="icon" aria-hidden="true"><use href="#icon-add-wishlist"></use></svg>
                                 </button>
-                                <a class="comments">
-                                    <svg viewBox="0 0 508 506" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <g>
-                                        <rect id="background" x="2" width="506" height="506" rx="253" fill="white"/>
-                                    </svg>
-                                    <p>Вообще из прихожей, но можно куда-то еще</p>
-                                </a>
+                                <div class="comments">
+                                    <div class="comments-list">
+                                        <div class="comment">
+                                            <span class="comment-avatar"></span>
+                                            <p>Вообще из прихожей, но можно куда-то еще</p>
+                                        </div>
+                                    </div>
+                                    <form class="comments-form">
+                                        <button type="button" class="comments-toggle" aria-label="Комментарий">
+                                            <svg class="icon" aria-hidden="true"><use href="#icon-buttom-comments"></use></svg>
+                                        </button>
+                                        <textarea name="comment" placeholder="Комментарий" rows="1" autocomplete="off"></textarea>
+                                        <button type="submit" class="comments-send" aria-label="Отправить комментарий">
+                                            <svg class="icon" aria-hidden="true"><use href="#icon-send-comment"></use></svg>
+                                        </button>
+                                    </form>
+                                </div>
                             </div>
 
                             <hgroup>
                                 <a href="https://factuure.ru/product/konsol-s-yashhikami/" target="_blank">Консоль с ящиками ↗</a>
 
                                 <div class="price">
-                                    <p class="price-row"><span class="price">в наличии</span> · <span class="quantity">1 шт</span></p>
+                                    <p class="price-row"><span class="price">В наличии</span> · <span class="quantity">1 шт</span></p>
                                 </div>
                             </hgroup>
                         </li>
@@ -216,13 +240,23 @@
                                 <button type="button" class="add-wishlist">
                                     <svg class="icon" aria-hidden="true"><use href="#icon-add-wishlist"></use></svg>
                                 </button>
-                                <a class="comments">
-                                    <svg viewBox="0 0 508 506" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <g>
-                                        <rect id="background" x="2" width="506" height="506" rx="253" fill="white"/>
-                                    </svg>
-                                    <p>Их 2 одинаковых тоже можно куда угодно пристроить</p>
-                                </a>
+                                <div class="comments">
+                                    <div class="comments-list">
+                                        <div class="comment">
+                                            <span class="comment-avatar"></span>
+                                            <p>Их 2 одинаковых тоже можно куда угодно пристроить</p>
+                                        </div>
+                                    </div>
+                                    <form class="comments-form">
+                                        <button type="button" class="comments-toggle" aria-label="Комментарий">
+                                            <svg class="icon" aria-hidden="true"><use href="#icon-buttom-comments"></use></svg>
+                                        </button>
+                                        <textarea name="comment" placeholder="Комментарий" rows="1" autocomplete="off"></textarea>
+                                        <button type="submit" class="comments-send" aria-label="Отправить комментарий">
+                                            <svg class="icon" aria-hidden="true"><use href="#icon-send-comment"></use></svg>
+                                        </button>
+                                    </form>
+                                </div>
                             </div>
 
                             <hgroup>
@@ -230,7 +264,7 @@
                                     Зеркало «Облако» ↗</a>
 
                                 <div class="price">
-                                    <p class="price-row"><span class="price">в наличии</span> · <span class="quantity">1 шт</span></p>
+                                    <p class="price-row"><span class="price">В наличии</span> · <span class="quantity">1 шт</span></p>
                                 </div>
                             </hgroup>
                         </li>                                        
@@ -248,14 +282,18 @@
                                 <button type="button" class="add-wishlist">
                                     <svg class="icon" aria-hidden="true"><use href="#icon-add-wishlist"></use></svg>
                                 </button>
-                                <a class="comments">
-                                    <svg viewBox="0 0 508 506" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <g>
-                                        <rect id="background" x="2" width="506" height="506" rx="253" fill="white"/>
-                                        <!-- <path id="plas" d="M267 241H405V266H267V403H242V266H105V241H242V103H267V241Z" fill="black"/> -->
-                                        </g>
-                                    </svg><p>Комментарий</p>
-                                </a>
+                                <div class="comments">
+                                    <div class="comments-list"></div>
+                                    <form class="comments-form">
+                                        <button type="button" class="comments-toggle" aria-label="Комментарий">
+                                            <svg class="icon" aria-hidden="true"><use href="#icon-buttom-comments"></use></svg>
+                                        </button>
+                                        <textarea name="comment" placeholder="Комментарий" rows="1" autocomplete="off"></textarea>
+                                        <button type="submit" class="comments-send" aria-label="Отправить комментарий">
+                                            <svg class="icon" aria-hidden="true"><use href="#icon-send-comment"></use></svg>
+                                        </button>
+                                    </form>
+                                </div>
                             </div>
 
                             <hgroup>
@@ -274,14 +312,18 @@
                                 <button type="button" class="add-wishlist">
                                     <svg class="icon" aria-hidden="true"><use href="#icon-add-wishlist"></use></svg>
                                 </button>
-                                <a class="comments">
-                                    <svg viewBox="0 0 508 506" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <g>
-                                        <rect id="background" x="2" width="506" height="506" rx="253" fill="white"/>
-                                        <!-- <path id="plas" d="M267 241H405V266H267V403H242V266H105V241H242V103H267V241Z" fill="black"/> -->
-                                        </g>
-                                    </svg><p>Комментарий</p>
-                                </a>
+                                <div class="comments">
+                                    <div class="comments-list"></div>
+                                    <form class="comments-form">
+                                        <button type="button" class="comments-toggle" aria-label="Комментарий">
+                                            <svg class="icon" aria-hidden="true"><use href="#icon-buttom-comments"></use></svg>
+                                        </button>
+                                        <textarea name="comment" placeholder="Комментарий" rows="1" autocomplete="off"></textarea>
+                                        <button type="submit" class="comments-send" aria-label="Отправить комментарий">
+                                            <svg class="icon" aria-hidden="true"><use href="#icon-send-comment"></use></svg>
+                                        </button>
+                                    </form>
+                                </div>
                             </div>
 
                             <hgroup>
@@ -299,14 +341,18 @@
                                 <button type="button" class="add-wishlist">
                                     <svg class="icon" aria-hidden="true"><use href="#icon-add-wishlist"></use></svg>
                                 </button>
-                                <a class="comments">
-                                    <svg viewBox="0 0 508 506" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <g>
-                                        <rect id="background" x="2" width="506" height="506" rx="253" fill="white"/>
-                                        <!-- <path id="plas" d="M267 241H405V266H267V403H242V266H105V241H242V103H267V241Z" fill="black"/> -->
-                                        </g>
-                                    </svg><p>Комментарий</p>
-                                </a>
+                                <div class="comments">
+                                    <div class="comments-list"></div>
+                                    <form class="comments-form">
+                                        <button type="button" class="comments-toggle" aria-label="Комментарий">
+                                            <svg class="icon" aria-hidden="true"><use href="#icon-buttom-comments"></use></svg>
+                                        </button>
+                                        <textarea name="comment" placeholder="Комментарий" rows="1" autocomplete="off"></textarea>
+                                        <button type="submit" class="comments-send" aria-label="Отправить комментарий">
+                                            <svg class="icon" aria-hidden="true"><use href="#icon-send-comment"></use></svg>
+                                        </button>
+                                    </form>
+                                </div>
                             </div>
 
                             <hgroup>
@@ -325,14 +371,18 @@
                                 <button type="button" class="add-wishlist">
                                     <svg class="icon" aria-hidden="true"><use href="#icon-add-wishlist"></use></svg>
                                 </button>
-                                <a class="comments">
-                                    <svg viewBox="0 0 508 506" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <g>
-                                        <rect id="background" x="2" width="506" height="506" rx="253" fill="white"/>
-                                        <!-- <path id="plas" d="M267 241H405V266H267V403H242V266H105V241H242V103H267V241Z" fill="black"/> -->
-                                        </g>
-                                    </svg><p>Комментарий</p>
-                                </a>
+                                <div class="comments">
+                                    <div class="comments-list"></div>
+                                    <form class="comments-form">
+                                        <button type="button" class="comments-toggle" aria-label="Комментарий">
+                                            <svg class="icon" aria-hidden="true"><use href="#icon-buttom-comments"></use></svg>
+                                        </button>
+                                        <textarea name="comment" placeholder="Комментарий" rows="1" autocomplete="off"></textarea>
+                                        <button type="submit" class="comments-send" aria-label="Отправить комментарий">
+                                            <svg class="icon" aria-hidden="true"><use href="#icon-send-comment"></use></svg>
+                                        </button>
+                                    </form>
+                                </div>
                             </div>
 
                             <hgroup>
@@ -351,14 +401,18 @@
                                 <button type="button" class="add-wishlist">
                                     <svg class="icon" aria-hidden="true"><use href="#icon-add-wishlist"></use></svg>
                                 </button>
-                                <a class="comments">
-                                    <svg viewBox="0 0 508 506" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <g>
-                                        <rect id="background" x="2" width="506" height="506" rx="253" fill="white"/>
-                                        <!-- <path id="plas" d="M267 241H405V266H267V403H242V266H105V241H242V103H267V241Z" fill="black"/> -->
-                                        </g>
-                                    </svg><p>Комментарий</p>
-                                </a>
+                                <div class="comments">
+                                    <div class="comments-list"></div>
+                                    <form class="comments-form">
+                                        <button type="button" class="comments-toggle" aria-label="Комментарий">
+                                            <svg class="icon" aria-hidden="true"><use href="#icon-buttom-comments"></use></svg>
+                                        </button>
+                                        <textarea name="comment" placeholder="Комментарий" rows="1" autocomplete="off"></textarea>
+                                        <button type="submit" class="comments-send" aria-label="Отправить комментарий">
+                                            <svg class="icon" aria-hidden="true"><use href="#icon-send-comment"></use></svg>
+                                        </button>
+                                    </form>
+                                </div>
                             </div>
 
                             <hgroup>
@@ -367,7 +421,7 @@
 
                                 <div class="price">
                                     <p>Авито · б/у</p>
-                                    <p class="price-row"><span class="price">88.000 ₽</span> · <span class="quantity">1 шт</span></p>
+                                    <p class="price-row"><span class="price">88.000 ₽</span> · <span class="quantity">2 шт</span></p>
                                 </div>
                             </hgroup>
                         </li>
@@ -377,14 +431,18 @@
                                 <button type="button" class="add-wishlist">
                                     <svg class="icon" aria-hidden="true"><use href="#icon-add-wishlist"></use></svg>
                                 </button>
-                                <a class="comments">
-                                    <svg viewBox="0 0 508 506" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <g>
-                                        <rect id="background" x="2" width="506" height="506" rx="253" fill="white"/>
-                                        <!-- <path id="plas" d="M267 241H405V266H267V403H242V266H105V241H242V103H267V241Z" fill="black"/> -->
-                                        </g>
-                                    </svg><p>Комментарий</p>
-                                </a>
+                                <div class="comments">
+                                    <div class="comments-list"></div>
+                                    <form class="comments-form">
+                                        <button type="button" class="comments-toggle" aria-label="Комментарий">
+                                            <svg class="icon" aria-hidden="true"><use href="#icon-buttom-comments"></use></svg>
+                                        </button>
+                                        <textarea name="comment" placeholder="Комментарий" rows="1" autocomplete="off"></textarea>
+                                        <button type="submit" class="comments-send" aria-label="Отправить комментарий">
+                                            <svg class="icon" aria-hidden="true"><use href="#icon-send-comment"></use></svg>
+                                        </button>
+                                    </form>
+                                </div>
                             </div>
 
                             <hgroup>
@@ -411,14 +469,18 @@
                                 <button type="button" class="add-wishlist">
                                     <svg class="icon" aria-hidden="true"><use href="#icon-add-wishlist"></use></svg>
                                 </button>
-                                <a class="comments">
-                                    <svg viewBox="0 0 508 506" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <g>
-                                        <rect id="background" x="2" width="506" height="506" rx="253" fill="white"/>
-                                        <!-- <path id="plas" d="M267 241H405V266H267V403H242V266H105V241H242V103H267V241Z" fill="black"/> -->
-                                        </g>
-                                    </svg><p>Комментарий</p>
-                                </a>
+                                <div class="comments">
+                                    <div class="comments-list"></div>
+                                    <form class="comments-form">
+                                        <button type="button" class="comments-toggle" aria-label="Комментарий">
+                                            <svg class="icon" aria-hidden="true"><use href="#icon-buttom-comments"></use></svg>
+                                        </button>
+                                        <textarea name="comment" placeholder="Комментарий" rows="1" autocomplete="off"></textarea>
+                                        <button type="submit" class="comments-send" aria-label="Отправить комментарий">
+                                            <svg class="icon" aria-hidden="true"><use href="#icon-send-comment"></use></svg>
+                                        </button>
+                                    </form>
+                                </div>
                             </div>
 
                             <hgroup>
@@ -437,14 +499,18 @@
                                 <button type="button" class="add-wishlist">
                                     <svg class="icon" aria-hidden="true"><use href="#icon-add-wishlist"></use></svg>
                                 </button>
-                                <a class="comments">
-                                    <svg viewBox="0 0 508 506" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <g>
-                                        <rect id="background" x="2" width="506" height="506" rx="253" fill="white"/>
-                                        <!-- <path id="plas" d="M267 241H405V266H267V403H242V266H105V241H242V103H267V241Z" fill="black"/> -->
-                                        </g>
-                                    </svg><p>Комментарий</p>
-                                </a>
+                                <div class="comments">
+                                    <div class="comments-list"></div>
+                                    <form class="comments-form">
+                                        <button type="button" class="comments-toggle" aria-label="Комментарий">
+                                            <svg class="icon" aria-hidden="true"><use href="#icon-buttom-comments"></use></svg>
+                                        </button>
+                                        <textarea name="comment" placeholder="Комментарий" rows="1" autocomplete="off"></textarea>
+                                        <button type="submit" class="comments-send" aria-label="Отправить комментарий">
+                                            <svg class="icon" aria-hidden="true"><use href="#icon-send-comment"></use></svg>
+                                        </button>
+                                    </form>
+                                </div>
                             </div>
 
                             <hgroup>
@@ -462,14 +528,18 @@
                                 <button type="button" class="add-wishlist">
                                     <svg class="icon" aria-hidden="true"><use href="#icon-add-wishlist"></use></svg>
                                 </button>
-                                <a class="comments">
-                                    <svg viewBox="0 0 508 506" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <g>
-                                        <rect id="background" x="2" width="506" height="506" rx="253" fill="white"/>
-                                        <!-- <path id="plas" d="M267 241H405V266H267V403H242V266H105V241H242V103H267V241Z" fill="black"/> -->
-                                        </g>
-                                    </svg><p>Комментарий</p>
-                                </a>
+                                <div class="comments">
+                                    <div class="comments-list"></div>
+                                    <form class="comments-form">
+                                        <button type="button" class="comments-toggle" aria-label="Комментарий">
+                                            <svg class="icon" aria-hidden="true"><use href="#icon-buttom-comments"></use></svg>
+                                        </button>
+                                        <textarea name="comment" placeholder="Комментарий" rows="1" autocomplete="off"></textarea>
+                                        <button type="submit" class="comments-send" aria-label="Отправить комментарий">
+                                            <svg class="icon" aria-hidden="true"><use href="#icon-send-comment"></use></svg>
+                                        </button>
+                                    </form>
+                                </div>
                             </div>
 
                             <hgroup>
@@ -488,14 +558,18 @@
                                 <button type="button" class="add-wishlist">
                                     <svg class="icon" aria-hidden="true"><use href="#icon-add-wishlist"></use></svg>
                                 </button>
-                                <a class="comments">
-                                    <svg viewBox="0 0 508 506" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <g>
-                                        <rect id="background" x="2" width="506" height="506" rx="253" fill="white"/>
-                                        <!-- <path id="plas" d="M267 241H405V266H267V403H242V266H105V241H242V103H267V241Z" fill="black"/> -->
-                                        </g>
-                                    </svg><p>Комментарий</p>
-                                </a>
+                                <div class="comments">
+                                    <div class="comments-list"></div>
+                                    <form class="comments-form">
+                                        <button type="button" class="comments-toggle" aria-label="Комментарий">
+                                            <svg class="icon" aria-hidden="true"><use href="#icon-buttom-comments"></use></svg>
+                                        </button>
+                                        <textarea name="comment" placeholder="Комментарий" rows="1" autocomplete="off"></textarea>
+                                        <button type="submit" class="comments-send" aria-label="Отправить комментарий">
+                                            <svg class="icon" aria-hidden="true"><use href="#icon-send-comment"></use></svg>
+                                        </button>
+                                    </form>
+                                </div>
                             </div>
 
                             <hgroup>
@@ -514,14 +588,18 @@
                                 <button type="button" class="add-wishlist">
                                     <svg class="icon" aria-hidden="true"><use href="#icon-add-wishlist"></use></svg>
                                 </button>
-                                <a class="comments">
-                                    <svg viewBox="0 0 508 506" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <g>
-                                        <rect id="background" x="2" width="506" height="506" rx="253" fill="white"/>
-                                        <!-- <path id="plas" d="M267 241H405V266H267V403H242V266H105V241H242V103H267V241Z" fill="black"/> -->
-                                        </g>
-                                    </svg><p>Комментарий</p>
-                                </a>
+                                <div class="comments">
+                                    <div class="comments-list"></div>
+                                    <form class="comments-form">
+                                        <button type="button" class="comments-toggle" aria-label="Комментарий">
+                                            <svg class="icon" aria-hidden="true"><use href="#icon-buttom-comments"></use></svg>
+                                        </button>
+                                        <textarea name="comment" placeholder="Комментарий" rows="1" autocomplete="off"></textarea>
+                                        <button type="submit" class="comments-send" aria-label="Отправить комментарий">
+                                            <svg class="icon" aria-hidden="true"><use href="#icon-send-comment"></use></svg>
+                                        </button>
+                                    </form>
+                                </div>
                             </div>
 
                             <hgroup>
@@ -540,14 +618,18 @@
                                 <button type="button" class="add-wishlist">
                                     <svg class="icon" aria-hidden="true"><use href="#icon-add-wishlist"></use></svg>
                                 </button>
-                                <a class="comments">
-                                    <svg viewBox="0 0 508 506" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <g>
-                                        <rect id="background" x="2" width="506" height="506" rx="253" fill="white"/>
-                                        <!-- <path id="plas" d="M267 241H405V266H267V403H242V266H105V241H242V103H267V241Z" fill="black"/> -->
-                                        </g>
-                                    </svg><p>Комментарий</p>
-                                </a>
+                                <div class="comments">
+                                    <div class="comments-list"></div>
+                                    <form class="comments-form">
+                                        <button type="button" class="comments-toggle" aria-label="Комментарий">
+                                            <svg class="icon" aria-hidden="true"><use href="#icon-buttom-comments"></use></svg>
+                                        </button>
+                                        <textarea name="comment" placeholder="Комментарий" rows="1" autocomplete="off"></textarea>
+                                        <button type="submit" class="comments-send" aria-label="Отправить комментарий">
+                                            <svg class="icon" aria-hidden="true"><use href="#icon-send-comment"></use></svg>
+                                        </button>
+                                    </form>
+                                </div>
                             </div>
 
                             <hgroup>

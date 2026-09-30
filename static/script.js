@@ -127,3 +127,44 @@ function renderCart() {
 }
 
 renderCart();
+
+document.addEventListener('click', (event) => {
+  const toggle = event.target.closest('.comments-toggle');
+  if (!toggle) return;
+
+  toggle.closest('.comments-form')?.querySelector('textarea')?.focus();
+});
+
+function autosizeTextarea(textarea) {
+  textarea.style.height = 'auto';
+  textarea.style.height = `${textarea.scrollHeight}px`;
+}
+
+document.addEventListener('input', (event) => {
+  const textarea = event.target.closest('.comments-form textarea');
+  if (!textarea) return;
+
+  autosizeTextarea(textarea);
+});
+
+document.addEventListener('submit', (event) => {
+  const form = event.target.closest('.comments-form');
+  if (!form) return;
+  event.preventDefault();
+
+  const textarea = form.querySelector('textarea');
+  const text = textarea.value.trim();
+  if (!text) return;
+
+  // TODO: когда появится бэкенд — комментарий нужно будет отправлять на сервер здесь,
+  // а не только добавлять в DOM. Пока комментарии не сохраняются между перезагрузками.
+  const comment = document.createElement('div');
+  comment.className = 'comment';
+  comment.innerHTML = '<span class="comment-avatar"></span><p></p>';
+  comment.querySelector('p').textContent = text;
+  form.closest('.comments').querySelector('.comments-list').appendChild(comment);
+
+  textarea.value = '';
+  textarea.style.height = '';
+  textarea.blur();
+});
