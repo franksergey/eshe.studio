@@ -127,3 +127,171 @@ function renderCart() {
 }
 
 renderCart();
+
+// ==========================================
+// COMMENTS FEED LOGIC
+// ==========================================
+
+// 1. Author Name Management (Cookies + JS Variable Fallback)
+let sessionAuthorName = null;
+
+function getCookie(name) {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(';').shift();
+  return null;
+}
+
+function setCookie(name, value, days) {
+  try {
+    let expires = "";
+    if (days) {
+      const date = new Date();
+      date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+      expires = "; expires=" + date.toUTCString();
+    }
+    document.cookie = name + "=" + (value || "") + expires + "; path=/";
+  } catch (e) {
+    console.warn("Cookies are restricted. Falling back to session variable.");
+  }
+}
+
+function getAuthorName() {
+  // Check JS variable first
+  if (sessionAuthorName) return sessionAuthorName;
+
+  // Check Cookie second
+  const cookieName = getCookie('author_name');
+  if (cookieName) {
+    sessionAuthorName = decodeURIComponent(cookieName);
+    return sessionAuthorName;
+  }
+
+  // If neither exists, prompt the user
+  let promptedName = prompt('Пожалуйста, введите ваше имя, чтобы оставить комментарий:');
+
+  if (promptedName && promptedName.trim() !== '') {
+    promptedName = promptedName.trim();
+    sessionAuthorName = promptedName; // Save to JS variable
+    setCookie('author_name', encodeURIComponent(promptedName), 365); // Save to Cookie for 1 year
+    return sessionAuthorName;
+  }
+
+  // Return null if the user cancelled the prompt or entered an empty string
+  return null;
+}
+
+// 2. Feed Initialization
+document.addEventListener('DOMContentLoaded', () => {
+  const commentSections = document.querySelectorAll('.comments[data-item-id]');
+
+  commentSections.forEach(async (section) => {
+    const itemId = section.getAttribute('data-item-id');
+
+    // Construct the DOM for the feed and form
+    const wrapper = document.createElement('div');
+    wrapper.style.display = 'flex';
+    wrapper.style.flexDirection = 'column';
+    wrapper.style.gap = '0.3em';
+    wrapper.style.flex = '1';
+    wrapper.style.minWidth = '0';
+
+    const feed = document.createElement('div');
+    feed.style.display = 'flex';
+    feed.style.flexDirection = 'column';
+    feed.style.gap = '0.3em';
+    feed.style.maxHeight = '120px';
+    feed.style.overflowY = 'auto';
+    feed.style.scrollbarWidth = 'none';
+
+    const form = document.createElement('form');
+    form.style.display = 'flex';
+    form.style.gap = '0.3em';
+    form.innerHTML = `
+      <input type="text" name="text" placeholder="Написать..." required 
+             style="flex: 1; min-width: 0; border: none; border-radius: 0.5em; padding: 0.3em 0.5em; font-size: inherit; background: rgba(var(--background-color-RGB), 0.9); color: rgba(var(--text-color-RGB), 1); outline: none;">
+      <button type="submit" 
+              style="border: none; border-radius: 0.5em; padding: 0.3em 0.6em; background: rgba(var(--background-color-RGB), 0.9); color: rgba(var(--text-color-RGB), 1); cursor: pointer; font-size: inherit; font-weight: bold;">
+        ➤
+      </button>
+    `;
+
+    wrapper.appendChild(feed);
+    wrapper.appendChild(form);
+    section.appendChild(wrapper);
+
+    // Helper to append a comment to the DOM
+    const appendComment = (commentData) => {
+      const p = document.createElement('p');
+      p.textContent = `${commentData.author_name}: ${commentData.text}`;
+      feed.appendChild(p);
+      feed.scrollTop = feed.scrollHeight;
+    };
+
+    // Fetch existing comments from the backend
+    try {
+      const response = await fetch(`/api/items/${itemId}/comments`);
+      if (response.ok) {
+        const comments = await response.json();
+        comments.forEach(appendComment);
+      } else if (response.status !== 404) {
+        console.error(`Failed to load comments for item ${itemId}`);
+      }
+    } catch (err) {
+      console.error(`Network error fetching comments for item ${itemId}:`, err);
+    }
+
+    // Handle new comment creation
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const input = form.querySelector('input');
+      const button = form.querySelector('button');
+      const text = input.value.trim();
+
+      if (!text) return;
+
+      // Ask for the author's name (or retrieve it if already saved)
+      const authorName = getAuthorName();
+
+      // If the user clicked "Cancel" on the prompt, abort the submission
+      if (!authorName) return;
+
+      // Loading state
+      input.disabled = true;
+      button.disabled = true;
+      button.style.opacity = '0.5';
+
+      try {
+        const response = await fetch(`/api/items/${itemId}/comments`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            text: text,
+            author_name: authorName // Use the dynamically retrieved name
+          })
+        });
+
+        if (response.ok) {
+          const newComment = await response.json();
+          appendComment(newComment);
+          input.value = ''; // Clear input
+        } else {
+          alert('Ошибка при сохранении комментария. Проверьте консоль.');
+          console.error(await response.text());
+        }
+      } catch (err) {
+        alert('Ошибка сети. Не удалось отправить комментарий.');
+        console.error(err);
+      } finally {
+        // Remove loading state
+        input.disabled = false;
+        button.disabled = false;
+        button.style.opacity = '1';
+        input.focus();
+      }
+    });
+  });
+});
