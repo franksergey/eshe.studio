@@ -11,13 +11,13 @@ from fastapi_problem.handler import add_exception_handler
 from starlette.staticfiles import StaticFiles
 
 from server import __version__ as version
+from server.api.routers import api_router
 from server.config import settings
 from server.sql.database import Database
 
 from . import cors_configuration
 from .container import container_getter
 from .errors import error_handler
-from .routers import ROUTERS
 
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator
@@ -53,18 +53,10 @@ def setup_routers(app: FastAPI) -> None:
     Args:
         app: Application object.
     """
+    app.include_router(api_router)
+    logger.debug("Included API router with prefix: %r", api_router.prefix)
+
     static_directory = Path(settings.STATICFILES)
-    prefixes: list[str] = []
-
-    for router in ROUTERS:
-        app.include_router(router)
-        prefixes.append(router.prefix)
-
-    logger.debug(
-        "Included %i FastAPI routers with the following prefixes: %r",
-        len(ROUTERS),
-        prefixes,
-    )
     app.mount(
         "/", StaticFiles(directory=static_directory, html=True), name="static"
     )
