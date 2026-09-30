@@ -147,24 +147,137 @@ document.addEventListener('input', (event) => {
   autosizeTextarea(textarea);
 });
 
-document.addEventListener('submit', (event) => {
-  const form = event.target.closest('.comments-form');
-  if (!form) return;
-  event.preventDefault();
+// ==========================================
+// COMMENTS LOGIC (API INTEGRATION)
+// ==========================================
 
-  const textarea = form.querySelector('textarea');
-  const text = textarea.value.trim();
-  if (!text) return;
+// 1. Author Name Management
+let currentAuthorName = null;
 
-  // TODO: когда появится бэкенд — комментарий нужно будет отправлять на сервер здесь,
-  // а не только добавлять в DOM. Пока комментарии не сохраняются между перезагрузками.
+try {
+  currentAuthorName = localStorage.getItem('author_name');
+} catch (e) {
+  // LocalStorage might be blocked by browser settings
+}
+
+function getAuthorName() {
+  if (currentAuthorName) return currentAuthorName;
+
+  const name = prompt("Пожалуйста, введите ваше имя для оставления комментариев:");
+  if (name && name.trim()) {
+    currentAuthorName = name.trim();
+    try {
+      localStorage.setItem('author_name', currentAuthorName);
+    } catch (e) {
+      console.warn("Не удалось сохранить имя в localStorage.");
+    }
+    return currentAuthorName;
+  }
+  return null;
+}
+
+// 2. Helper to create a comment DOM element
+function createCommentElement(text) {
   const comment = document.createElement('div');
   comment.className = 'comment';
   comment.innerHTML = '<span class="comment-avatar"></span><p></p>';
   comment.querySelector('p').textContent = text;
-  form.closest('.comments').querySelector('.comments-list').appendChild(comment);
+  return comment;
+}
 
-  textarea.value = '';
-  textarea.style.height = '';
-  textarea.blur();
+// 3. Fetch comments on page load
+async function loadComments() {
+  const items = document.querySelectorAll('li[data-item-id]');
+
+  for (const item of items) {
+    const itemId = item.getAttribute('data-item-id');
+    if (!itemId) continue;
+
+    try {
+      const response = await fetch(`/api/items/${itemId}/comments`);
+      if (response.ok) {
+        const comments = await response.json();
+        const list = item.querySelector('.comments-list');
+        if (list) {
+          list.innerHTML = ''; // Ensure it's empty before appending
+          comments.forEach(c => {
+            list.appendChild(createCommentElement(c.text));
+          });
+        }
+      } else if (response.status !== 404) {
+        console.error(`Failed to load comments for item ${itemId}. Status: ${response.status}`);
+      }
+    } catch (error) {
+      console.error(`Network error while loading comments for item ${itemId}:`, error);
+    }
+  }
+}
+
+// Initialize comments fetching
+document.addEventListener('DOMContentLoaded', loadComments);
+
+// 4. Handle Comment Submission
+document.addEventListener('submit', async (event) => {
+  const form = event.target.closest('.comments-form');
+  if (!form) return;
+  event.preventDefault();
+
+  const itemLi = form.closest('li[data-item-id]');
+  if (!itemLi) {
+    console.error("Item ID not found on the parent element.");
+    return;
+  }
+
+  const itemId = itemLi.getAttribute('data-item-id');
+  const textarea = form.querySelector('textarea');
+  const text = textarea.value.trim();
+
+  if (!text) return;
+
+  const authorName = getAuthorName();
+  if (!authorName) {
+    alert("Имя обязательно для отправки комментария.");
+    return;
+  }
+
+  // Disable form while submitting
+  const submitBtn = form.querySelector('.comments-send');
+  textarea.disabled = true;
+  submitBtn.disabled = true;
+
+  try {
+    const response = await fetch(`/api/items/${itemId}/comments`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        text: text,
+        author_name: authorName
+      })
+    });
+
+    if (response.ok) {
+      const newComment = await response.json();
+
+      // Append to DOM
+      const list = form.closest('.comments').querySelector('.comments-list');
+      list.appendChild(createCommentElement(newComment.text));
+
+      // Reset form
+      textarea.value = '';
+      textarea.style.height = '';
+      textarea.blur();
+    } else {
+      const errorData = await response.json().catch(() => ({}));
+      alert(`Ошибка при отправке комментария: ${errorData.title || 'Неизвестная ошибка'}`);
+    }
+  } catch (error) {
+    console.error("Error posting comment:", error);
+    alert("Ошибка сети при отправке комментария. Проверьте подключение.");
+  } finally {
+    // Re-enable form
+    textarea.disabled = false;
+    submitBtn.disabled = false;
+  }
 });
