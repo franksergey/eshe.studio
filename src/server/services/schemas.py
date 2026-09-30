@@ -2,7 +2,7 @@ from decimal import Decimal
 from enum import StrEnum
 from typing import Annotated
 
-from pydantic import BaseModel, ConfigDict, Field, HttpUrl
+from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, HttpUrl
 
 # =============================
 # Aggregate Root: Specification
@@ -56,6 +56,25 @@ class MoneyType(BaseModel):
     currency: CurrencyCode
 
 
+class CommentBase(BaseModel):
+    """Базовая модель комментария."""
+
+    text: Annotated[str, Field(min_length=1, max_length=4096)]
+    author_name: Annotated[str, Field(min_length=1)]
+
+
+class CommentCreate(CommentBase):
+    """Модель создания комментария."""
+
+
+class Comment(CommentBase):
+    """Комментарий к элементу комплектации."""
+
+    id: int
+
+    created_at: AwareDatetime
+
+
 class Item(BaseModel):
     """Вариант предмета в таблице комплектации."""
 
@@ -66,6 +85,7 @@ class Item(BaseModel):
     tags: Annotated[list[str], Field(max_length=16)]
 
     price: MoneyType | None
+    comments: list[Comment]
 
     model_config = ConfigDict(
         use_enum_values=True, from_attributes=True, serialize_by_alias=True

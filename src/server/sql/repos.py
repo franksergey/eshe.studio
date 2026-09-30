@@ -1,12 +1,14 @@
 from typing import TYPE_CHECKING, cast, override
 
 from pydantic import HttpUrl
-from sqlalchemy import select
-from sqlalchemy.orm import lazyload
+from sqlalchemy import exists, select
+from sqlalchemy.orm import lazyload, load_only, selectinload
 
 from server.services.ports import AbstractSpecificationRepo
 from server.services.schemas import (
     Category,
+    Comment,
+    CommentCreate,
     CurrencyCode,
     Item,
     MoneyType,
@@ -14,7 +16,13 @@ from server.services.schemas import (
     Specification,
     SpecificationPure,
 )
-from server.sql.models import CategoryDB, ItemDB, RoomDB, SpecificationDB
+from server.sql.models import (
+    CategoryDB,
+    CommentDB,
+    ItemDB,
+    RoomDB,
+    SpecificationDB,
+)
 
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession
@@ -25,6 +33,15 @@ class SpecificationRepo(AbstractSpecificationRepo):
 
     def __init__(self, session: AsyncSession) -> None:
         self.session = session
+
+    @classmethod
+    def _validate_comment(cls, obj: CommentDB) -> Comment:
+        return Comment(
+            id=obj.id,
+            text=obj.text,
+            author_name=obj.author_name,
+            created_at=obj.created_at,
+        )
 
     @classmethod
     def _validate_item(cls, obj: ItemDB) -> Item:
@@ -42,6 +59,9 @@ class SpecificationRepo(AbstractSpecificationRepo):
             link=HttpUrl(obj.link) if obj.link is not None else None,
             tags=[tag.tag for tag in obj.tags],
             price=price,
+            comments=[
+                cls._validate_comment(comment) for comment in obj.comments
+            ],
         )
 
     @classmethod
@@ -99,3 +119,39 @@ class SpecificationRepo(AbstractSpecificationRepo):
         objs = (await self.session.scalars(self.GET_ALL_PURE_STMT)).all()
 
         return [self._to_domain_schema_pure(obj) for obj in objs]
+
+    @override
+    async def check_item_exists(self, item_id: int) -> bool:
+        stmt = select(exists(ItemDB).where(ItemDB.id == item_id))
+        return (await self.session.execute(stmt)).scalar_one()
+
+    @override
+    async def get_item_comments(self, item_id: int) -> list[Comment] | None:
+        stmt = (
+            select(ItemDB)
+            .options(load_only(ItemDB.id), selectinload(ItemDB.comments))
+            .where(ItemDB.id == item_id)
+        )
+        obj = await self.session.scalar(stmt)
+
+        if obj is None:
+            return None
+
+        return [self._validate_comment(comment) for comment in obj.comments]
+
+    # NOTE: Should it return new data of ItemDB?
+    @override
+    async def add_comment(
+        self, item_id: int, data: CommentCreate
+    ) -> Comment | None:
+        stmt = select(ItemDB).where(ItemDB.id == item_id)
+        item = await self.session.scalar(stmt)
+
+        if item is None:
+            return None
+
+        obj = CommentDB(text=data.text, author_name=data.author_name)
+        item.comments.append(obj)
+        await self.session.flush((item,))
+
+        return self._validate_comment(obj)
