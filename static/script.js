@@ -47,4 +47,83 @@ document.addEventListener('click', (event) => {
   if (!button) return;
 
   button.closest('li')?.classList.toggle('product-select');
+  renderCart();
 });
+
+function renderCart() {
+  const approvedList = document.querySelector('.cart-items-approved');
+  const doneList = document.querySelector('.cart-items-done');
+  const totalEls = document.querySelectorAll('.cart-buttom p span');
+  if (!approvedList || !doneList || totalEls.length < 3) return;
+
+  const [approvedTotalEl, selectedTotalEl, grandTotalEl] = totalEls;
+
+  function cardData(card) {
+    const link = card.querySelector('hgroup a');
+    const title = link ? link.textContent.replace(/\s*↗\s*$/, '').trim() : '';
+
+    const priceRow = card.querySelector('.price .price-row');
+    const priceSpan = priceRow?.querySelector('.price');
+    const qtySpan = priceRow?.querySelector('.quantity');
+
+    const digits = priceSpan ? priceSpan.textContent.replace(/\D/g, '') : '';
+    const unitPrice = digits ? parseInt(digits, 10) : 0;
+
+    const qtyDigits = qtySpan ? qtySpan.textContent.replace(/\D/g, '') : '';
+    const qty = qtyDigits ? parseInt(qtyDigits, 10) : 1;
+
+    return {
+      title,
+      priceOuterHTML: priceRow ? priceRow.outerHTML : '',
+      lineTotal: unitPrice * qty,
+    };
+  }
+
+  function formatRUB(amount) {
+    return amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') + ' ₽';
+  }
+
+  approvedList.innerHTML = '';
+  let approvedTotal = 0;
+  document.querySelectorAll('.product-grid li.product-done').forEach((card) => {
+    const data = cardData(card);
+    approvedTotal += data.lineTotal;
+
+    const li = document.createElement('li');
+    li.innerHTML = `<a>${data.title}</a>${data.priceOuterHTML}`;
+    li.querySelector('a').addEventListener('click', () => {
+      card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+    approvedList.appendChild(li);
+  });
+
+  doneList.innerHTML = '';
+  let selectedTotal = 0;
+  document.querySelectorAll('.product-grid li.product-select').forEach((card) => {
+    const data = cardData(card);
+    selectedTotal += data.lineTotal;
+
+    const li = document.createElement('li');
+    li.innerHTML = `
+      <div>
+        <a>${data.title}</a>
+        ${data.priceOuterHTML}
+      </div>
+      <button type="button">Убрать</button>
+    `;
+    li.querySelector('a').addEventListener('click', () => {
+      card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+    li.querySelector('button').addEventListener('click', () => {
+      card.classList.remove('product-select');
+      renderCart();
+    });
+    doneList.appendChild(li);
+  });
+
+  approvedTotalEl.textContent = formatRUB(approvedTotal);
+  selectedTotalEl.textContent = formatRUB(selectedTotal);
+  grandTotalEl.textContent = formatRUB(approvedTotal + selectedTotal);
+}
+
+renderCart();

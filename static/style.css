@@ -56,7 +56,7 @@
 }
 
 .text-width {
-  width: 80%;
+  width: 70%;
   
   @media (max-width: 768px) {
     width: 100%;
@@ -157,6 +157,15 @@ ul {
   margin: 0;
 }
 
+button {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+}
+
 /* ————————————— item ————————————— */
 
 .chapter {
@@ -165,7 +174,7 @@ ul {
   margin: auto;
   display: flex;
   width: calc(var(--chapter-width) * 1%);
-  gap: 2em;
+  gap: 3em;
   position: relative;
 
   @media (max-width: 768px) {
@@ -240,9 +249,9 @@ ul {
 
     & a:hover {
       background-color: rgba(var(--product-hover-color-RGB), 0.4);
-
       transition: background-color 0s ease, text-decoration-color 0s ease;
     }
+
   }
 }
 
@@ -261,19 +270,54 @@ header {
   & .link-group {
     display: flex;
     flex-wrap: wrap;
+
     --gap: 0.5em;
+    --columns: 4;
+    --gap-number: calc(var(--columns) - 1);
+
     gap: var(--gap);
+
+    @media (max-width: 768px) {
+      --columns: 2;
+    }
+
+    & a {
+      background-color: rgba(var(--product-hover-color-RGB),0.4);
+
+      color: rgba(var(--text-color-RGB), 1);
+
+      text-decoration: none;
+
+      border-radius: 0.4em;
+      padding: 0.4em 5em 4em 0.4em;
+
+      width: calc((100% - var(--gap-number) * var(--gap)) / (var(--columns)));
+
+    }
+
+    & a:not(.active):hover {
+      background-color: rgba(var(--product-hover-color-RGB), 1);
+      color: rgba(var(--hover-color-RGB),1);
+
+      transition: background-color 0s ease, text-decoration-color 0s ease;
+    }
+
+    & .active {
+      color: rgba(var(--text-color-inverse-RGB), 1);
+      background-color: rgba(var(--text-color-RGB), 0.8);
+    }
+
   }
 
-  & div {
+  /* & div {
     display: flex;
     gap: 1em;
     align-items: baseline;
 
     & p {
-      /* font-size: 1.2em; */
+      font-size: 1.2em;
     }
-  }
+  } */
 }
 
 
@@ -437,17 +481,23 @@ header {
 
     & .price {
       margin: 1em 0 0 0;
-      display: flex;
+      /* display: flex;
       flex-direction: column;
-      gap: 0.5em;
+      gap: 0.5em; */
     }
 
     & span {
       /* display: block; */
+      /* border: solid 1px rgba(var(--text-color-RGB),1);
+      padding: 0.1em 0.6em;
+      border-radius: 0.4em; */
+    } 
+
+    & .quantity {
       border: solid 1px rgba(var(--text-color-RGB),1);
       padding: 0.1em 0.6em;
       border-radius: 0.4em;
-    } 
+    }
   }
 
   & .product-done {
@@ -460,7 +510,7 @@ header {
       text-decoration-color: rgba(var(--text-color-inverse-RGB),0.3);
     }
     
-    & span {
+    & .quantity {
       border: solid 1px rgba(var(--text-color-inverse-RGB),1);
     }
 
@@ -479,7 +529,7 @@ header {
       text-decoration-color: rgba(var(--text-color-inverse-RGB),0.3);
     }
     
-    & span {
+    & .quantity {
       border: solid 1px rgba(var(--text-color-inverse-RGB),1);
     }
 
@@ -503,7 +553,7 @@ header {
 
 .cart-panel {
 
-  padding: 2em 0;
+  padding: 2em 0 3em;
 
   display: flex;
   flex-direction: column;
@@ -534,7 +584,7 @@ header {
   }
 
   & .cart-items-done {
-    height: 60%;
+    height: 55%;
     overflow-y: auto;
 
     &::after {
@@ -560,7 +610,7 @@ header {
     justify-content: space-between;
 
     padding: 0.4em 0.7em 0.4em 0;
-    margin: 0 0 0.1em;
+    margin: 0 0 0.6em;
     border-radius: 0.4em;
 
     color: rgba(var(--text-color-RGB),0.7);
@@ -568,6 +618,7 @@ header {
     & a{
       color: rgba(var(--text-color-RGB), 1);
       text-decoration: none;
+      cursor: pointer;
     }
 
     & .price {
@@ -584,7 +635,39 @@ header {
     }
 
     & button {
-      
+      background-color: rgba(var(--product-hover-color-RGB), 0.4);
+
+      padding: 0.7em 1em;
+      border-radius: 1.5em;
+      height: fit-content;
+    }
+  }
+
+  & .cart-buttom {
+    color: rgba(var(--text-color-RGB), 0.6);
+    font-size: 0.9em;
+    /* display: flex;
+    flex-direction: column; */
+
+    padding: 1em;
+    border-radius: 1em;
+    background-color: rgba(var(--product-hover-color-RGB), 0.4);
+
+    & p {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    & span {
+      /* width: 100%; */
+      text-align: right;
+    }
+
+    & .total {
+      font-size: 1.3em;
+      color: rgba(var(--text-color-RGB), 1);
+      border-top: 1px solid;
+      margin-top: 0.5em;
     }
   }
 }
