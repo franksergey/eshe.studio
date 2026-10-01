@@ -281,3 +281,105 @@ document.addEventListener('submit', async (event) => {
     submitBtn.disabled = false;
   }
 });
+
+// ==========================================
+// NAV: click-to-scroll + scrollspy (nav-active)
+// ==========================================
+
+(() => {
+  const navSectionUl = document.querySelector('.chapter nav ul.nav-section');
+  const content = document.querySelector('.chapter > section');
+  if (!navSectionUl || !content) return;
+
+  const topLis = [...navSectionUl.children].filter((el) => el.tagName === 'LI');
+  const rooms = [];
+
+  topLis.forEach((li) => {
+    if (li.querySelector(':scope > ul.nav-subsection')) return;
+
+    const room = { roomLi: li, subLis: [], subHeadings: [] };
+    const next = li.nextElementSibling;
+    const subUl = next?.querySelector(':scope > ul.nav-subsection');
+
+    if (subUl) {
+      room.subWrapperLi = next;
+      room.subLis = [...subUl.children].filter((el) => el.tagName === 'LI');
+    }
+
+    rooms.push(room);
+  });
+
+  const headings = [...content.querySelectorAll('h3')];
+
+  rooms.forEach((room) => {
+    const roomName = room.roomLi.querySelector('a')?.textContent.trim() ?? '';
+    room.heading = headings.find((h) => h.textContent.includes(roomName));
+    if (!room.heading) return;
+
+    const rangeEnd = headings[headings.indexOf(room.heading) + 1] ?? null;
+    const h4sInRange = [];
+    let el = room.heading.nextElementSibling;
+    while (el && el !== rangeEnd) {
+      if (el.tagName === 'H4') h4sInRange.push(el);
+      el = el.nextElementSibling;
+    }
+
+    room.subLis.forEach((subLi) => {
+      const subName = subLi.querySelector('a')?.textContent.trim() ?? '';
+      const heading = h4sInRange.find((h) => h.textContent.includes(subName));
+      room.subHeadings.push(heading ?? null);
+    });
+  });
+
+  function scrollToHeading(heading) {
+    if (!heading) return;
+    heading.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  rooms.forEach((room) => {
+    room.roomLi.querySelector('a')?.addEventListener('click', (event) => {
+      event.preventDefault();
+      scrollToHeading(room.heading);
+    });
+
+    room.subLis.forEach((subLi, j) => {
+      subLi.querySelector('a')?.addEventListener('click', (event) => {
+        event.preventDefault();
+        scrollToHeading(room.subHeadings[j]);
+      });
+    });
+  });
+
+  const watched = [];
+  rooms.forEach((room) => {
+    if (room.heading) {
+      watched.push({ el: room.heading, roomLi: room.roomLi, subLi: null });
+    }
+    room.subHeadings.forEach((heading, j) => {
+      if (heading) {
+        watched.push({ el: heading, roomLi: room.roomLi, subLi: room.subLis[j] });
+      }
+    });
+  });
+
+  function setActive(entry) {
+    document.querySelectorAll('.chapter nav .nav-active').forEach((el) => {
+      el.classList.remove('nav-active');
+    });
+    entry.roomLi.classList.add('nav-active');
+    if (entry.subLi) entry.subLi.classList.add('nav-active');
+  }
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        const match = watched.find((w) => w.el === entry.target);
+        if (match) setActive(match);
+      });
+    },
+    { rootMargin: '-10% 0px -85% 0px', threshold: 0 }
+  );
+
+  watched.forEach((w) => observer.observe(w.el));
+})();
