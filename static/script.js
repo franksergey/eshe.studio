@@ -1,47 +1,3 @@
-(() => {
-  const container = document.querySelector('.chapter nav > div');
-  const list = container?.firstElementChild;
-  const nav = container?.closest('nav');
-  if (!container || !list || !nav) return;
-
-  let stickStartY = 0;
-  let maxTravel = 0;
-  let ticking = false;
-
-  function measure() {
-    const topOffset = parseFloat(getComputedStyle(container).top) || 0;
-    stickStartY = nav.offsetTop - topOffset;
-
-    const stickDuration = nav.offsetHeight - container.clientHeight;
-    const listOverflow = list.scrollHeight - container.clientHeight;
-    maxTravel = Math.max(0, Math.min(stickDuration, listOverflow));
-
-    update();
-  }
-
-  function update() {
-    ticking = false;
-    const progress = maxTravel <= 0
-      ? 0
-      : Math.min(Math.max(window.scrollY - stickStartY, 0), maxTravel);
-
-    list.style.transform = progress ? `translateY(${-progress}px)` : '';
-  }
-
-  function onScroll() {
-    if (!ticking) {
-      ticking = true;
-      requestAnimationFrame(update);
-    }
-  }
-
-  window.addEventListener('scroll', onScroll, { passive: true });
-  window.addEventListener('resize', measure);
-  new ResizeObserver(measure).observe(list);
-
-  measure();
-})();
-
 document.addEventListener('click', (event) => {
   const button = event.target.closest('.add-wishlist');
   if (!button) return;
@@ -288,8 +244,9 @@ document.addEventListener('submit', async (event) => {
 
 (() => {
   const navSectionUl = document.querySelector('.chapter nav ul.nav-section');
+  const navScrollBox = document.querySelector('.chapter nav > div');
   const content = document.querySelector('.chapter > section');
-  if (!navSectionUl || !content) return;
+  if (!navSectionUl || !navScrollBox || !content) return;
 
   const topLis = [...navSectionUl.children].filter((el) => el.tagName === 'LI');
   const rooms = [];
@@ -362,12 +319,24 @@ document.addEventListener('submit', async (event) => {
     });
   });
 
+  let activeRoomLi = null;
+
   function setActive(entry) {
     document.querySelectorAll('.chapter nav .nav-active').forEach((el) => {
       el.classList.remove('nav-active');
     });
     entry.roomLi.classList.add('nav-active');
     if (entry.subLi) entry.subLi.classList.add('nav-active');
+
+    if (entry.roomLi !== activeRoomLi) {
+      activeRoomLi = entry.roomLi;
+
+      const boxRect = navScrollBox.getBoundingClientRect();
+      const liRect = activeRoomLi.getBoundingClientRect();
+      const delta = liRect.top - boxRect.top;
+
+      navScrollBox.scrollTo({ top: navScrollBox.scrollTop + delta, behavior: 'smooth' });
+    }
   }
 
   const observer = new IntersectionObserver(

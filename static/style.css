@@ -37,7 +37,7 @@
   height: 2em;
 
   @media (max-width: 768px) {
-    height: 2em;    
+    height: 3em;    
   }
 }
 
@@ -234,8 +234,6 @@ button {
     }
 
     & ul{
-      will-change: transform;
-
       @media (max-width: 768px) {
         display: flex;
         flex-direction: row;
@@ -274,8 +272,13 @@ button {
     }
 
     & .nav-active {
+      border-radius: 0.4em;
       color: rgba(var(--link-color-RGB),1);
       background-color: rgba(var(--product-hover-color-RGB),0.3);
+      
+      @media (max-width: 768px) {
+        border-radius: 2em;
+      }
     }
 
 
@@ -287,6 +290,10 @@ button {
         white-space: nowrap;
       }
 
+    }
+
+    & .nav-subsection {
+      padding: 0 0 0 1em;
     }
 
     & a {
@@ -490,6 +497,21 @@ header {
 
   & li.product-select .add-wishlist:hover::after {
     content: 'Убрать';
+  }
+
+  & li.product-done .add-wishlist {
+    background: rgba(var(--product-done-color-RGB), 1);
+    cursor: default;
+    pointer-events: none;
+  }
+
+  & li.product-done .add-wishlist svg {
+    display: none;
+  }
+
+  & li.product-done .add-wishlist::after {
+    content: 'Утверждено';
+    padding: 0 0.8em;
   }
 
   & .comments {

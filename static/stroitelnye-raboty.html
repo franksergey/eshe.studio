@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html   lang="ru">
+    <head>
+        <title>ТК — Мохавая 21-23</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width," initial-scale="1.0">
+
+        <!-- conect-file -->
+        <link href="style.css" rel="stylesheet" type="text/css" />
+        <script src="script.js" defer></script>
+    </head>
+
+    <body>
+        <svg style="display: none" aria-hidden="true">
+            <symbol id="icon-add-wishlist" viewBox="0 0 508 506">
+                <rect id="background" x="2" width="506" height="506" rx="253" fill="currentColor"/>
+                <path id="plas" d="M267 241H405V266H267V403H242V266H105V241H242V103H267V241Z" fill="black"/>
+            </symbol>
+
+            <symbol id="icon-buttom-comments" viewBox="0 0 24 24">
+                <rect id="background" x="0" width="24" height="24" rx="253" fill="white"/>
+                <path id="мessage"
+                    transform="translate(12 12) scale(0.8) translate(-12 -12)"
+                    d="M2.00049 7C2.00049 5.325 3.32549 4 5.00049 4H19.0005C20.6755 4 22.0005 5.325 22.0005 7V17C22.0005 18.675 20.6755 20 19.0005 20H6.80049L2.00049 24V7ZM8.00049 10.875V9.075H16.0005V10.875H8.00049ZM8.00049 14.875V13.075H14.0005V14.875H8.00049ZM3.87549 20.075L6.12549 18.175H19.0005C19.6255 18.175 20.1255 17.65 20.1255 17V7C20.1255 6.35 19.6255 5.825 19.0005 5.825H5.00049C4.37549 5.825 3.87549 6.35 3.87549 7V20.075Z"/>
+            </symbol>
+
+            <symbol id="icon-send-comment" viewBox="0 0 508 506">
+                <rect id="background" x="2" width="506" height="506" rx="253" fill="white"/>
+                <path id="arrow" d="M209 163L299 253L209 343" stroke="black" stroke-width="40" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+            </symbol>
+        </svg>
+
+        <div class="vertical-space XL"></div>
+        <header>
+            <p>Мохавая 21-23</p>
+            <div class="vertical-space S"></div>
+            <h1>Таблица комплектации</h1>
+            <div class="vertical-space S"></div>
+            <p class="text-width">Таблица, как маркетплейс выбираешь что нравится
+                и видишь сколько это будет стоить. Так же можно увидеть, что уже утверждено
+                или оставить комментарий</p>
+            <div class="vertical-space M"></div>
+
+            <div class="link-group">
+                <a href="index.html">Мебель</a><a href="santehnika.html">Сантехника</a><a href="tehnika.html">Техника</a><a href="osveshenie.html">Освещение</a><a href="otdelka.html">Отделка</a>
+                <a href="inzhenernoe-oborudovanie.html">Инженерное оборудование</a><a href="stroitelnye-raboty.html" class="active">Строительные работы</a><a href="aksessuary.html">Аксессуары</a>
+            </div>
+        </header>
+
+        <div class="vertical-space L"></div>
+
+        <section class="chapter"> <!-- Раздел -->
+            <nav>
+                <div>
+                    <ul class="nav-section">
+                        <li class="nav-active"><a href="#">Текст</a></li>
+                        <li>
+                            <ul class="nav-subsection">
+                                <li class="nav-active">
+                                    <a href="#">Текст</a>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <section> <!-- Контент -->
+                <h3>Текст</h3>
+                <h4>Текст</h4> <!-- Подраздел -->
+
+                <article class="product-grid"> <!-- Сетка товаров -->
+                    <ul>
+                        <li data-item-id="1">
+                            <div>
+                                <img src="media/konsol_s_yashhikami_08-scaled.jpg">
+                                <button type="button" class="add-wishlist">
+                                    <svg class="icon" aria-hidden="true"><use href="#icon-add-wishlist"></use></svg>
+                                </button>
+                                <div class="comments">
+                                    <div class="comments-list">
+                                    </div>
+                                    <form class="comments-form">
+                                        <button type="button" class="comments-toggle" aria-label="Комментарий">
+                                            <svg class="icon" aria-hidden="true"><use href="#icon-buttom-comments"></use></svg>
+                                        </button>
+                                        <textarea name="comment" placeholder="Комментарий" rows="1" autocomplete="off"></textarea>
+                                        <button type="submit" class="comments-send" aria-label="Отправить комментарий">
+                                            <svg class="icon" aria-hidden="true"><use href="#icon-send-comment"></use></svg>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+
+                            <hgroup>
+                                <a href="https://factuure.ru/product/konsol-s-yashhikami/" target="_blank">Консоль с ящиками ↗</a>
+
+                                <div class="price">
+                                    <p class="price-row"><span class="price">В наличии</span> · <span class="quantity">1 шт</span></p>
+                                </div>
+                            </hgroup>
+                        </li>
+                    </ul>
+                </article>
+            </section>
+
+            <aside class="cart-panel"> <!-- Карзина -->
+                <div style="height: 90%;">
+                    <p>Утверждено</p>
+                    <ul class="cart-items-approved">
+                       <li>
+                            <a>Трюмо винтаж Art-deco</a>
+                            <p><span class="price">15.000 ₽</span> · 1 шт</p>
+                        </li>
+                    </ul>
+
+                    <div class="vertical-space S"></div>
+
+                    <p>Выбрано</p>
+                    <ul class="cart-items-done">
+                        <li>
+                            <div>
+                                <a>Винтажное трюмо, Чехословакия</a>
+                                <p><span class="price">40.000 ₽</span> · 1 шт</p>
+                            </div>
+                            <button>Убрать</button>
+                        </li>
+                    </ul>
+
+                    <div class="vertical-space M"></div>
+                </div>
+
+
+                <div class="cart-buttom">
+                    <p>Утверждено <span>40.000 ₽</span></p>
+                    <p>Выбрано <span>40.000 ₽</span></p>
+                    <p class="total">Итого <span>80.000 ₽</span></p>
+                </div>
+            </aside>
+        </section>
+
+        <div class="vertical-space XL"></div>
+    </body>
+</html>
