@@ -260,6 +260,7 @@ document.addEventListener('submit', async (event) => {
 
     if (subUl) {
       room.subWrapperLi = next;
+      room.subUl = subUl;
       room.subLis = [...subUl.children].filter((el) => el.tagName === 'LI');
     }
 
@@ -310,11 +311,11 @@ document.addEventListener('submit', async (event) => {
   const watched = [];
   rooms.forEach((room) => {
     if (room.heading) {
-      watched.push({ el: room.heading, roomLi: room.roomLi, subLi: null });
+      watched.push({ el: room.heading, roomLi: room.roomLi, subLi: null, room });
     }
     room.subHeadings.forEach((heading, j) => {
       if (heading) {
-        watched.push({ el: heading, roomLi: room.roomLi, subLi: room.subLis[j] });
+        watched.push({ el: heading, roomLi: room.roomLi, subLi: room.subLis[j], room });
       }
     });
   });
