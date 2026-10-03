@@ -267,6 +267,30 @@ document.addEventListener('submit', async (event) => {
     rooms.push(room);
   });
 
+  // Мобилка: переносим ul.nav-subsection в общую вторую строку (.nav-subsection-row),
+  // чтобы она скроллилась независимо от строки разделов. Перенос — разовый
+  // (при загрузке и при пересечении брейкпоинта), а не на каждый тик скролла —
+  // какой из списков сейчас виден, решает чистый CSS через .nav-active.
+  const subsectionRow = document.querySelector('.chapter nav > .nav-subsection-row');
+  const mobileQuery = window.matchMedia('(max-width: 768px)');
+
+  function placeSubsections(isMobile) {
+    if (!subsectionRow) return;
+
+    rooms.forEach((room) => {
+      if (!room.subUl) return;
+
+      if (isMobile) {
+        subsectionRow.appendChild(room.subUl);
+      } else if (room.subWrapperLi) {
+        room.subWrapperLi.appendChild(room.subUl);
+      }
+    });
+  }
+
+  placeSubsections(mobileQuery.matches);
+  mobileQuery.addEventListener('change', (event) => placeSubsections(event.matches));
+
   const headings = [...content.querySelectorAll('h3')];
 
   rooms.forEach((room) => {
@@ -320,7 +344,18 @@ document.addEventListener('submit', async (event) => {
     });
   });
 
+  // На мобилке строки разделов/подразделов скроллятся по горизонтали —
+  // держим активный пункт по центру видимой области его собственного ряда.
+  function centerHorizontally(container, el) {
+    const containerRect = container.getBoundingClientRect();
+    const elRect = el.getBoundingClientRect();
+    const delta = (elRect.left + elRect.width / 2) - (containerRect.left + containerRect.width / 2);
+
+    container.scrollTo({ left: container.scrollLeft + delta, behavior: 'smooth' });
+  }
+
   let activeRoomLi = null;
+  let activeSubLi = null;
 
   function setActive(entry) {
     document.querySelectorAll('.chapter nav .nav-active').forEach((el) => {
@@ -337,6 +372,14 @@ document.addEventListener('submit', async (event) => {
       const delta = liRect.top - boxRect.top;
 
       navScrollBox.scrollTo({ top: navScrollBox.scrollTop + delta, behavior: 'smooth' });
+
+      if (mobileQuery.matches) centerHorizontally(navScrollBox, activeRoomLi);
+    }
+
+    if (entry.subLi && entry.subLi !== activeSubLi) {
+      activeSubLi = entry.subLi;
+
+      if (mobileQuery.matches && subsectionRow) centerHorizontally(subsectionRow, activeSubLi);
     }
   }
 

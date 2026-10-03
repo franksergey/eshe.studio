@@ -229,6 +229,12 @@ button {
       @media (max-width: 768px) {
         overflow-x: auto;
         overflow-y: hidden;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+
+        &::-webkit-scrollbar {
+          display: none;
+        }
       }
       /* padding: 0 2em 0 1em; */
     }
@@ -238,13 +244,45 @@ button {
         display: flex;
         flex-direction: row;
         padding: 0 1em 1em;
+        width: fit-content;
+        font-size: 1.2em;
       }
     }
 
-    /* на мобилке подразделы вообще не показываем — только строка разделов */
+    /* "родной" <li> с подразделом на мобилке всегда скрыт — после переноса
+       JS-ом (см. script.js) он пустой; а если JS не выполнился — не показываем
+       как есть, это фоллбэк */
     & ul.nav-section > li:has(> ul.nav-subsection) {
       @media (max-width: 768px) {
         display: none;
+      }
+    }
+
+    /* мобилка: вторая строка — подразделы активного раздела, перенесённые
+       сюда JS-ом; свой overflow-x, поэтому скроллится независимо от разделов */
+    & .nav-subsection-row {
+      display: none;
+
+      @media (max-width: 768px) {
+        display: block;
+        /* overflow-x/overflow-y и скрытие скроллбара уже унаследованы от "& div"
+           выше (.nav-subsection-row — тоже <div>) — тут только то, что отличается:
+           обнуляем sticky/max-height, иначе вторая строка попытается прилипнуть
+           на тот же top, что и первая, и окажется скрыта под ней */
+        position: static;
+        max-height: none;
+      }
+
+      & ul.nav-subsection {
+        @media (max-width: 768px) {
+          display: none;
+        }
+      }
+
+      & ul.nav-subsection:has(li.nav-active) {
+        @media (max-width: 768px) {
+          display: flex;
+        }
       }
     }
 
@@ -273,7 +311,14 @@ button {
       padding: 0 0 0 1em;
 
       @media (max-width: 768px) {
-        padding: 0;
+        padding: 0 1em 1em;
+      }
+    }
+
+    & .nav-section {
+
+      @media (max-width: 768px) {
+        font-weight: 500;
       }
     }
 
@@ -292,6 +337,7 @@ button {
 
       @media (max-width: 768px) {
         border-radius: 1em;
+        color: rgba(var(--text-color-RGB), 1);
       }
     }
 
