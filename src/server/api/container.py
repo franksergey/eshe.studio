@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Protocol
 
-from server.domain.specification import SpecificationService
+from server.domain.projects.service import SpecificationService
 from server.sql.repos import SpecificationRepo
 
 if TYPE_CHECKING:
