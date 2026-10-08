@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 
 from server.api.dependencies import ContainerDependency
-from server.api.errors import SpecificationNotFoundError, error_handler
+from server.api.errors import ProjectNotFoundError, error_handler
 from server.domain.projects.schemas import Comment, CommentCreate
 
 router = APIRouter(prefix="/items", tags=["Specification Items"])
@@ -10,9 +10,7 @@ router = APIRouter(prefix="/items", tags=["Specification Items"])
 @router.get(
     "/{item_id}/comments",
     responses={
-        404: error_handler.generate_swagger_response(
-            SpecificationNotFoundError
-        )
+        404: error_handler.generate_swagger_response(ProjectNotFoundError)
     },
 )
 async def read_comment(
@@ -25,9 +23,7 @@ async def read_comment(
 @router.post(
     "/{item_id}/comments",
     responses={
-        404: error_handler.generate_swagger_response(
-            SpecificationNotFoundError
-        )
+        404: error_handler.generate_swagger_response(ProjectNotFoundError)
     },
     status_code=201,
 )

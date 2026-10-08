@@ -4,7 +4,7 @@ from pydantic import HttpUrl
 from sqlalchemy import exists, select
 from sqlalchemy.orm import lazyload, load_only, selectinload
 
-from server.domain.projects.ports import AbstractSpecificationRepo
+from server.domain.projects.ports import AbstractProjectsRepo
 from server.domain.projects.schemas import (
     Category,
     Comment,
@@ -12,9 +12,9 @@ from server.domain.projects.schemas import (
     CurrencyCode,
     Item,
     MoneyType,
+    Project,
+    ProjectPure,
     Room,
-    Specification,
-    SpecificationPure,
 )
 from server.sql.models import (
     CategoryDB,
@@ -28,7 +28,7 @@ if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession
 
 
-class SpecificationRepo(AbstractSpecificationRepo):
+class ProjectsRepo(AbstractProjectsRepo):
     session: AsyncSession
 
     def __init__(self, session: AsyncSession) -> None:
@@ -81,19 +81,19 @@ class SpecificationRepo(AbstractSpecificationRepo):
         )
 
     @classmethod
-    def _to_domain_schema(cls, obj: SpecificationDB) -> Specification:
-        return Specification(
+    def _to_domain_schema(cls, obj: SpecificationDB) -> Project:
+        return Project(
             id=obj.id,
             name=obj.name,
             rooms=[cls._validate_room(room) for room in obj.rooms],
         )
 
     @staticmethod
-    def _to_domain_schema_pure(obj: SpecificationDB) -> SpecificationPure:
-        return SpecificationPure(id=obj.id, name=obj.name)
+    def _to_domain_schema_pure(obj: SpecificationDB) -> ProjectPure:
+        return ProjectPure(id=obj.id, name=obj.name)
 
     @override
-    async def get(self, id: int) -> Specification | None:
+    async def get(self, id: int) -> Project | None:
         stmt = select(SpecificationDB).where(SpecificationDB.id == id)
         obj = await self.session.scalar(stmt)
 
@@ -105,7 +105,7 @@ class SpecificationRepo(AbstractSpecificationRepo):
     GET_ALL_STMT = select(SpecificationDB)
 
     @override
-    async def get_all(self) -> list[Specification]:
+    async def get_all(self) -> list[Project]:
         objs = (await self.session.scalars(self.GET_ALL_STMT)).all()
 
         return [self._to_domain_schema(obj) for obj in objs]
@@ -115,7 +115,7 @@ class SpecificationRepo(AbstractSpecificationRepo):
     )
 
     @override
-    async def get_all_pure(self) -> list[SpecificationPure]:
+    async def get_all_pure(self) -> list[ProjectPure]:
         objs = (await self.session.scalars(self.GET_ALL_PURE_STMT)).all()
 
         return [self._to_domain_schema_pure(obj) for obj in objs]

@@ -3,8 +3,8 @@ from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Protocol
 
-from server.domain.projects.service import SpecificationService
-from server.sql.repos import SpecificationRepo
+from server.domain.projects.service import ProjectsService
+from server.sql.repos import ProjectsRepo
 
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator, Callable
@@ -16,13 +16,13 @@ if TYPE_CHECKING:
 @dataclass(eq=False, slots=True)
 class ServiceContainer:
     session: AsyncSession
-    _specification_service: SpecificationService | None = None
+    _specification_service: ProjectsService | None = None
 
     @property
-    def specifications(self) -> SpecificationService:
+    def specifications(self) -> ProjectsService:
         if self._specification_service is None:
-            repo = SpecificationRepo(self.session)
-            self._specification_service = SpecificationService(repo)
+            repo = ProjectsRepo(self.session)
+            self._specification_service = ProjectsService(repo)
 
         return self._specification_service
 

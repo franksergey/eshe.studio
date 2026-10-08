@@ -1,18 +1,13 @@
 from typing import TYPE_CHECKING, Protocol
 
 if TYPE_CHECKING:
-    from .schemas import (
-        Comment,
-        CommentCreate,
-        Specification,
-        SpecificationPure,
-    )
+    from .schemas import Comment, CommentCreate, Project, ProjectPure
 
 
-class AbstractSpecificationRepo(Protocol):
-    async def get(self, id: int) -> Specification | None: ...
-    async def get_all(self) -> list[Specification]: ...
-    async def get_all_pure(self) -> list[SpecificationPure]: ...
+class AbstractProjectsRepo(Protocol):
+    async def get(self, id: int) -> Project | None: ...
+    async def get_all(self) -> list[Project]: ...
+    async def get_all_pure(self) -> list[ProjectPure]: ...
     async def check_item_exists(self, item_id: int) -> bool: ...
     async def get_item_comments(
         self, item_id: int
