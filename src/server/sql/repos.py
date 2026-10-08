@@ -4,8 +4,8 @@ from pydantic import HttpUrl
 from sqlalchemy import exists, select
 from sqlalchemy.orm import lazyload, load_only, selectinload
 
-from server.services.ports import AbstractSpecificationRepo
-from server.services.schemas import (
+from server.domain.ports import AbstractSpecificationRepo
+from server.domain.schemas import (
     Category,
     Comment,
     CommentCreate,

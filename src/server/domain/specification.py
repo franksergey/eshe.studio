@@ -4,8 +4,8 @@ from typing import TYPE_CHECKING
 from server.api.errors import ItemNotFoundError, SpecificationNotFoundError
 
 if TYPE_CHECKING:
-    from server.services.ports import AbstractSpecificationRepo
-    from server.services.schemas import (
+    from .ports import AbstractSpecificationRepo
+    from .schemas import (
         Comment,
         CommentCreate,
         Specification,

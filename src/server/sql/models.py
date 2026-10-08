@@ -14,7 +14,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 from server.config import settings
-from server.services.schemas import CurrencyCode
+from server.domain.schemas import CurrencyCode
 from server.sql.mixins import CreatedAtMixin
 
 

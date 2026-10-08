@@ -2,7 +2,7 @@ from fastapi import APIRouter
 
 from server.api.dependencies import ContainerDependency
 from server.api.errors import SpecificationNotFoundError, error_handler
-from server.services.schemas import Specification, SpecificationPure
+from server.domain.schemas import Specification, SpecificationPure
 
 router = APIRouter(prefix="/specifications", tags=["Rooms Specifications"])
 

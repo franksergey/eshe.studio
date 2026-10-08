@@ -1,13 +1,12 @@
 from typing import TYPE_CHECKING, Protocol
 
 if TYPE_CHECKING:
-    from server.services.schemas import (
+    from .schemas import (
         Comment,
         CommentCreate,
+        Specification,
         SpecificationPure,
     )
-
-    from .schemas import Specification
 
 
 class AbstractSpecificationRepo(Protocol):
