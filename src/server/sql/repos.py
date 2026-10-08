@@ -16,13 +16,7 @@ from server.domain.projects.schemas import (
     ProjectPure,
     Room,
 )
-from server.sql.models import (
-    CategoryDB,
-    CommentDB,
-    ItemDB,
-    RoomDB,
-    SpecificationDB,
-)
+from server.sql.models import CategoryDB, CommentDB, ItemDB, ProjectDB, RoomDB
 
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession
@@ -81,7 +75,7 @@ class ProjectsRepo(AbstractProjectsRepo):
         )
 
     @classmethod
-    def _to_domain_schema(cls, obj: SpecificationDB) -> Project:
+    def _to_domain_schema(cls, obj: ProjectDB) -> Project:
         return Project(
             id=obj.id,
             name=obj.name,
@@ -89,12 +83,12 @@ class ProjectsRepo(AbstractProjectsRepo):
         )
 
     @staticmethod
-    def _to_domain_schema_pure(obj: SpecificationDB) -> ProjectPure:
+    def _to_domain_schema_pure(obj: ProjectDB) -> ProjectPure:
         return ProjectPure(id=obj.id, name=obj.name)
 
     @override
     async def get(self, id: int) -> Project | None:
-        stmt = select(SpecificationDB).where(SpecificationDB.id == id)
+        stmt = select(ProjectDB).where(ProjectDB.id == id)
         obj = await self.session.scalar(stmt)
 
         if obj is None:
@@ -102,7 +96,7 @@ class ProjectsRepo(AbstractProjectsRepo):
 
         return self._to_domain_schema(obj)
 
-    GET_ALL_STMT = select(SpecificationDB)
+    GET_ALL_STMT = select(ProjectDB)
 
     @override
     async def get_all(self) -> list[Project]:
@@ -110,9 +104,7 @@ class ProjectsRepo(AbstractProjectsRepo):
 
         return [self._to_domain_schema(obj) for obj in objs]
 
-    GET_ALL_PURE_STMT = select(SpecificationDB).options(
-        lazyload(SpecificationDB.rooms)
-    )
+    GET_ALL_PURE_STMT = select(ProjectDB).options(lazyload(ProjectDB.rooms))
 
     @override
     async def get_all_pure(self) -> list[ProjectPure]:

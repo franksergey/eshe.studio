@@ -78,7 +78,7 @@ class ItemDB(Base):
 
     id: Mapped[int] = mapped_column(IDENTITY, primary_key=True)
     category_id: Mapped[int] = mapped_column(
-        ForeignKey("specification_items_categories.id", ondelete="CASCADE")
+        ForeignKey("specification_item_categories.id", ondelete="CASCADE")
     )
     ordinal_no: Mapped[int] = mapped_column()
 
@@ -123,7 +123,7 @@ class ItemDB(Base):
 class CategoryDB(Base):
     """Категория предметов в таблице комплектации."""
 
-    __tablename__ = "specification_items_categories"
+    __tablename__ = "specification_item_categories"
 
     id: Mapped[int] = mapped_column(IDENTITY, primary_key=True)
     room_id: Mapped[int] = mapped_column(
@@ -151,7 +151,7 @@ class RoomDB(Base):
 
     id: Mapped[int] = mapped_column(IDENTITY, primary_key=True)
     specification_id: Mapped[int] = mapped_column(
-        ForeignKey("specifications.id", ondelete="CASCADE")
+        ForeignKey("projects.id", ondelete="CASCADE")
     )
 
     name: Mapped[str] = mapped_column(String(256))
@@ -165,15 +165,13 @@ class RoomDB(Base):
         lazy="joined",
         order_by=CategoryDB.ordinal_no,
     )
-    specification: Mapped[SpecificationDB] = relationship(
-        back_populates="rooms"
-    )
+    project: Mapped[ProjectDB] = relationship(back_populates="rooms")
 
 
-class SpecificationDB(Base):
+class ProjectDB(Base):
     """Таблица комплектации."""
 
-    __tablename__ = "specifications"
+    __tablename__ = "projects"
 
     id: Mapped[int] = mapped_column(IDENTITY, primary_key=True)
 
@@ -182,7 +180,7 @@ class SpecificationDB(Base):
 
     # Relations
     rooms: Mapped[list[RoomDB]] = relationship(
-        back_populates="specification",
+        back_populates="project",
         cascade="all, delete, delete-orphan",
         passive_deletes=True,
         lazy="joined",
