@@ -38,3 +38,6 @@ loggers:
     level: INFO
   alembic.runtime.plugins:
     level: WARNING
+  sqlalchemy.engine.Engine:
+    handlers: [default]
+    propagate: false
