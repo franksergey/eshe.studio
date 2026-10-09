@@ -50,7 +50,7 @@ class DatabaseConfig(BaseModel):
     DATABASE: str | None = DATA_FOLDER_SENTIEL
     DATAFOLDER: Path | None = None
 
-    ECHO: bool = False
+    ECHO: bool | Literal["debug"] = False
     CHECKSCHEMA: bool = True
     UPGRADEIFEMPTY: bool = True
 
