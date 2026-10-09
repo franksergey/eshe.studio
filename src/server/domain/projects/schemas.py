@@ -42,7 +42,7 @@ class ProjectPure(ProjectBase):
 class Project(ProjectPure):
     """Таблица комплектации."""
 
-    rooms: Annotated[list[Room], Field(max_length=64)]
+    categories: Annotated[list[Category], Field(max_length=64)]
 
 
 class CurrencyCode(StrEnum):
@@ -92,7 +92,7 @@ class Item(BaseModel):
     )
 
 
-class Category(BaseModel):
+class OldCategory(BaseModel):
     """Категория предметов в таблице комплектации."""
 
     name: Annotated[str, Field(min_length=1, max_length=1024)]
@@ -105,6 +105,17 @@ class Room(BaseModel):
     """Комната, для которой выбираются предметы в таблице комплектации."""
 
     name: Annotated[str, Field(min_length=1, max_length=256)]
-    categories: Annotated[list[Category], Field(min_length=1, max_length=64)]
+    categories: Annotated[
+        list[OldCategory], Field(min_length=1, max_length=64)
+    ]
+
+    model_config = ConfigDict(from_attributes=True, serialize_by_alias=True)
+
+
+class Category(BaseModel):
+    """Категория карточек в таблице комплектации."""
+
+    name: str
+    rooms: list[Room]
 
     model_config = ConfigDict(from_attributes=True, serialize_by_alias=True)

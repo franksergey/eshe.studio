@@ -12,11 +12,13 @@ from server.domain.projects.schemas import (
     CurrencyCode,
     Item,
     MoneyType,
+    OldCategory,
     Project,
     ProjectPure,
     Room,
 )
 from server.sql.models import (
+    CategoryDB,
     CommentDB,
     ItemDB,
     OldCategoryDB,
@@ -65,8 +67,8 @@ class ProjectsRepo(AbstractProjectsRepo):
         )
 
     @classmethod
-    def _validate_category(cls, obj: OldCategoryDB) -> Category:
-        return Category(
+    def _validate_old_category(cls, obj: OldCategoryDB) -> OldCategory:
+        return OldCategory(
             name=obj.name,
             items=[cls._validate_item(item) for item in obj.items],
         )
@@ -76,8 +78,16 @@ class ProjectsRepo(AbstractProjectsRepo):
         return Room(
             name=obj.name,
             categories=[
-                cls._validate_category(category) for category in obj.categories
+                cls._validate_old_category(category)
+                for category in obj.categories
             ],
+        )
+
+    @classmethod
+    def _validate_category(cls, obj: CategoryDB) -> Category:
+        return Category(
+            name=obj.name,
+            rooms=[cls._validate_room(room) for room in obj.rooms],
         )
 
     @classmethod
@@ -85,7 +95,9 @@ class ProjectsRepo(AbstractProjectsRepo):
         return Project(
             id=obj.id,
             name=obj.name,
-            rooms=[cls._validate_room(room) for room in obj.rooms],
+            categories=[
+                cls._validate_category(category) for category in obj.categories
+            ],
         )
 
     @staticmethod
@@ -110,7 +122,9 @@ class ProjectsRepo(AbstractProjectsRepo):
 
         return [self._to_domain_schema(obj) for obj in objs]
 
-    GET_ALL_PURE_STMT = select(ProjectDB).options(lazyload(ProjectDB.rooms))
+    GET_ALL_PURE_STMT = select(ProjectDB).options(
+        lazyload(ProjectDB.categories)
+    )
 
     @override
     async def get_all_pure(self) -> list[ProjectPure]:
