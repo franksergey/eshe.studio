@@ -16,13 +16,13 @@ from server.config import settings
 from server.sql.database import Database
 
 from . import cors_configuration
-from .container import container_getter
 from .errors import error_handler
 
 if TYPE_CHECKING:
-    from collections.abc import AsyncGenerator
+    from collections.abc import AsyncGenerator, Callable
 
-    from .container import ContainerGetter
+    from sqlalchemy.ext.asyncio import AsyncSession
+
 
 logger = logging.getLogger(__name__)
 
@@ -95,7 +95,7 @@ def setup_exception_handlers(app: FastAPI) -> None:
 
 
 class AppInitialState(TypedDict):
-    get_container: ContainerGetter
+    get_session: Callable[[], AsyncSession]
 
 
 @asynccontextmanager
@@ -103,9 +103,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[AppInitialState]:
     async with Database(
         db_url=settings.db.database_url, echo=settings.db.ECHO
     ) as database:
-        get_container = container_getter(database.get_session)
-
         logger.info("Сервер полностью настроен и готов к началу работы.")
-        yield {"get_container": get_container}
+        yield {"get_session": database.get_session}
 
         logger.info("Сервер останавливает свою работу...")

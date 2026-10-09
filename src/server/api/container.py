@@ -1,15 +1,10 @@
-import asyncio
-from contextlib import asynccontextmanager
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Protocol
+from typing import TYPE_CHECKING
 
 from server.domain.projects.service import ProjectsService
 from server.sql.repos import ProjectsRepo
 
 if TYPE_CHECKING:
-    from collections.abc import AsyncGenerator, Callable
-    from contextlib import AbstractAsyncContextManager
-
     from sqlalchemy.ext.asyncio import AsyncSession
 
 
@@ -25,25 +20,3 @@ class ServiceContainer:
             self._specification_service = ProjectsService(repo)
 
         return self._specification_service
-
-
-class ContainerGetter(Protocol):
-    def __call__(self) -> AbstractAsyncContextManager[ServiceContainer]:
-        raise NotImplementedError
-
-
-def container_getter(
-    sessionmaker: Callable[[], AsyncSession],
-) -> ContainerGetter:
-    @asynccontextmanager
-    async def get_container() -> AsyncGenerator[ServiceContainer]:
-        async with sessionmaker() as session:
-            try:
-                yield ServiceContainer(session)
-            except:
-                await asyncio.shield(session.rollback())
-                raise
-            else:
-                await asyncio.shield(session.commit())
-
-    return get_container
