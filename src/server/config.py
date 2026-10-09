@@ -148,6 +148,8 @@ class AppSettings(BaseSettings):
 
     HOST: str = "0.0.0.0"  # noqa: S104
     PORT: int = 8000
+    SECRET: SecretStr | None = None
+    SECRETFILE: FilePath | None = None
     RELOAD: bool = False
     STATICFILES: DirectoryPath = Path("./static")
     GRACEFULSHUTDOWNTIMEOUT: int = 10
@@ -156,6 +158,17 @@ class AppSettings(BaseSettings):
     PYPROJECT: FilePath = Path.cwd() / "pyproject.toml"
 
     db: DatabaseConfig = DatabaseConfig()
+
+    @cached_property
+    def secret(self) -> SecretStr:
+        if self.SECRET is not None:
+            return self.SECRET
+
+        if self.SECRETFILE is None:
+            msg = "At least $APP_SECRET or $APP_SECRETFILE must be set"
+            raise ValueError(msg)
+
+        return SecretStr(self.SECRETFILE.read_text().strip())
 
     model_config = SettingsConfigDict(
         env_file=".env",

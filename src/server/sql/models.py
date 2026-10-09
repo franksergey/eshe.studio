@@ -199,5 +199,5 @@ class ProjectDB(Base):
 # ============
 
 
-class User(SQLAlchemyBaseUserTableUUID, Base):
+class UserDB(SQLAlchemyBaseUserTableUUID, Base):
     __tablename__ = "users"
