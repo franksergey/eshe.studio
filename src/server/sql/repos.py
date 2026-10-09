@@ -16,7 +16,13 @@ from server.domain.projects.schemas import (
     ProjectPure,
     Room,
 )
-from server.sql.models import CategoryDB, CommentDB, ItemDB, ProjectDB, RoomDB
+from server.sql.models import (
+    CommentDB,
+    ItemDB,
+    OldCategoryDB,
+    ProjectDB,
+    RoomDB,
+)
 
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession
@@ -59,7 +65,7 @@ class ProjectsRepo(AbstractProjectsRepo):
         )
 
     @classmethod
-    def _validate_category(cls, obj: CategoryDB) -> Category:
+    def _validate_category(cls, obj: OldCategoryDB) -> Category:
         return Category(
             name=obj.name,
             items=[cls._validate_item(item) for item in obj.items],

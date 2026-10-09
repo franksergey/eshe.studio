@@ -108,7 +108,7 @@ class ItemDB(Base):
         passive_deletes=True,
         lazy="joined",
     )
-    category: Mapped[CategoryDB] = relationship(back_populates="items")
+    category: Mapped[OldCategoryDB] = relationship(back_populates="items")
 
     # Constraints
     __table_args__ = (
@@ -120,7 +120,7 @@ class ItemDB(Base):
     )
 
 
-class CategoryDB(Base):
+class OldCategoryDB(Base):
     """Категория предметов в таблице комплектации."""
 
     __tablename__ = "specification_item_categories"
@@ -150,7 +150,31 @@ class RoomDB(Base):
     __tablename__ = "specification_rooms"
 
     id: Mapped[int] = mapped_column(IDENTITY, primary_key=True)
-    specification_id: Mapped[int] = mapped_column(
+    category_id: Mapped[int] = mapped_column(
+        ForeignKey("project_spec_categories.id", ondelete="CASCADE")
+    )
+
+    name: Mapped[str] = mapped_column(String(256))
+    ordinal_no: Mapped[int] = mapped_column()
+
+    # Relations
+    categories: Mapped[list[OldCategoryDB]] = relationship(
+        back_populates="room",
+        cascade="all, delete, delete-orphan",
+        passive_deletes=True,
+        lazy="joined",
+        order_by=OldCategoryDB.ordinal_no,
+    )
+    category: Mapped[CategoryDB] = relationship(back_populates="rooms")
+
+
+class CategoryDB(Base):
+    """Категория карточек в таблице комплектации."""
+
+    __tablename__ = "project_spec_categories"
+
+    id: Mapped[int] = mapped_column(IDENTITY, primary_key=True)
+    project_id: Mapped[int] = mapped_column(
         ForeignKey("projects.id", ondelete="CASCADE")
     )
 
@@ -158,18 +182,18 @@ class RoomDB(Base):
     ordinal_no: Mapped[int] = mapped_column()
 
     # Relations
-    categories: Mapped[list[CategoryDB]] = relationship(
-        back_populates="room",
+    rooms: Mapped[list[RoomDB]] = relationship(
+        back_populates="category",
         cascade="all, delete, delete-orphan",
         passive_deletes=True,
         lazy="joined",
-        order_by=CategoryDB.ordinal_no,
+        order_by=RoomDB.ordinal_no,
     )
-    project: Mapped[ProjectDB] = relationship(back_populates="rooms")
+    project: Mapped[ProjectDB] = relationship(back_populates="categories")
 
 
 class ProjectDB(Base):
-    """Таблица комплектации."""
+    """Архитектурный проект."""
 
     __tablename__ = "projects"
 
@@ -179,10 +203,10 @@ class ProjectDB(Base):
     name: Mapped[str] = mapped_column(String(256))
 
     # Relations
-    rooms: Mapped[list[RoomDB]] = relationship(
+    categories: Mapped[list[CategoryDB]] = relationship(
         back_populates="project",
         cascade="all, delete, delete-orphan",
         passive_deletes=True,
         lazy="joined",
-        order_by=RoomDB.ordinal_no,
+        order_by=CategoryDB.ordinal_no,
     )
