@@ -156,6 +156,7 @@ class AppSettings(BaseSettings):
     LOGGINGFORMAT: Literal["rich", "console", "structured"] = "console"
     DEBUG: bool = False
     PYPROJECT: FilePath = Path.cwd() / "pyproject.toml"
+    CREATEDEFAULTUSER: bool = True
 
     db: DatabaseConfig = DatabaseConfig()
 

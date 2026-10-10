@@ -21,7 +21,7 @@ if TYPE_CHECKING:
 @dataclass(eq=False, slots=True)
 class ServiceContainer:
     session: AsyncSession
-    request: Request
+    request: Request | None
 
     _specification_service: ProjectsService | None = None
 
@@ -64,7 +64,7 @@ class ServiceContainer:
 
 class ContainerGetter(Protocol):
     def __call__(
-        self, request: Request
+        self, request: Request | None = None
     ) -> AbstractAsyncContextManager[ServiceContainer]:
         raise NotImplementedError
 
@@ -74,7 +74,7 @@ def container_getter(
 ) -> ContainerGetter:
     @asynccontextmanager
     async def get_container(
-        request: Request,
+        request: Request | None = None,
     ) -> AsyncGenerator[ServiceContainer]:
         async with sessionmaker() as session:
             try:

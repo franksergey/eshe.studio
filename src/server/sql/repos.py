@@ -170,14 +170,14 @@ class ProjectsRepo(AbstractProjectsRepo):
 class UserDatabase(SQLAlchemyUserDatabase[UserDB, uuid.UUID]):
     async def users_table_empty(self) -> bool:
         stmt = select(select(self.user_table).exists())
-        return (await self.session.execute(stmt)).scalar_one()
+        return not (await self.session.execute(stmt)).scalar_one()
 
 
 @dataclass(eq=False, slots=True)
 class UsersRepo(AbstractUsersRepo):
     users_db: UserDatabase
     user_manager: UserManager
-    request: Request
+    request: Request | None
 
     @staticmethod
     def _to_domain_schema(user: UserDB) -> UserRead:
