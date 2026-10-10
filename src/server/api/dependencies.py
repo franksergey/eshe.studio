@@ -24,7 +24,7 @@ async def get_container(request: Request) -> AsyncGenerator[ServiceContainer]:
     """
     getter: ContainerGetter = request.state.get_container
 
-    async with getter() as container:
+    async with getter(request) as container:
         yield container
 
 

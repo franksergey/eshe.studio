@@ -1,11 +1,12 @@
-import uuid
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, cast, override
 
-from fastapi_users.db import SQLAlchemyUserDatabase
+from fastapi_users import exceptions
 from pydantic import HttpUrl
 from sqlalchemy import exists, select
 from sqlalchemy.orm import lazyload, load_only, selectinload
 
+from server.api.errors import UserAlreadyExistsError
 from server.domain.projects.ports import AbstractProjectsRepo
 from server.domain.projects.schemas import (
     Category,
@@ -18,6 +19,8 @@ from server.domain.projects.schemas import (
     ProjectPure,
     Room,
 )
+from server.domain.users.ports import AbstractUsersRepo
+from server.domain.users.schemas import UserRead
 from server.sql.models import (
     CategoryDB,
     CommentDB,
@@ -28,7 +31,14 @@ from server.sql.models import (
 )
 
 if TYPE_CHECKING:
+    import uuid
+
+    from fastapi import Request
+    from fastapi_users.db import SQLAlchemyUserDatabase
     from sqlalchemy.ext.asyncio import AsyncSession
+
+    from server.api.auth import UserManager
+    from server.domain.users.schemas import UserCreate, UserUpdate
 
 
 class ProjectsRepo(AbstractProjectsRepo):
@@ -158,5 +168,69 @@ class ProjectsRepo(AbstractProjectsRepo):
         return self._validate_comment(obj)
 
 
-class UsersRepo(SQLAlchemyUserDatabase[UserDB, uuid.UUID]):
-    pass
+@dataclass(eq=False, slots=True)
+class UsersRepo(AbstractUsersRepo):
+    users_db: SQLAlchemyUserDatabase[UserDB, uuid.UUID]
+    user_manager: UserManager
+    request: Request
+
+    @staticmethod
+    def _to_domain_schema(user: UserDB) -> UserRead:
+        return UserRead(
+            id=user.id,
+            email=user.email,
+            is_active=user.is_active,
+            is_superuser=user.is_superuser,
+            is_verified=user.is_verified,
+        )
+
+    async def get(self, id: uuid.UUID) -> UserRead | None:
+        user = await self.users_db.get(id)
+
+        if user is None:
+            return None
+
+        return self._to_domain_schema(user)
+
+    async def get_by_email(self, user_email: str) -> UserRead | None:
+        user = await self.users_db.get_by_email(user_email)
+
+        if user is None:
+            return None
+
+        return self._to_domain_schema(user)
+
+    async def create(
+        self, data: UserCreate, *, safe: bool = False
+    ) -> UserRead:
+        try:
+            return self._to_domain_schema(
+                await self.user_manager.create(
+                    data, safe=safe, request=self.request
+                )
+            )
+        except exceptions.UserAlreadyExists as exc:
+            raise UserAlreadyExistsError from exc
+
+    async def update(
+        self, user_email: str, data: UserUpdate, *, safe: bool = False
+    ) -> UserRead | None:
+        user = await self.users_db.get_by_email(user_email)
+
+        if user is None:
+            return None
+
+        return self._to_domain_schema(
+            await self.user_manager.update(
+                data, user, safe=safe, request=self.request
+            )
+        )
+
+    async def delete(self, user_email: str) -> UserRead | None:
+        user = await self.users_db.get_by_email(user_email)
+
+        if user is None:
+            return None
+
+        await self.user_manager.delete(user, self.request)
+        return self._to_domain_schema(user)

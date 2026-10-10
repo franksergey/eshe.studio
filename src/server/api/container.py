@@ -7,8 +7,9 @@ from typing import TYPE_CHECKING, Protocol
 from fastapi_users.db import SQLAlchemyUserDatabase
 
 from server.domain.projects.service import ProjectsService
+from server.domain.users.service import UsersService
 from server.sql.models import UserDB
-from server.sql.repos import ProjectsRepo
+from server.sql.repos import ProjectsRepo, UsersRepo
 
 from .auth import UserManager
 
@@ -16,12 +17,15 @@ if TYPE_CHECKING:
     from collections.abc import AsyncGenerator, Callable
     from contextlib import AbstractAsyncContextManager
 
+    from fastapi import Request
     from sqlalchemy.ext.asyncio import AsyncSession
 
 
 @dataclass(eq=False, slots=True)
 class ServiceContainer:
     session: AsyncSession
+    request: Request
+
     _specification_service: ProjectsService | None = None
 
     @property
@@ -32,21 +36,41 @@ class ServiceContainer:
 
         return self._specification_service
 
+    _users_service: UsersService | None = None
+
+    @property
+    def users(self) -> UsersService:
+        if self._users_service is None:
+            repo = UsersRepo(self.user_db, self.user_manager, self.request)
+            self._users_service = UsersService(repo)
+
+        return self._users_service
+
+    _user_db: SQLAlchemyUserDatabase[UserDB, uuid.UUID] | None = None
+
+    @property
+    def user_db(self) -> SQLAlchemyUserDatabase[UserDB, uuid.UUID]:
+        if self._user_db is None:
+            self._user_db = SQLAlchemyUserDatabase[UserDB, uuid.UUID](
+                self.session, UserDB
+            )
+
+        return self._user_db
+
     _user_manager: UserManager | None = None
 
     @property
     def user_manager(self) -> UserManager:
         if self._user_manager is None:
-            user_db = SQLAlchemyUserDatabase[UserDB, uuid.UUID](
-                self.session, UserDB
-            )
-            self._user_manager = UserManager(user_db)
+            self._user_manager = UserManager(self.user_db)
 
         return self._user_manager
 
 
 class ContainerGetter(Protocol):
-    def __call__(self) -> AbstractAsyncContextManager[ServiceContainer]:
+    def __call__(
+        self, request: Request
+    ) -> AbstractAsyncContextManager[ServiceContainer]:
         raise NotImplementedError
 
 
@@ -54,10 +78,12 @@ def container_getter(
     sessionmaker: Callable[[], AsyncSession],
 ) -> ContainerGetter:
     @asynccontextmanager
-    async def get_container() -> AsyncGenerator[ServiceContainer]:
+    async def get_container(
+        request: Request,
+    ) -> AsyncGenerator[ServiceContainer]:
         async with sessionmaker() as session:
             try:
-                yield ServiceContainer(session)
+                yield ServiceContainer(session, request)
             except:
                 await asyncio.shield(session.rollback())
                 raise
