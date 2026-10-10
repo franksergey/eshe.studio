@@ -1,3 +1,4 @@
+import logging
 import uuid
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, cast, override
@@ -38,6 +39,9 @@ if TYPE_CHECKING:
 
     from server.api.auth import UserManager
     from server.domain.users.schemas import UserCreate, UserUpdate
+
+
+logger = logging.getLogger(__name__)
 
 
 class ProjectsRepo(AbstractProjectsRepo):
