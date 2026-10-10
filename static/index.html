@@ -11,7 +11,7 @@
     </head>
 
     <body>
-        <svg style="display: none" aria-hidden="true"> 
+        <svg style="display: none" aria-hidden="true"> <!-- Рендер svg -->
             <symbol id="icon-add-wishlist" viewBox="0 0 508 506">
                 <rect id="background" x="2" width="506" height="506" rx="253" fill="currentColor"/>
                 <path id="plas" d="M267 241H405V266H267V403H242V266H105V241H242V103H267V241Z" fill="black"/>
@@ -29,181 +29,157 @@
                 <path id="arrow" d="M209 163L299 253L209 343" stroke="black" stroke-width="40" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
             </symbol>
         </svg>
+        
+        <header></header>
+        
+        <main>
+            <div class="vertical-space XL"></div>
+            
+            <header>
+                <p>Мохавая 21-23</p>
+                <div class="vertical-space S"></div>
+                <h1>Таблица комплектации</h1>
+                <div class="vertical-space S"></div>
+                <p class="text-width">Таблица, как маркетплейс выбираешь что нравится 
+                    и видишь сколько это будет стоить. Так же можно увидеть, что уже утверждено 
+                    или оставить комментарий</p>
+                <div class="vertical-space M"></div>
 
-        <div class="vertical-space XL"></div>
-        <header>
-            <p>Мохавая 21-23</p>
-            <div class="vertical-space S"></div>
-            <h1>Таблица комплектации</h1>
-            <div class="vertical-space S"></div>
-            <p class="text-width">Таблица, как маркетплейс выбираешь что нравится 
-                и видишь сколько это будет стоить. Так же можно увидеть, что уже утверждено 
-                или оставить комментарий</p>
-            <div class="vertical-space M"></div>
+                <nav class="nav-pages">
+                    <a href="index.html" class="active">Мебель</a><a href="santehnika.html">Сантехника</a><a href="tehnika.html">Техника</a><a href="osveshenie.html">Освещение</a><a href="otdelka.html">Отделка</a>
+                    <a href="inzhenernoe-oborudovanie.html">Инженерное оборудование</a><a href="stroitelnye-raboty.html">Строительные работы</a><a href="aksessuary.html">Аксессуары</a>
+                </nav>
+            </header>
 
-            <div class="link-group">
-                <a href="index.html" class="active">Мебель</a><a href="santehnika.html">Сантехника</a><a href="tehnika.html">Техника</a><a href="osveshenie.html">Освещение</a><a href="otdelka.html">Отделка</a>
-                <a href="inzhenernoe-oborudovanie.html">Инженерное оборудование</a><a href="stroitelnye-raboty.html">Строительные работы</a><a href="aksessuary.html">Аксессуары</a>
-            </div>
-        </header>
+            <div class="vertical-space L"></div>
 
-        <div class="vertical-space L"></div>
+            <article class="page-of-table"> <!-- Страница таблицы -->
+                <nav>
+                    <div>
+                        <ul class="nav-section">
+                            <li class=" nav-active"><a href="#">Холл</a></li>
+                            <li>
+                                <ul class="nav-subsection">
+                                    <li>
+                                        <a href="#">Мебель заказчицы</a>
+                                    </li>
+                                    <li>
+                                        <a href="#">Трюмо</a>
+                                    </li>
+                                    <li>
+                                        <a href="#">Шкаф платяной</a>
+                                    </li>
+                                </ul>
+                            </li>
+                            <li><a href="#">Кухня-Гостиная</a></li>
+                            <li>
+                                <ul class="nav-subsection">
+                                    <li>
+                                        <a href="#">Мебель заказчицы</a>
+                                    </li>
+                                    <li>
+                                        <a href="#">Диван</a>
+                                    </li>
+                                    <li>
+                                        <a href="#">Журнальный столик</a>
+                                    </li>
+                                    <li>
+                                        <a href="#">Кресло</a>
+                                    </li>
+                                    <li>
+                                        <a href="#">Кухонный гарнитур</a>
+                                    </li>
+                                    <li>
+                                        <a href="#">Стул полубарный</a>
+                                    </li>
+                                </ul>
+                            </li>
+                            <li><a href="#">Санузел</a></li> 
+                            <li>
+                                <ul class="nav-subsection">
+                                    <li>
+                                        <a href="#">Столешница над стиральной машиной</a>
+                                    </li>
+                                    <li>
+                                        <a href="#">Шкаф над инсталяцией</a>
+                                    </li>
+                                </ul>
+                            </li>
+                            <li><a href="#">Спальня</a></li> 
+                            <li>
+                                <ul class="nav-subsection">
+                                    <li>
+                                        <a href="#">Мебель заказчицы</a>
+                                    </li>
+                                    <li>
+                                        <a href="#">Тумба под ТВ</a>
+                                    </li>
+                                    <li>
+                                        <a href="#">Прикроватная тумба</a>
+                                    </li>
+                                </ul>
+                            </li>
+                            <li><a href="#">Спальня вторая</a></li> 
 
-        <section class="chapter"> <!-- Раздел -->
-            <nav>
-                <!-- <h3>Мебель</h3> -->
-                <div>
-                    <ul class="nav-section">
-                        <li class=" nav-active"><a href="#">Холл</a></li>
-                        <li>
-                            <ul class="nav-subsection">
-                                <li>
-                                    <a href="#">Мебель заказчицы</a>
-                                </li>
-                                <li>
-                                    <a href="#">Трюмо</a>
-                                </li>
-                                <li>
-                                    <a href="#">Шкаф платяной</a>
-                                </li>
-                            </ul>
-                        </li>
-                        <li><a href="#">Кухня-Гостиная</a></li>
-                        <li>
-                            <ul class="nav-subsection">
-                                <li>
-                                    <a href="#">Мебель заказчицы</a>
-                                </li>
-                                <li>
-                                    <a href="#">Диван</a>
-                                </li>
-                                <li>
-                                    <a href="#">Журнальный столик</a>
-                                </li>
-                                <li>
-                                    <a href="#">Кресло</a>
-                                </li>
-                                <li>
-                                    <a href="#">Кухонный гарнитур</a>
-                                </li>
-                                <li>
-                                    <a href="#">Стул полубарный</a>
-                                </li>
-                            </ul>
-                        </li>
-                        <li><a href="#">Санузел</a></li> 
-                        <li>
-                            <ul class="nav-subsection">
-                                <li>
-                                    <a href="#">Столешница над стиральной машиной</a>
-                                </li>
-                                <li>
-                                    <a href="#">Шкаф над инсталяцией</a>
-                                </li>
-                            </ul>
-                        </li>
-                        <li><a href="#">Спальня</a></li> 
-                        <li>
-                            <ul class="nav-subsection">
-                                <li>
-                                    <a href="#">Мебель заказчицы</a>
-                                </li>
-                                <li>
-                                    <a href="#">Тумба под ТВ</a>
-                                </li>
-                                <li>
-                                    <a href="#">Прикроватная тумба</a>
-                                </li>
-                            </ul>
-                        </li>
-                        <li><a href="#">Спальня вторая</a></li> 
+                            <li><a href="#">Гардеробная</a></li>
+                            <li>
+                                <ul class="nav-subsection">
+                                    <li>
+                                        <a href="#">Мебель заказчицы</a>
+                                    </li>
+                                    <li>
+                                        <a href="#">Шкаф</a>
+                                    </li>
+                                    <li>
+                                        <a href="#">Стул</a>
+                                    </li>
+                                    <li>
+                                        <a href="#">Стол</a>
+                                    </li>
+                                    <li>
+                                        <a href="#">Пуф, кушетка</a>
+                                    </li> 
+                                    <li>
+                                        <a href="#">Столик</a>
+                                    </li>                                                          
+                                </ul>
+                            </li>
+                            <li><a href="#">Детская</a></li> 
+                            <li>
+                                <ul class="nav-subsection">
+                                    <li>
+                                        <a href="#">Мебель заказчицы</a>
+                                    </li>
+                                    <li>
+                                        <a href="#">Кровать</a>
+                                    </li>
+                                    <li>
+                                        <a href="#">Матрас</a>
+                                    </li>
+                                    <li>
+                                        <a href="#">Кресло</a>
+                                    </li>
+                                    <li>
+                                        <a href="#">Стул растущий</a>
+                                    </li> 
+                                    <li>
+                                        <a href="#">Стол растущий</a>
+                                    </li> 
+                                    <li>
+                                        <a href="#">Стеллаж у окна</a>
+                                    </li>                                                          
+                                </ul>
+                            </li>                  
+                        </ul>
+                    </div>
+                    <!-- <h3>Мебель</h3> -->
+                    <div class="nav-subsection-row"></div>
+                </nav>
 
-                        <li><a href="#">Гардеробная</a></li>
-                        <li>
-                            <ul class="nav-subsection">
-                                <li>
-                                    <a href="#">Мебель заказчицы</a>
-                                </li>
-                                <li>
-                                    <a href="#">Шкаф</a>
-                                </li>
-                                <li>
-                                    <a href="#">Стул</a>
-                                </li>
-                                <li>
-                                    <a href="#">Стол</a>
-                                </li>
-                                <li>
-                                    <a href="#">Пуф, кушетка</a>
-                                </li> 
-                                <li>
-                                    <a href="#">Столик</a>
-                                </li>                                                          
-                            </ul>
-                        </li>
-                        <li><a href="#">Детская</a></li> 
-                        <li>
-                            <ul class="nav-subsection">
-                                <li>
-                                    <a href="#">Мебель заказчицы</a>
-                                </li>
-                                <li>
-                                    <a href="#">Кровать</a>
-                                </li>
-                                <li>
-                                    <a href="#">Матрас</a>
-                                </li>
-                                <li>
-                                    <a href="#">Кресло</a>
-                                </li>
-                                <li>
-                                    <a href="#">Стул растущий</a>
-                                </li> 
-                                <li>
-                                    <a href="#">Стол растущий</a>
-                                </li> 
-                                <li>
-                                    <a href="#">Стеллаж у окна</a>
-                                </li>                                                          
-                            </ul>
-                        </li>                  
-                    </ul>
-                </div>
-                <div class="nav-subsection-row"></div>
-            </nav>
-
-            <section> <!-- Контент -->
-                <h3>Комната: Холл</h3> 
-                <h4>Мебель заказчицы</h4> <!-- Подраздел -->
-
-                <article class="product-grid"> <!-- Сетка товаров -->
-                    <ul>
-                        <!-- <li>
-                            <div>
-                                <img src="media/konsol_s_yashhikami_08-scaled.jpg">
-                                <button type="button" class="add-wishlist">
-                                    <svg class="icon" aria-hidden="true"><use href="#icon-add-wishlist"></use></svg>
-                                </button>
-                                <a class="comments">
-                                    <svg viewBox="0 0 508 506" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <g>
-                                        <rect id="background" x="2" width="506" height="506" rx="253" fill="white"/>
-                                         <path id="plas" d="M267 241H405V266H267V403H242V266H105V241H242V103H267V241Z" fill="black"/>
-                                        </g>
-                                    </svg><p>Комментарий</p>
-                                </a>
-                            </div>
-
-                            <hgroup>
-                                <a href="" 
-                                target="_blank">Спейс-М 1, Модульный диван Велюр Терракотовый ↗</a>
-
-                                <div class="price">
-                                    <p>Велюр · Тарракотовый</p>
-                                    <p>55.500 ₽ <span>1 шт</span></p>
-                                </div>
-                            </hgroup>
-                        </li> -->
+                <article class="content"> <!-- Контент -->
+                    <h3>Комната: Холл</h3> <!-- Раздел -->
+                    <h4>Мебель заказчицы</h4> <!-- Подраздел -->
+                    <ul class="product-grid"> <!-- Сетка товаров -->
                         <li data-item-id="1">
                             <div>
                                 <img src="media/konsol_s_yashhikami_08-scaled.jpg">
@@ -264,13 +240,10 @@
                             </hgroup>
                         </li>                                        
                     </ul>
-                </article>
+                    <div class="vertical-space L"></div>
 
-                <div class="vertical-space L"></div>
-                <h4>Трюмо</h4> <!-- Подраздел -->
-
-                <article class="product-grid"> <!-- Сетка товаров -->
-                    <ul>
+                    <h4>Трюмо</h4>
+                    <ul class="product-grid">
                         <li data-item-id="3" class="product-select">
                             <div>
                                 <img src="media/product-img/1.9dN83ra4WTpKads3GpXv41V-WzzCf9ssSnJbOMx3UTDK.webp">
@@ -330,7 +303,7 @@
                                 </div>
                             </hgroup>
                         </li>
-                        <li data-item-id="5">
+                        <li data-item-id="5" class="product-done">
                             <div>
                                 <img src="media/product-img/1.dMtGS7a42CJw_FovInZy7G3r2iT46lo0cOfaIPbi0Cjw.E-o_r6QrwG9QC3ZrimQFF2dpo6kPnBK_wdk_XUlWWn8">
                                 <button type="button" class="add-wishlist">
@@ -360,7 +333,7 @@
                                 </div>
                             </hgroup>
                         </li>
-                        <li data-item-id="6">
+                        <li data-item-id="6" class="product-done">
                             <div>
                                 <img src="media/product-img/1.xaEbG7a4aUgtrOtFHRjo9Se7a06luuteLbdrSquyYUKt.YAJeNsTkkGwn_fEK0C2w2x2w2giJKG1WWFgCyy1IvSs">
                                 <button type="button" class="add-wishlist">
@@ -390,7 +363,7 @@
                                 </div>
                             </hgroup>
                         </li>
-                        <li data-item-id="7">
+                        <li data-item-id="7" class="product-done">
                             <div>
                                 <img src="media/product-img/1.Airmwba4rsPQdizO7o1NT8lhrMVYYCzV0G2swVZopslQ.ugE3E4JjwetxtOAlhNbmUHF595AeeBPXWueiPSQP0oE">
                                 <button type="button" class="add-wishlist">
@@ -420,7 +393,7 @@
                                 </div>
                             </hgroup>
                         </li>
-                        <li data-item-id="8">
+                        <li data-item-id="8" class="product-done">
                             <div>
                                 <img src="media/product-img/1.2C4zXLa4dMcF6_bKD3eAaxv8dsGN_fbRBfB2xYP1fM2F._mxVnX6TezYvVqORw4Bek2LPIKaWvS80t2TcBc2nEds">
                                 <button type="button" class="add-wishlist">
@@ -451,13 +424,75 @@
                             </hgroup>
                         </li>                                                                   
                     </ul>
-                </article>
+                    <div class="vertical-space L"></div>
 
-                <div class="vertical-space L"></div>
-                <h4>Шкаф платяной</h4> <!-- Подраздел -->
+                    <h4>Шкаф платяной</h4>
+                    <ul class="product-grid">
+                        <li data-item-id="1">
+                            <div>
+                                <img src="media/konsol_s_yashhikami_08-scaled.jpg">
+                                <button type="button" class="add-wishlist">
+                                    <svg class="icon" aria-hidden="true"><use href="#icon-add-wishlist"></use></svg>
+                                </button>
+                                <div class="comments">
+                                    <div class="comments-list">
+                                    </div>
+                                    <form class="comments-form">
+                                        <button type="button" class="comments-toggle" aria-label="Комментарий">
+                                            <svg class="icon" aria-hidden="true"><use href="#icon-buttom-comments"></use></svg>
+                                        </button>
+                                        <textarea name="comment" placeholder="Комментарий" rows="1" autocomplete="off"></textarea>
+                                        <button type="submit" class="comments-send" aria-label="Отправить комментарий">
+                                            <svg class="icon" aria-hidden="true"><use href="#icon-send-comment"></use></svg>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
 
-                <article class="product-grid"> <!-- Сетка товаров -->
-                    <ul>
+                            <hgroup>
+                                <a href="https://factuure.ru/product/konsol-s-yashhikami/" target="_blank">Консоль с ящиками ↗</a>
+
+                                <div class="price">
+                                    <p class="price-row"><span class="price">В наличии</span> · <span class="quantity">1 шт</span></p>
+                                </div>
+                            </hgroup>
+                        </li>
+                        <li data-item-id="2">
+                            <div>
+                                <img src="media/product-img/zerkalo_oblako_01-scaled.png">
+                                <button type="button" class="add-wishlist">
+                                    <svg class="icon" aria-hidden="true"><use href="#icon-add-wishlist"></use></svg>
+                                </button>
+                                <div class="comments">
+                                    <div class="comments-list">
+                                    </div>
+                                    <form class="comments-form">
+                                        <button type="button" class="comments-toggle" aria-label="Комментарий">
+                                            <svg class="icon" aria-hidden="true"><use href="#icon-buttom-comments"></use></svg>
+                                        </button>
+                                        <textarea name="comment" placeholder="Комментарий" rows="1" autocomplete="off"></textarea>
+                                        <button type="submit" class="comments-send" aria-label="Отправить комментарий">
+                                            <svg class="icon" aria-hidden="true"><use href="#icon-send-comment"></use></svg>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+
+                            <hgroup>
+                                <a href="https://factuure.ru/product/zerkalo-oblako/" target="_blank">
+                                    Зеркало «Облако» ↗</a>
+
+                                <div class="price">
+                                    <p class="price-row"><span class="price">В наличии</span> · <span class="quantity">1 шт</span></p>
+                                </div>
+                            </hgroup>
+                        </li>                                        
+                    </ul>
+                    <div class="vertical-space L"></div>
+
+                    <h3>Кухня-Гостиная</h3>
+                    <h4>Мебель заказчицы</h4>
+                    <ul class="product-grid">
                         <!-- <li>
                             <div>
                                 <img src="media/konsol_s_yashhikami_08-scaled.jpg">
@@ -468,7 +503,7 @@
                                     <svg viewBox="0 0 508 506" fill="none" xmlns="http://www.w3.org/2000/svg">
                                         <g>
                                         <rect id="background" x="2" width="506" height="506" rx="253" fill="white"/>
-                                         <path id="plas" d="M267 241H405V266H267V403H242V266H105V241H242V103H267V241Z" fill="black"/>
+                                            <path id="plas" d="M267 241H405V266H267V403H242V266H105V241H242V103H267V241Z" fill="black"/>
                                         </g>
                                     </svg><p>Комментарий</p>
                                 </a>
@@ -544,15 +579,10 @@
                             </hgroup>
                         </li>                                        
                     </ul>
-                </article>
+                    <div class="vertical-space L"></div>
 
-
-                <div class="vertical-space L"></div>
-                <h3>Кухня-Гостиная</h3>
-                <h4>Мебель заказчицы</h4> <!-- Подраздел -->
-
-                <article class="product-grid"> <!-- Сетка товаров -->
-                    <ul>
+                    <h4>Диван</h4>
+                    <ul class="product-grid">
                         <!-- <li>
                             <div>
                                 <img src="media/konsol_s_yashhikami_08-scaled.jpg">
@@ -563,7 +593,7 @@
                                     <svg viewBox="0 0 508 506" fill="none" xmlns="http://www.w3.org/2000/svg">
                                         <g>
                                         <rect id="background" x="2" width="506" height="506" rx="253" fill="white"/>
-                                         <path id="plas" d="M267 241H405V266H267V403H242V266H105V241H242V103H267V241Z" fill="black"/>
+                                            <path id="plas" d="M267 241H405V266H267V403H242V266H105V241H242V103H267V241Z" fill="black"/>
                                         </g>
                                     </svg><p>Комментарий</p>
                                 </a>
@@ -639,13 +669,10 @@
                             </hgroup>
                         </li>                                        
                     </ul>
-                </article>
-                
-                <div class="vertical-space L"></div>
-                <h4>Диван</h4> <!-- Подраздел -->
+                    <div class="vertical-space L"></div>
 
-                <article class="product-grid"> <!-- Сетка товаров -->
-                    <ul>
+                    <h4>Журнальный столик</h4>
+                    <ul class="product-grid">
                         <!-- <li>
                             <div>
                                 <img src="media/konsol_s_yashhikami_08-scaled.jpg">
@@ -656,7 +683,7 @@
                                     <svg viewBox="0 0 508 506" fill="none" xmlns="http://www.w3.org/2000/svg">
                                         <g>
                                         <rect id="background" x="2" width="506" height="506" rx="253" fill="white"/>
-                                         <path id="plas" d="M267 241H405V266H267V403H242V266H105V241H242V103H267V241Z" fill="black"/>
+                                            <path id="plas" d="M267 241H405V266H267V403H242V266H105V241H242V103H267V241Z" fill="black"/>
                                         </g>
                                     </svg><p>Комментарий</p>
                                 </a>
@@ -732,191 +759,98 @@
                             </hgroup>
                         </li>                                        
                     </ul>
+                    <div class="vertical-space L"></div>
+                    <h4>Кресло</h4>
+                    <div class="vertical-space L"></div>
+                    <h4>Кухонный гарнитур</h4>
+                    <div class="vertical-space L"></div>
+                    <h4>Стул полубарный</h4>
+                    <div class="vertical-space L"></div>
+
+                    <h3>Санузел</h3>
+                    <h4>Столешница над стиральной машиной</h4>
+                    <div class="vertical-space L"></div>
+                    <h4>Шкаф над инсталяцией</h4>
+                    <div class="vertical-space L"></div>
+
+                    <h3>Спальня</h3>
+                    <h4>Мебель заказчицы</h4>
+                    <div class="vertical-space L"></div>
+                    <h4>Тумба под ТВ</h4>
+                    <div class="vertical-space L"></div>
+                    <h4>Прикроватная тумба</h4>
+                    <div class="vertical-space L"></div>
+
+                    <h3>Спальня вторая</h3>
+                    <div class="vertical-space L"></div>
+
+                    <h3>Гардеробная</h3>
+                    <h4>Мебель заказчицы</h4>
+                    <div class="vertical-space L"></div>
+                    <h4>Шкаф</h4>
+                    <div class="vertical-space L"></div>
+                    <h4>Стул</h4>
+                    <div class="vertical-space L"></div>
+                    <h4>Стол</h4>
+                    <div class="vertical-space L"></div>
+                    <h4>Пуф, кушетка</h4>
+                    <div class="vertical-space L"></div>
+                    <h4>Столик</h4>
+                    <div class="vertical-space L"></div>
+
+                    <h3>Детская</h3>
+                    <h4>Мебель заказчицы</h4>
+                    <div class="vertical-space L"></div>
+                    <h4>Кровать</h4>
+                    <div class="vertical-space L"></div>
+                    <h4>Матрас</h4>
+                    <div class="vertical-space L"></div>
+                    <h4>Кресло</h4>
+                    <div class="vertical-space L"></div>
+                    <h4>Стул растущий</h4>
+                    <div class="vertical-space L"></div>
+                    <h4>Стол растущий</h4>
+                    <div class="vertical-space L"></div>
+                    <h4>Стеллаж у окна</h4>
                 </article>
 
-                <div class="vertical-space L"></div>
-                <h4>Журнальный столик</h4> <!-- Подраздел -->
+                <aside class="cart-panel"> <!-- Карзина -->
+                    <section class="cart-items-approved">
+                        <p>Утверждено</p>
+                        <ul>
+                            <li>
+                                <a>Трюмо винтаж Art-deco</a>
+                                <p><span class="price">15.000 ₽</span> · 1 шт</p>
+                            </li>
+                        </ul>
+                        <!-- <div class="vertical-space S"></div> -->
+                    </section>
 
-                <article class="product-grid"> <!-- Сетка товаров -->
-                    <ul>
-                        <!-- <li>
-                            <div>
-                                <img src="media/konsol_s_yashhikami_08-scaled.jpg">
-                                <button type="button" class="add-wishlist">
-                                    <svg class="icon" aria-hidden="true"><use href="#icon-add-wishlist"></use></svg>
-                                </button>
-                                <a class="comments">
-                                    <svg viewBox="0 0 508 506" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <g>
-                                        <rect id="background" x="2" width="506" height="506" rx="253" fill="white"/>
-                                         <path id="plas" d="M267 241H405V266H267V403H242V266H105V241H242V103H267V241Z" fill="black"/>
-                                        </g>
-                                    </svg><p>Комментарий</p>
-                                </a>
-                            </div>
-
-                            <hgroup>
-                                <a href="" 
-                                target="_blank">Спейс-М 1, Модульный диван Велюр Терракотовый ↗</a>
-
-                                <div class="price">
-                                    <p>Велюр · Тарракотовый</p>
-                                    <p>55.500 ₽ <span>1 шт</span></p>
+                    <section class="cart-items-done">
+                        <!-- <div class="vertical-space S"></div> -->
+                        <p>Выбрано</p>
+                        <ul>
+                            <li>
+                                <div>
+                                    <a>Винтажное трюмо, Чехословакия</a>
+                                    <p><span class="price">40.000 ₽</span> · 1 шт</p>
                                 </div>
-                            </hgroup>
-                        </li> -->
-                        <li data-item-id="1">
-                            <div>
-                                <img src="media/konsol_s_yashhikami_08-scaled.jpg">
-                                <button type="button" class="add-wishlist">
-                                    <svg class="icon" aria-hidden="true"><use href="#icon-add-wishlist"></use></svg>
-                                </button>
-                                <div class="comments">
-                                    <div class="comments-list">
-                                    </div>
-                                    <form class="comments-form">
-                                        <button type="button" class="comments-toggle" aria-label="Комментарий">
-                                            <svg class="icon" aria-hidden="true"><use href="#icon-buttom-comments"></use></svg>
-                                        </button>
-                                        <textarea name="comment" placeholder="Комментарий" rows="1" autocomplete="off"></textarea>
-                                        <button type="submit" class="comments-send" aria-label="Отправить комментарий">
-                                            <svg class="icon" aria-hidden="true"><use href="#icon-send-comment"></use></svg>
-                                        </button>
-                                    </form>
-                                </div>
-                            </div>
+                                <button>Убрать</button>
+                            </li>
+                        </ul>
+                        <!-- <div class="vertical-space M"></div>  -->
+                    </section>
 
-                            <hgroup>
-                                <a href="https://factuure.ru/product/konsol-s-yashhikami/" target="_blank">Консоль с ящиками ↗</a>
+                    <section class="cart-buttom">
+                        <p>Утверждено <span>40.000 ₽</span></p>
+                        <p>Выбрано <span>40.000 ₽</span></p>
+                        <p class="total">Итого <span>80.000 ₽</span></p>
+                    </section>
+                </aside>
+            </article>
 
-                                <div class="price">
-                                    <p class="price-row"><span class="price">В наличии</span> · <span class="quantity">1 шт</span></p>
-                                </div>
-                            </hgroup>
-                        </li>
-                        <li data-item-id="2">
-                            <div>
-                                <img src="media/product-img/zerkalo_oblako_01-scaled.png">
-                                <button type="button" class="add-wishlist">
-                                    <svg class="icon" aria-hidden="true"><use href="#icon-add-wishlist"></use></svg>
-                                </button>
-                                <div class="comments">
-                                    <div class="comments-list">
-                                    </div>
-                                    <form class="comments-form">
-                                        <button type="button" class="comments-toggle" aria-label="Комментарий">
-                                            <svg class="icon" aria-hidden="true"><use href="#icon-buttom-comments"></use></svg>
-                                        </button>
-                                        <textarea name="comment" placeholder="Комментарий" rows="1" autocomplete="off"></textarea>
-                                        <button type="submit" class="comments-send" aria-label="Отправить комментарий">
-                                            <svg class="icon" aria-hidden="true"><use href="#icon-send-comment"></use></svg>
-                                        </button>
-                                    </form>
-                                </div>
-                            </div>
-
-                            <hgroup>
-                                <a href="https://factuure.ru/product/zerkalo-oblako/" target="_blank">
-                                    Зеркало «Облако» ↗</a>
-
-                                <div class="price">
-                                    <p class="price-row"><span class="price">В наличии</span> · <span class="quantity">1 шт</span></p>
-                                </div>
-                            </hgroup>
-                        </li>                                        
-                    </ul>
-                </article>
-
-                <div class="vertical-space L"></div>
-                <h4>Кресло</h4> <!-- Подраздел -->
-                <div class="vertical-space L"></div>
-                <h4>Кухонный гарнитур</h4> <!-- Подраздел -->
-                <div class="vertical-space L"></div>
-                <h4>Стул полубарный</h4> <!-- Подраздел -->
-                <div class="vertical-space L"></div>
-
-                <h3>Санузел</h3>
-                <h4>Столешница над стиральной машиной</h4> <!-- Подраздел -->
-                <div class="vertical-space L"></div>
-                <h4>Шкаф над инсталяцией</h4> <!-- Подраздел -->
-                <div class="vertical-space L"></div>
-
-                <h3>Спальня</h3>
-                <h4>Мебель заказчицы</h4> <!-- Подраздел -->
-                <div class="vertical-space L"></div>
-                <h4>Тумба под ТВ</h4> <!-- Подраздел -->
-                <div class="vertical-space L"></div>
-                <h4>Прикроватная тумба</h4> <!-- Подраздел -->
-                <div class="vertical-space L"></div>
-
-                <h3>Спальня вторая</h3>
-                <div class="vertical-space L"></div>
-
-                <h3>Гардеробная</h3>
-                <h4>Мебель заказчицы</h4> <!-- Подраздел -->
-                <div class="vertical-space L"></div>
-                <h4>Шкаф</h4> <!-- Подраздел -->
-                <div class="vertical-space L"></div>
-                <h4>Стул</h4> <!-- Подраздел -->
-                <div class="vertical-space L"></div>
-                <h4>Стол</h4> <!-- Подраздел -->
-                <div class="vertical-space L"></div>
-                <h4>Пуф, кушетка</h4> <!-- Подраздел -->
-                <div class="vertical-space L"></div>
-                <h4>Столик</h4> <!-- Подраздел -->
-                <div class="vertical-space L"></div>
-
-                <h3>Детская</h3>
-                <h4>Мебель заказчицы</h4> <!-- Подраздел -->
-                <div class="vertical-space L"></div>
-                <h4>Кровать</h4> <!-- Подраздел -->
-                <div class="vertical-space L"></div>
-                <h4>Матрас</h4> <!-- Подраздел -->
-                <div class="vertical-space L"></div>
-                <h4>Кресло</h4> <!-- Подраздел -->
-                <div class="vertical-space L"></div>
-                <h4>Стул растущий</h4> <!-- Подраздел -->
-                <div class="vertical-space L"></div>
-                <h4>Стол растущий</h4> <!-- Подраздел -->
-                <div class="vertical-space L"></div>
-                <h4>Стеллаж у окна</h4> <!-- Подраздел -->
-            </section>
-
-            <aside class="cart-panel"> <!-- Карзина -->
-                <div style="height: 90%;">
-                    <p>Утверждено</p>
-                    <ul class="cart-items-approved">
-                       <li>
-                            <a>Трюмо винтаж Art-deco</a>
-                            <p><span class="price">15.000 ₽</span> · 1 шт</p>
-                        </li>
-                    </ul>
-
-                    <div class="vertical-space S"></div>
-
-                    <p>Выбрано</p>
-                    <ul class="cart-items-done">
-                        <li>
-                            <div>
-                                <a>Винтажное трюмо, Чехословакия</a>
-                                <p><span class="price">40.000 ₽</span> · 1 шт</p>
-                            </div>
-                            <button>Убрать</button>
-                        </li>
-                    </ul>
-
-                    <div class="vertical-space M"></div> 
-                </div>
-
-
-                <div class="cart-buttom">
-                    <p>Утверждено <span>40.000 ₽</span></p>
-                    <p>Выбрано <span>40.000 ₽</span></p>
-                    <p class="total">Итого <span>80.000 ₽</span></p>
-                </div>
-            </aside>
-        </section>
-
-        <div class="vertical-space XL"></div>
+            <div class="vertical-space XL"></div>
+        </main>
+        <!-- <footer></footer> -->
     </body>
 </html>

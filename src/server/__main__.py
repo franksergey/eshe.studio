@@ -7,6 +7,8 @@ import sys
 import uvicorn
 from alembic.config import Config
 
+from server.api.container import container_getter
+from server.domain.users.schemas import UserCreate
 from server.sql.database import Database, DatabaseChecker
 from server.sql.models import Base
 
@@ -61,9 +63,12 @@ def launch_server() -> None:
 async def perform_checks() -> None:
     logger.info("Performing an initial health check")
 
-    async with Database(
-        db_url=settings.db.database_url, echo=settings.db.ECHO
-    ) as database:
+    async with (
+        Database(
+            db_url=settings.db.database_url, echo=settings.db.ECHO
+        ) as database,
+        container_getter(database.get_session)() as container,
+    ):
         if settings.db.CHECKSCHEMA:
             alembic_config = Config(toml_file=settings.PYPROJECT)
 
@@ -71,6 +76,19 @@ async def perform_checks() -> None:
             await checker.raise_for_differences(
                 upgrade_if_empty=settings.db.UPGRADEIFEMPTY
             )
+
+        if (
+            settings.CREATEDEFAULTUSER
+            and await container.users.users_table_empty()
+        ):
+            user_create = UserCreate(
+                email="admin@example.com",
+                password="admin",  # noqa: S106
+                is_active=True,
+                is_superuser=True,
+                is_verified=True,
+            )
+            await container.users.create(user_create, safe=False)
 
     logger.info("Initial health check has been finished")
 
