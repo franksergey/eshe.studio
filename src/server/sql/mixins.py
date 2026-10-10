@@ -16,7 +16,7 @@ class UTCDateTime(types.TypeDecorator[datetime]):
 
     @override
     def process_bind_param(
-        self, value: datetime | None, dialect: Dialect
+        self, value: object, dialect: Dialect
     ) -> datetime | None:
         if value is None:
             return value

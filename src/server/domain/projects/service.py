@@ -1,34 +1,29 @@
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from server.api.errors import ItemNotFoundError, SpecificationNotFoundError
+from server.api.errors import ItemNotFoundError, ProjectNotFoundError
 
 if TYPE_CHECKING:
-    from server.services.ports import AbstractSpecificationRepo
-    from server.services.schemas import (
-        Comment,
-        CommentCreate,
-        Specification,
-        SpecificationPure,
-    )
+    from .ports import AbstractProjectsRepo
+    from .schemas import Comment, CommentCreate, Project, ProjectPure
 
 
 @dataclass(eq=False, slots=True)
-class SpecificationService:
-    repo: AbstractSpecificationRepo
+class ProjectsService:
+    repo: AbstractProjectsRepo
 
-    async def get(self, id: int) -> Specification:
+    async def get(self, id: int) -> Project:
         obj = await self.repo.get(id)
 
         if obj is None:
-            raise SpecificationNotFoundError
+            raise ProjectNotFoundError
 
         return obj
 
-    async def get_all(self) -> list[Specification]:
+    async def get_all(self) -> list[Project]:
         return await self.repo.get_all()
 
-    async def get_all_pure(self) -> list[SpecificationPure]:
+    async def get_all_pure(self) -> list[ProjectPure]:
         return await self.repo.get_all_pure()
 
     async def get_item_comments(self, item_id: int) -> list[Comment]:

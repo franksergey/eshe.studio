@@ -9,7 +9,7 @@ from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, HttpUrl
 # =============================
 
 
-class SpecificationBase(BaseModel):
+class ProjectBase(BaseModel):
     """Базовая модель таблицы комплектации."""
 
     name: Annotated[str, Field(min_length=1, max_length=256)]
@@ -17,15 +17,15 @@ class SpecificationBase(BaseModel):
     model_config = ConfigDict(from_attributes=True, serialize_by_alias=True)
 
 
-class SpecificationCreate(SpecificationBase):
+class ProjectCreate(ProjectBase):
     """Модель для создания спецификации."""
 
 
-class SpecificationPut(SpecificationBase):
+class ProjectPut(ProjectBase):
     """Модель для полной замены объекта спецификации."""
 
 
-class SpecificationUpdate(BaseModel):
+class ProjectUpdate(BaseModel):
     """Модель для частичного обновления объекта спецификации."""
 
     name: Annotated[str | None, Field(None, min_length=1, max_length=256)]
@@ -33,13 +33,13 @@ class SpecificationUpdate(BaseModel):
     model_config = ConfigDict(from_attributes=True, serialize_by_alias=True)
 
 
-class SpecificationPure(SpecificationBase):
+class ProjectPure(ProjectBase):
     """Изолированная модель таблицы комплектации."""
 
     id: int
 
 
-class Specification(SpecificationPure):
+class Project(ProjectPure):
     """Таблица комплектации."""
 
     rooms: Annotated[list[Room], Field(max_length=64)]
