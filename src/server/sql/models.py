@@ -77,9 +77,6 @@ class ItemDB(Base):
     __tablename__ = "project_spec_items"
 
     id: Mapped[int] = mapped_column(IDENTITY, primary_key=True)
-    category_id: Mapped[int] = mapped_column(
-        ForeignKey("specification_item_categories.id", ondelete="CASCADE")
-    )
     group_id: Mapped[int] = mapped_column(
         ForeignKey("project_spec_groups.id", ondelete="CASCADE")
     )
@@ -111,7 +108,6 @@ class ItemDB(Base):
         passive_deletes=True,
         lazy="joined",
     )
-    category: Mapped[OldCategoryDB] = relationship(back_populates="items")
     group: Mapped[GroupDB] = relationship(back_populates="items")
 
     # Constraints
@@ -122,54 +118,6 @@ class ItemDB(Base):
             name="ux_c_email_or_phone_required",
         ),
     )
-
-
-class OldCategoryDB(Base):
-    """Категория предметов в таблице комплектации."""
-
-    __tablename__ = "specification_item_categories"
-
-    id: Mapped[int] = mapped_column(IDENTITY, primary_key=True)
-    room_id: Mapped[int] = mapped_column(
-        ForeignKey("specification_rooms.id", ondelete="CASCADE")
-    )
-
-    name: Mapped[str] = mapped_column(String(1024))
-    ordinal_no: Mapped[int] = mapped_column()
-
-    # Relations
-    items: Mapped[list[ItemDB]] = relationship(
-        back_populates="category",
-        cascade="all, delete, delete-orphan",
-        passive_deletes=True,
-        lazy="joined",
-        order_by=ItemDB.ordinal_no,
-    )
-    room: Mapped[RoomDB] = relationship(back_populates="categories")
-
-
-class RoomDB(Base):
-    """Комната, для которой выбираются предметы в таблице комплектации."""
-
-    __tablename__ = "specification_rooms"
-
-    id: Mapped[int] = mapped_column(IDENTITY, primary_key=True)
-    category_id: Mapped[int] = mapped_column(
-        ForeignKey("project_spec_groups.id", ondelete="CASCADE")
-    )
-
-    name: Mapped[str] = mapped_column(String(256))
-    ordinal_no: Mapped[int] = mapped_column()
-
-    # Relations
-    categories: Mapped[list[OldCategoryDB]] = relationship(
-        back_populates="room",
-        cascade="all, delete, delete-orphan",
-        passive_deletes=True,
-        lazy="joined",
-        order_by=OldCategoryDB.ordinal_no,
-    )
-    category: Mapped[GroupDB] = relationship(back_populates="rooms")
 
 
 class GroupDB(Base):
@@ -189,13 +137,6 @@ class GroupDB(Base):
     ordinal_no: Mapped[int] = mapped_column()
 
     # Relations
-    rooms: Mapped[list[RoomDB]] = relationship(
-        back_populates="category",
-        cascade="all, delete, delete-orphan",
-        passive_deletes=True,
-        lazy="joined",
-        order_by=RoomDB.ordinal_no,
-    )
     items: Mapped[list[ItemDB]] = relationship(
         back_populates="group",
         cascade="all, delete, delete-orphan",
