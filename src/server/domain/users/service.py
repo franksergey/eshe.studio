@@ -30,6 +30,9 @@ class UsersService:
 
         return user
 
+    async def users_table_empty(self) -> bool:
+        return await self.repo.users_table_empty()
+
     async def create(
         self, data: UserCreate, *, safe: bool = False
     ) -> UserRead:

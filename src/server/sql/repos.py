@@ -1,7 +1,9 @@
+import uuid
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, cast, override
 
 from fastapi_users import exceptions
+from fastapi_users.db import SQLAlchemyUserDatabase
 from pydantic import HttpUrl
 from sqlalchemy import exists, select
 from sqlalchemy.orm import lazyload, load_only, selectinload
@@ -31,10 +33,7 @@ from server.sql.models import (
 )
 
 if TYPE_CHECKING:
-    import uuid
-
     from fastapi import Request
-    from fastapi_users.db import SQLAlchemyUserDatabase
     from sqlalchemy.ext.asyncio import AsyncSession
 
     from server.api.auth import UserManager
@@ -168,9 +167,15 @@ class ProjectsRepo(AbstractProjectsRepo):
         return self._validate_comment(obj)
 
 
+class UserDatabase(SQLAlchemyUserDatabase[UserDB, uuid.UUID]):
+    async def users_table_empty(self) -> bool:
+        stmt = select(select(self.user_table).exists())
+        return (await self.session.execute(stmt)).scalar_one()
+
+
 @dataclass(eq=False, slots=True)
 class UsersRepo(AbstractUsersRepo):
-    users_db: SQLAlchemyUserDatabase[UserDB, uuid.UUID]
+    users_db: UserDatabase
     user_manager: UserManager
     request: Request
 
@@ -199,6 +204,9 @@ class UsersRepo(AbstractUsersRepo):
             return None
 
         return self._to_domain_schema(user)
+
+    async def users_table_empty(self) -> bool:
+        return await self.users_db.users_table_empty()
 
     async def create(
         self, data: UserCreate, *, safe: bool = False
