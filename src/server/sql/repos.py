@@ -1,5 +1,7 @@
+import uuid
 from typing import TYPE_CHECKING, cast, override
 
+from fastapi_users.db import SQLAlchemyUserDatabase
 from pydantic import HttpUrl
 from sqlalchemy import exists, select
 from sqlalchemy.orm import lazyload, load_only, selectinload
@@ -16,7 +18,14 @@ from server.domain.projects.schemas import (
     ProjectPure,
     Room,
 )
-from server.sql.models import CategoryDB, CommentDB, ItemDB, ProjectDB, RoomDB
+from server.sql.models import (
+    CategoryDB,
+    CommentDB,
+    ItemDB,
+    ProjectDB,
+    RoomDB,
+    UserDB,
+)
 
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession
@@ -147,3 +156,7 @@ class ProjectsRepo(AbstractProjectsRepo):
         await self.session.flush((item,))
 
         return self._validate_comment(obj)
+
+
+class UsersRepo(SQLAlchemyUserDatabase[UserDB, uuid.UUID]):
+    pass

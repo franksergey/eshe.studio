@@ -11,7 +11,7 @@ from fastapi_problem.handler import add_exception_handler
 from starlette.staticfiles import StaticFiles
 
 from server import __version__ as version
-from server.api.routers import api_router
+from server.api.routers import api_router, auth_router
 from server.config import settings
 from server.sql.database import Database
 
@@ -55,6 +55,10 @@ def setup_routers(app: FastAPI) -> None:
     """
     app.include_router(api_router)
     logger.debug("Included API router with prefix: %r", api_router.prefix)
+    app.include_router(
+        auth_router, prefix="/auth/jwt", tags=["Authentication"]
+    )
+    logger.debug("Included authentication router with prefix: '/auth/jwt'")
 
     static_directory = Path(settings.STATICFILES)
     app.mount(
