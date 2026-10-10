@@ -57,21 +57,26 @@ class ProjectsRepo(AbstractProjectsRepo):
             ],
         )
 
-    @classmethod
-    def _validate_group(cls, obj: GroupDB) -> Group:
+    async def _validate_group(self, obj: GroupDB) -> Group:
+        if "subgroups" not in obj.__dict__:
+            await self.session.refresh(obj, ("subgroups",))
+
         items: list[Group | Item] = [
-            *(cls._validate_item(item) for item in obj.items),
-            *(cls._validate_group(subgroup) for subgroup in obj.subgroups),
+            *(self._validate_item(item) for item in obj.items),
+            *[
+                await self._validate_group(subgroup)
+                for subgroup in obj.subgroups
+            ],
         ]
         return Group(name=obj.name, items=items)
 
-    @classmethod
-    def _to_domain_schema(cls, obj: ProjectDB) -> Project:
+    async def _to_domain_schema(self, obj: ProjectDB) -> Project:
         return Project(
             id=obj.id,
             name=obj.name,
             categories=[
-                cls._validate_group(category) for category in obj.categories
+                await self._validate_group(category)
+                for category in obj.categories
             ],
         )
 
@@ -87,7 +92,7 @@ class ProjectsRepo(AbstractProjectsRepo):
         if obj is None:
             return None
 
-        return self._to_domain_schema(obj)
+        return await self._to_domain_schema(obj)
 
     GET_ALL_STMT = select(ProjectDB)
 
@@ -95,7 +100,7 @@ class ProjectsRepo(AbstractProjectsRepo):
     async def get_all(self) -> list[Project]:
         objs = (await self.session.scalars(self.GET_ALL_STMT)).all()
 
-        return [self._to_domain_schema(obj) for obj in objs]
+        return [await self._to_domain_schema(obj) for obj in objs]
 
     GET_ALL_PURE_STMT = select(ProjectDB).options(
         lazyload(ProjectDB.categories)
