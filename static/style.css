@@ -336,12 +336,15 @@ main header {
 
   & .nav-active {
     border-radius: 0.4em;
-    color: rgba(var(--link-color-RGB),1);
-    background-color: rgba(var(--product-hover-color-RGB),0.3);
-    
+    background-color: rgba(var(--product-hover-color-RGB), 1);    
+
     @media (max-width: 768px) {
       border-radius: 2em;
     }
+
+    /* & a {
+      color: rgba(var(--text-color-inverse-RGB),1);
+    } */
   }
 
 
@@ -480,22 +483,25 @@ main header {
     background: rgba(var(--background-color-RGB), 1);
     padding: 0 0.8em 0 0;
   }
-
+  
   & li:not(.product-select) .add-wishlist:hover::after {
     content: 'Выбрать';
   }
-
+  
   & li.product-select .add-wishlist {
     background: rgba(var(--product-select-color-RGB), 1);
   }
-
+  
   & li.product-select .add-wishlist svg {
     display: none;
   }
-
+  
   & li.product-select .add-wishlist::after {
     content: 'Выбрано';
     padding: 0 0.8em;
+    border-radius: 2em;
+
+    background: rgba(var(--link-color-RGB), 1);
 
 
     & svg {
@@ -675,7 +681,7 @@ main header {
   }
 
   & .product-select{
-    background-color: rgba(var(--text-color-RGB), 0.6);
+    background-color: rgba(var(--link-color-RGB), 1);
     color: rgba(var(--text-color-inverse-RGB), 1);
 
     & a {
@@ -752,6 +758,10 @@ main header {
       display: block;
       margin: 0 2em 1.5em 0;
     }
+
+    & a {
+      color: rgba(var(--text-color-RGB), 1);
+    }
   }
 
   & .cart-items-done {
@@ -796,9 +806,9 @@ main header {
     color: rgba(var(--text-color-RGB),0.7);
 
     & a{
-      color: rgba(var(--text-color-RGB), 1);
       text-decoration: none;
       cursor: pointer;
+      font-weight: 500;
     }
 
     & .price {
@@ -821,6 +831,15 @@ main header {
       border-radius: 1.5em;
       height: fit-content;
     }
+  }
+
+  & .button-confirm {
+    font-size: 0.9em;
+    width: stretch;
+    padding: 1em;
+    border-radius: 1em;
+    color: rgba(var(--background-color-RGB), 1);
+    background-color: rgba(var(--link-color-RGB),1);
   }
 
   & .cart-buttom {
