@@ -1,6 +1,7 @@
 from decimal import Decimal
 from typing import ClassVar
 
+from fastapi_users.db import SQLAlchemyBaseUserTableUUID
 from sqlalchemy import (
     CheckConstraint,
     Enum,
@@ -35,6 +36,11 @@ class Base(DeclarativeBase):
 IDENTITY = (
     Identity(always=True) if settings.db.DIALECT == "postgresql" else None
 )
+
+
+# ===============
+# Projects Domain
+# ===============
 
 
 class SpecificationTagDB(Base):
@@ -186,3 +192,12 @@ class ProjectDB(Base):
         lazy="joined",
         order_by=RoomDB.ordinal_no,
     )
+
+
+# ============
+# Users Domain
+# ============
+
+
+class UserDB(SQLAlchemyBaseUserTableUUID, Base):
+    __tablename__ = "users"

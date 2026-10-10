@@ -1,7 +1,7 @@
 import logging
 
 from fastapi_problem.handler import new_exception_handler
-from rfc9457 import NotFoundProblem
+from rfc9457 import ConflictProblem, NotFoundProblem
 
 from . import cors_configuration
 
@@ -12,13 +12,22 @@ error_handler = new_exception_handler(logger=logger, cors=cors_configuration)
 
 class ProjectNotFoundError(NotFoundProblem):
     type_ = "project-not-found"
-    title = (
-        "Architectural project with specified id hasn't been found in database"
-    )
+    title = "Architectural project with specified id hasn't been found"
 
 
 class ItemNotFoundError(NotFoundProblem):
     type_ = "specification-item-not-found"
+    title = "Specification item with specified id hasn't been found"
+
+
+class UserAlreadyExistsError(ConflictProblem):
+    type_ = "user-already-exists"
     title = (
-        "Specification item with specified id hasn't been found in database"
+        "New user cannot be created as there already exists one with the "
+        "specified email."
     )
+
+
+class UserNotFoundError(NotFoundProblem):
+    type_ = "user-not-found"
+    title = "User with the specified email couldn't be found."
