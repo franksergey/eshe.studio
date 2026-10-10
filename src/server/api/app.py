@@ -55,10 +55,8 @@ def setup_routers(app: FastAPI) -> None:
     """
     app.include_router(api_router)
     logger.debug("Included API router with prefix: %r", api_router.prefix)
-    app.include_router(
-        auth_router, prefix="/auth/jwt", tags=["Authentication"]
-    )
-    logger.debug("Included authentication router with prefix: '/auth/jwt'")
+    app.include_router(auth_router)
+    logger.debug("Included authentication router with prefix: %r", auth_router)
 
     static_directory = Path(settings.STATICFILES)
     app.mount(
