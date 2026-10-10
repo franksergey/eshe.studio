@@ -7,8 +7,8 @@ document.addEventListener('click', (event) => {
 });
 
 function renderCart() {
-  const approvedList = document.querySelector('.cart-items-approved');
-  const doneList = document.querySelector('.cart-items-done');
+  const approvedList = document.querySelector('.cart-items-approved ul');
+  const doneList = document.querySelector('.cart-items-done ul');
   const totalEls = document.querySelectorAll('.cart-buttom p span');
   if (!approvedList || !doneList || totalEls.length < 3) return;
 
@@ -243,9 +243,9 @@ document.addEventListener('submit', async (event) => {
 // ==========================================
 
 (() => {
-  const navSectionUl = document.querySelector('.chapter nav ul.nav-section');
-  const navScrollBox = document.querySelector('.chapter nav > div');
-  const content = document.querySelector('.chapter > section');
+  const navSectionUl = document.querySelector('.page-of-table nav ul.nav-section');
+  const navScrollBox = document.querySelector('.page-of-table nav > div');
+  const content = document.querySelector('.page-of-table > article.content');
   if (!navSectionUl || !navScrollBox || !content) return;
 
   const topLis = [...navSectionUl.children].filter((el) => el.tagName === 'LI');
@@ -271,7 +271,7 @@ document.addEventListener('submit', async (event) => {
   // чтобы она скроллилась независимо от строки разделов. Перенос — разовый
   // (при загрузке и при пересечении брейкпоинта), а не на каждый тик скролла —
   // какой из списков сейчас виден, решает чистый CSS через .nav-active.
-  const subsectionRow = document.querySelector('.chapter nav > .nav-subsection-row');
+  const subsectionRow = document.querySelector('.page-of-table nav > .nav-subsection-row');
   const mobileQuery = window.matchMedia('(max-width: 768px)');
 
   function placeSubsections(isMobile) {
@@ -358,7 +358,7 @@ document.addEventListener('submit', async (event) => {
   let activeSubLi = null;
 
   function setActive(entry) {
-    document.querySelectorAll('.chapter nav .nav-active').forEach((el) => {
+    document.querySelectorAll('.page-of-table nav .nav-active').forEach((el) => {
       el.classList.remove('nav-active');
     });
     entry.roomLi.classList.add('nav-active');

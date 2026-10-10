@@ -168,12 +168,59 @@ button {
 
 /* ————————————— item ————————————— */
 
-.chapter {
-  --chapter-width: 90;
+main header {
+  width: calc(var(--width-main-content) * 1%);
+  margin: 0 auto;
+
+  @media (max-width: 768px) {
+    width: 100%;
+    padding: 0 1em;
+  }
+
+  & .nav-pages {
+    display: flex;
+    flex-wrap: wrap;
+
+    --gap: 0.5em;
+    --columns: 4;
+    --gap-number: calc(var(--columns) - 1);
+
+    gap: var(--gap);
+
+    @media (max-width: 768px) {
+      --columns: 2;
+    }
+
+    & a {
+      width: calc((100% - var(--gap-number) * var(--gap)) / (var(--columns)));
+      border-radius: 0.4em;
+      padding: 0.4em 5em 4em 0.4em;
+
+      text-decoration: none;
+      color: rgba(var(--text-color-RGB), 1);
+      background-color: rgba(var(--product-hover-color-RGB),0.4);
+    }
+
+    & a:not(.active):hover {
+      background-color: rgba(var(--product-hover-color-RGB), 1);
+      color: rgba(var(--hover-color-RGB),1);
+
+      transition: background-color 0s ease, text-decoration-color 0s ease;
+    }
+
+    & .active {
+      color: rgba(var(--text-color-inverse-RGB), 1);
+      background-color: rgba(var(--text-color-RGB), 0.8);
+    }
+  }
+}
+
+.page-of-table {
+  --page-of-table-width: 90;
 
   margin: auto;
   display: flex;
-  width: calc(var(--chapter-width) * 1%);
+  width: calc(var(--page-of-table-width) * 1%);
   gap: 3em;
   position: relative;
 
@@ -185,10 +232,25 @@ button {
     display: block;
   }
 
-  & section { /* Контент */
-    /* ширина .chapter — --chapter-width% от вьюпорта, а section должна занимать --width-main-content% от вьюпорта (как header) — пересчитываем в проценты от .chapter */
-    flex: 0 0 calc(var(--width-main-content) / var(--chapter-width) * 100%);
-    width: calc(var(--width-main-content) / var(--chapter-width) * 100%);
+  & nav {
+    flex: 1 1 0;
+    min-width: 0;
+    font-size: 0.9em;
+    
+    @media (max-width: 768px) {
+      position: sticky;
+      top: 0;
+      padding-top: 2em;
+      /* display: none; */
+      
+      background-color: rgba(var(--background-color-RGB), 1);
+      z-index: 1;
+    }
+  }
+
+  & .content {
+    flex: 0 0 calc(var(--width-main-content) / var(--page-of-table-width) * 100%);
+    width: calc(var(--width-main-content) / var(--page-of-table-width) * 100%);
 
     @media (max-width: 768px) {
       width: 100%;
@@ -204,234 +266,153 @@ button {
       display: none;
     }
   }
+}
 
-  & nav {
-    flex: 1 1 0;
-    min-width: 0;
-    font-size: 0.9em;
+.page-of-table nav {
+  & div {
+    position: sticky;
+    top: 2em;
+    max-height: calc(100vh - 4em);
+    overflow: hidden;
 
     @media (max-width: 768px) {
-      position: sticky;
-      top: 0;
-      padding-top: 2em;
-      /* display: none; */
+      overflow-x: auto;
+      overflow-y: hidden;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
 
-      background-color: rgba(var(--background-color-RGB), 1);
-      z-index: 1;
-    }
-
-    & div {
-      position: sticky;
-      top: 2em;
-      max-height: calc(100vh - 4em);
-      overflow: hidden;
-
-      @media (max-width: 768px) {
-        overflow-x: auto;
-        overflow-y: hidden;
-        scrollbar-width: none;
-        -ms-overflow-style: none;
-
-        &::-webkit-scrollbar {
-          display: none;
-        }
-      }
-      /* padding: 0 2em 0 1em; */
-    }
-
-    & ul{
-      @media (max-width: 768px) {
-        display: flex;
-        flex-direction: row;
-        padding: 0 1em 1em;
-        width: fit-content;
-        font-size: 1.2em;
+      &::-webkit-scrollbar {
+        display: none;
       }
     }
+  }
 
-    /* "родной" <li> с подразделом на мобилке всегда скрыт — после переноса
-       JS-ом (см. script.js) он пустой; а если JS не выполнился — не показываем
-       как есть, это фоллбэк */
-    & ul.nav-section > li:has(> ul.nav-subsection) {
+  & ul {
+    @media (max-width: 768px) {
+      display: flex;
+      flex-direction: row;
+      padding: 0 1em 1em;
+      width: fit-content;
+      font-size: 1.2em;
+    }
+  }
+
+  /* "родной" <li> с подразделом на мобилке всегда скрыт — после переноса
+      JS-ом (см. script.js) он пустой; а если JS не выполнился — не показываем
+      как есть, это фоллбэк */
+  & ul.nav-section > li:has(> ul.nav-subsection) {
+    @media (max-width: 768px) {
+      display: none;
+    }
+  }
+
+  /* мобилка: вторая строка — подразделы активного раздела, перенесённые
+      сюда JS-ом; свой overflow-x, поэтому скроллится независимо от разделов */
+  & .nav-subsection-row {
+    display: none;
+
+    @media (max-width: 768px) {
+      display: block;
+      /* overflow-x/overflow-y и скрытие скроллбара уже унаследованы от "& div"
+          выше (.nav-subsection-row — тоже <div>) — тут только то, что отличается:
+          обнуляем sticky/max-height, иначе вторая строка попытается прилипнуть
+          на тот же top, что и первая, и окажется скрыта под ней */
+      position: static;
+      max-height: none;
+    }
+
+    & ul.nav-subsection {
       @media (max-width: 768px) {
         display: none;
       }
     }
 
-    /* мобилка: вторая строка — подразделы активного раздела, перенесённые
-       сюда JS-ом; свой overflow-x, поэтому скроллится независимо от разделов */
-    & .nav-subsection-row {
-      display: none;
-
+    & ul.nav-subsection:has(li.nav-active) {
       @media (max-width: 768px) {
-        display: block;
-        /* overflow-x/overflow-y и скрытие скроллбара уже унаследованы от "& div"
-           выше (.nav-subsection-row — тоже <div>) — тут только то, что отличается:
-           обнуляем sticky/max-height, иначе вторая строка попытается прилипнуть
-           на тот же top, что и первая, и окажется скрыта под ней */
-        position: static;
-        max-height: none;
-      }
-
-      & ul.nav-subsection {
-        @media (max-width: 768px) {
-          display: none;
-        }
-      }
-
-      & ul.nav-subsection:has(li.nav-active) {
-        @media (max-width: 768px) {
-          display: flex;
-        }
+        display: flex;
       }
     }
-
-    & .nav-active {
-      border-radius: 0.4em;
-      color: rgba(var(--link-color-RGB),1);
-      background-color: rgba(var(--product-hover-color-RGB),0.3);
-      
-      @media (max-width: 768px) {
-        border-radius: 2em;
-      }
-    }
-
-
-    & li {
-      /* padding: 0 0 0 0.6em; */
-      /* padding: 0 0 0 1em; */
-
-      @media (max-width: 768px) {
-        white-space: nowrap;
-      }
-
-    }
-
-    & .nav-subsection {
-      padding: 0 0 0 1em;
-
-      @media (max-width: 768px) {
-        padding: 0 1em 1em;
-      }
-    }
-
-    & .nav-section {
-
-      @media (max-width: 768px) {
-        font-weight: 500;
-      }
-    }
-
-    & a {
-      color: rgba(var(--text-color-RGB),0.7);
-      text-decoration: none;
-
-      display: block;
-      flex: 1;
-      min-width: 0;
-      border-radius: 0.4em;
-      padding: 0.4em 0.7em 0.4em;
-      margin: 0 0 0.1em;
-
-      transition: background-color 0.5s ease, text-decoration-color 0.5s ease;
-
-      @media (max-width: 768px) {
-        border-radius: 1em;
-        color: rgba(var(--text-color-RGB), 1);
-      }
-    }
-
-    & a:hover {
-      background-color: rgba(var(--product-hover-color-RGB), 0.4);
-      transition: background-color 0s ease, text-decoration-color 0s ease;
-    }
-
-  }
-}
-
-
-
-header {
-  width: calc(var(--width-main-content) * 1%);
-  margin: 0 auto;
-
-  @media (max-width: 768px) {
-    width: 100%;
-    padding: 0 1em;
   }
 
-  & .link-group {
-    display: flex;
-    flex-wrap: wrap;
+  & .nav-active {
+    border-radius: 0.4em;
+    color: rgba(var(--link-color-RGB),1);
+    background-color: rgba(var(--product-hover-color-RGB),0.3);
+    
+    @media (max-width: 768px) {
+      border-radius: 2em;
+    }
+  }
 
-    --gap: 0.5em;
-    --columns: 4;
-    --gap-number: calc(var(--columns) - 1);
 
-    gap: var(--gap);
+  & li {
+    /* padding: 0 0 0 0.6em; */
+    /* padding: 0 0 0 1em; */
 
     @media (max-width: 768px) {
-      --columns: 2;
-    }
-
-    & a {
-      background-color: rgba(var(--product-hover-color-RGB),0.4);
-
-      color: rgba(var(--text-color-RGB), 1);
-
-      text-decoration: none;
-
-      border-radius: 0.4em;
-      padding: 0.4em 5em 4em 0.4em;
-
-      width: calc((100% - var(--gap-number) * var(--gap)) / (var(--columns)));
-
-    }
-
-    & a:not(.active):hover {
-      background-color: rgba(var(--product-hover-color-RGB), 1);
-      color: rgba(var(--hover-color-RGB),1);
-
-      transition: background-color 0s ease, text-decoration-color 0s ease;
-    }
-
-    & .active {
-      color: rgba(var(--text-color-inverse-RGB), 1);
-      background-color: rgba(var(--text-color-RGB), 0.8);
+      white-space: nowrap;
     }
 
   }
 
-  /* & div {
-    display: flex;
-    gap: 1em;
-    align-items: baseline;
+  & .nav-subsection {
+    padding: 0 0 0 1em;
 
-    & p {
-      font-size: 1.2em;
+    @media (max-width: 768px) {
+      padding: 0 1em 1em;
     }
-  } */
-}
+  }
 
+  & .nav-section {
+
+    @media (max-width: 768px) {
+      font-weight: 500;
+    }
+  }
+
+  & a {
+    color: rgba(var(--text-color-RGB),0.7);
+    text-decoration: none;
+
+    display: block;
+    flex: 1;
+    min-width: 0;
+    border-radius: 0.4em;
+    padding: 0.4em 0.7em 0.4em;
+    margin: 0 0 0.1em;
+
+    transition: background-color 0.5s ease, text-decoration-color 0.5s ease;
+
+    @media (max-width: 768px) {
+      border-radius: 1em;
+      color: rgba(var(--text-color-RGB), 1);
+    }
+  }
+
+  & a:hover {
+    background-color: rgba(var(--product-hover-color-RGB), 0.4);
+    transition: background-color 0s ease, text-decoration-color 0s ease;
+  }
+
+}
 
 .product-grid {
-  & ul {
-    display: flex;
-    flex-wrap: wrap;
-    /* margin-bottom: 1em; */
-    margin: 0;
-    padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  /* margin-bottom: 1em; */
+  margin: 0;
+  padding: 0;
 
-    --gap: 0.2em;
-    --columns: 3;
-    --gap-number: calc(var(--columns) - 1);
+  --gap: 0.2em;
+  --columns: 3;
+  --gap-number: calc(var(--columns) - 1);
 
-    gap: var(--gap);
+  gap: var(--gap);
 
-    @media (max-width: 768px) {
-      --columns: 2;
-    }
+  @media (max-width: 768px) {
+    --columns: 2;
   }
+  
 
   & li {
     font-size: 1.1em;
@@ -726,65 +707,90 @@ header {
 }
 
 .cart-panel {
-
+  
   padding: 2em 0 3em;
-
+  
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  gap: 1.5em;
 
   position: sticky;
   height: 100vh;
   top: 0;
-
+  
+  
+  /* & section {
+    border-radius: 1em;
+    background-color: rgba(var(--product-hover-color-RGB), 0.4);
+  } */
+  
   & .cart-items-approved {
-    height: 30%;
-    overflow-y: auto;
+    flex: 1 1 0;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+
+    & ul {
+      flex: 1 1 0;
+      min-height: 0;
+      overflow-y: auto;
+      position: relative;
+
+      &::after {
+        content: '';
+        display: block;
+        position: sticky;
+        bottom: 0;
+        height: 5em;
+        margin-top: -1.5em;
+        background: linear-gradient(to bottom, rgba(var(--background-color-RGB), 0), rgba(var(--background-color-RGB), 1));
+        pointer-events: none;
+      }
+    }
 
     & li {
       display: block;
-    }
-
-    &::after {
-      content: '';
-      display: block;
-      position: sticky;
-      bottom: 0;
-      height: 5em;
-      margin-top: -1.5em;
-      background: linear-gradient(to bottom, rgba(var(--background-color-RGB), 0), rgba(var(--background-color-RGB), 1));
-      pointer-events: none;
+      margin: 0 2em 1.5em 0;
     }
   }
 
   & .cart-items-done {
-    height: 55%;
-    overflow-y: auto;
+    flex: 2 1 0;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
 
-    &::after {
-      content: '';
-      display: block;
-      position: sticky;
-      bottom: 0;
-      height: 5em;
-      margin-top: -1.5em;
-      background: linear-gradient(to bottom, rgba(var(--background-color-RGB), 0), rgba(var(--background-color-RGB), 1));
-      pointer-events: none;
+    & ul {
+      flex: 1 1 0;
+      min-height: 0;
+      overflow-y: auto;
+      position: relative;
+
+      &::after {
+        content: '';
+        display: block;
+        position: sticky;
+        bottom: 0;
+        height: 5em;
+        margin-top: -1.5em;
+        background: linear-gradient(to bottom, rgba(var(--background-color-RGB), 0), rgba(var(--background-color-RGB), 1));
+        pointer-events: none;
+      }
     }
   }
-
-
+  
+  
   & ul {
     font-size: 0.75em;  
     margin-top: 0.5em;
   }
-
+  
   & li {
     display: flex;
     justify-content: space-between;
-
-    padding: 0.4em 0.7em 0.4em 0;
-    margin: 0 0 0.6em;
+    
+    margin: 0 0.7em 1.5em 0;
+    gap: 2em;
     border-radius: 0.4em;
 
     color: rgba(var(--text-color-RGB),0.7);
@@ -818,14 +824,17 @@ header {
   }
 
   & .cart-buttom {
+    flex: 0 0 auto;
+
     color: rgba(var(--text-color-RGB), 0.6);
     font-size: 0.9em;
+    border-radius: 1em;
+    background-color: rgba(var(--product-hover-color-RGB), 0.4);
+
     /* display: flex;
     flex-direction: column; */
 
     padding: 1em;
-    border-radius: 1em;
-    background-color: rgba(var(--product-hover-color-RGB), 0.4);
 
     & p {
       display: flex;
