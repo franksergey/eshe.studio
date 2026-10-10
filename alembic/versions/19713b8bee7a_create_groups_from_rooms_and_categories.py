@@ -194,14 +194,9 @@ def downgrade() -> None:
 
     with op.batch_alter_table("project_spec_groups", schema=None) as batch_op:
         batch_op.drop_constraint(
-            "fk_project_spec_groups_category_id_specification_item_categorie",
-            type_="foreignkey",
-        )
-        batch_op.drop_constraint(
             "fk_project_spec_groups_group_id_project_spec_groups",
             type_="foreignkey",
         )
-        batch_op.drop_column("category_id")
         batch_op.drop_column("group_id")
 
     with op.batch_alter_table("project_spec_items", schema=None) as batch_op:
