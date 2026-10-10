@@ -80,6 +80,9 @@ class ItemDB(Base):
     category_id: Mapped[int] = mapped_column(
         ForeignKey("specification_item_categories.id", ondelete="CASCADE")
     )
+    group_id: Mapped[int] = mapped_column(
+        ForeignKey("project_spec_groups.id", ondelete="CASCADE")
+    )
     ordinal_no: Mapped[int] = mapped_column()
 
     name: Mapped[str] = mapped_column(String(1024))
@@ -109,6 +112,7 @@ class ItemDB(Base):
         lazy="joined",
     )
     category: Mapped[OldCategoryDB] = relationship(back_populates="items")
+    group: Mapped[GroupDB] = relationship(back_populates="items")
 
     # Constraints
     __table_args__ = (
@@ -177,6 +181,9 @@ class GroupDB(Base):
     project_id: Mapped[int] = mapped_column(
         ForeignKey("projects.id", ondelete="CASCADE")
     )
+    group_id: Mapped[int | None] = mapped_column(
+        ForeignKey("project_spec_groups.id", ondelete="CASCADE")
+    )
 
     name: Mapped[str] = mapped_column(String(256))
     ordinal_no: Mapped[int] = mapped_column()
@@ -188,6 +195,23 @@ class GroupDB(Base):
         passive_deletes=True,
         lazy="joined",
         order_by=RoomDB.ordinal_no,
+    )
+    items: Mapped[list[ItemDB]] = relationship(
+        back_populates="group",
+        cascade="all, delete, delete-orphan",
+        passive_deletes=True,
+        lazy="selectin",
+        order_by=ItemDB.ordinal_no,
+    )
+    subgroups: Mapped[list[GroupDB]] = relationship(
+        back_populates="parent_group",
+        cascade="all, delete, delete-orphan",
+        passive_deletes=True,
+        lazy="selectin",
+        order_by="GroupDB.ordinal_no",
+    )
+    parent_group: Mapped[GroupDB | None] = relationship(
+        back_populates="subgroups", remote_side="GroupDB.id"
     )
     project: Mapped[ProjectDB] = relationship(back_populates="categories")
 

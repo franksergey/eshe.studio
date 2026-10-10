@@ -58,16 +58,12 @@ class ProjectsRepo(AbstractProjectsRepo):
         )
 
     @classmethod
-    def _validate_category(cls, obj: GroupDB) -> Group:
-        return Group(
-            name=obj.name,
-            items=[
-                cls._validate_item(item)
-                for room in obj.rooms
-                for group in room.categories
-                for item in group.items
-            ],
-        )
+    def _validate_group(cls, obj: GroupDB) -> Group:
+        items: list[Group | Item] = [
+            *(cls._validate_item(item) for item in obj.items),
+            *(cls._validate_group(subgroup) for subgroup in obj.subgroups),
+        ]
+        return Group(name=obj.name, items=items)
 
     @classmethod
     def _to_domain_schema(cls, obj: ProjectDB) -> Project:
@@ -75,7 +71,7 @@ class ProjectsRepo(AbstractProjectsRepo):
             id=obj.id,
             name=obj.name,
             categories=[
-                cls._validate_category(category) for category in obj.categories
+                cls._validate_group(category) for category in obj.categories
             ],
         )
 
