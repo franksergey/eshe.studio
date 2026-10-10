@@ -12,26 +12,18 @@ from sqlalchemy.orm import lazyload, load_only, selectinload
 from server.api.errors import UserAlreadyExistsError
 from server.domain.projects.ports import AbstractProjectsRepo
 from server.domain.projects.schemas import (
-    Category,
     Comment,
     CommentCreate,
     CurrencyCode,
+    Group,
     Item,
     MoneyType,
     Project,
     ProjectPure,
-    Room,
 )
 from server.domain.users.ports import AbstractUsersRepo
 from server.domain.users.schemas import UserRead
-from server.sql.models import (
-    CategoryDB,
-    CommentDB,
-    ItemDB,
-    ProjectDB,
-    RoomDB,
-    UserDB,
-)
+from server.sql.models import CommentDB, GroupDB, ItemDB, ProjectDB, UserDB
 
 if TYPE_CHECKING:
     from fastapi import Request
@@ -80,28 +72,27 @@ class ProjectsRepo(AbstractProjectsRepo):
             ],
         )
 
-    @classmethod
-    def _validate_category(cls, obj: CategoryDB) -> Category:
-        return Category(
-            name=obj.name,
-            items=[cls._validate_item(item) for item in obj.items],
-        )
+    async def _validate_group(self, obj: GroupDB) -> Group:
+        if "subgroups" not in obj.__dict__:
+            await self.session.refresh(obj, ("subgroups",))
 
-    @classmethod
-    def _validate_room(cls, obj: RoomDB) -> Room:
-        return Room(
-            name=obj.name,
-            categories=[
-                cls._validate_category(category) for category in obj.categories
+        items: list[Group | Item] = [
+            *(self._validate_item(item) for item in obj.items),
+            *[
+                await self._validate_group(subgroup)
+                for subgroup in obj.subgroups
             ],
-        )
+        ]
+        return Group(name=obj.name, items=items)
 
-    @classmethod
-    def _to_domain_schema(cls, obj: ProjectDB) -> Project:
+    async def _to_domain_schema(self, obj: ProjectDB) -> Project:
         return Project(
             id=obj.id,
             name=obj.name,
-            rooms=[cls._validate_room(room) for room in obj.rooms],
+            categories=[
+                await self._validate_group(category)
+                for category in obj.categories
+            ],
         )
 
     @staticmethod
@@ -116,7 +107,7 @@ class ProjectsRepo(AbstractProjectsRepo):
         if obj is None:
             return None
 
-        return self._to_domain_schema(obj)
+        return await self._to_domain_schema(obj)
 
     GET_ALL_STMT = select(ProjectDB)
 
@@ -124,9 +115,11 @@ class ProjectsRepo(AbstractProjectsRepo):
     async def get_all(self) -> list[Project]:
         objs = (await self.session.scalars(self.GET_ALL_STMT)).all()
 
-        return [self._to_domain_schema(obj) for obj in objs]
+        return [await self._to_domain_schema(obj) for obj in objs]
 
-    GET_ALL_PURE_STMT = select(ProjectDB).options(lazyload(ProjectDB.rooms))
+    GET_ALL_PURE_STMT = select(ProjectDB).options(
+        lazyload(ProjectDB.categories)
+    )
 
     @override
     async def get_all_pure(self) -> list[ProjectPure]:
