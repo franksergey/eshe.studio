@@ -6,25 +6,16 @@ from sqlalchemy.orm import lazyload, load_only, selectinload
 
 from server.domain.projects.ports import AbstractProjectsRepo
 from server.domain.projects.schemas import (
-    Category,
     Comment,
     CommentCreate,
     CurrencyCode,
+    Group,
     Item,
     MoneyType,
-    OldCategory,
     Project,
     ProjectPure,
-    Room,
 )
-from server.sql.models import (
-    CategoryDB,
-    CommentDB,
-    ItemDB,
-    OldCategoryDB,
-    ProjectDB,
-    RoomDB,
-)
+from server.sql.models import CategoryDB, CommentDB, ItemDB, ProjectDB
 
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession
@@ -67,27 +58,15 @@ class ProjectsRepo(AbstractProjectsRepo):
         )
 
     @classmethod
-    def _validate_old_category(cls, obj: OldCategoryDB) -> OldCategory:
-        return OldCategory(
+    def _validate_category(cls, obj: CategoryDB) -> Group:
+        return Group(
             name=obj.name,
-            items=[cls._validate_item(item) for item in obj.items],
-        )
-
-    @classmethod
-    def _validate_room(cls, obj: RoomDB) -> Room:
-        return Room(
-            name=obj.name,
-            categories=[
-                cls._validate_old_category(category)
-                for category in obj.categories
+            items=[
+                cls._validate_item(item)
+                for room in obj.rooms
+                for group in room.categories
+                for item in group.items
             ],
-        )
-
-    @classmethod
-    def _validate_category(cls, obj: CategoryDB) -> Category:
-        return Category(
-            name=obj.name,
-            rooms=[cls._validate_room(room) for room in obj.rooms],
         )
 
     @classmethod

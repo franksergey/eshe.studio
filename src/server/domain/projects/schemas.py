@@ -1,6 +1,6 @@
 from decimal import Decimal
 from enum import StrEnum
-from typing import Annotated
+from typing import Annotated, Literal
 
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, HttpUrl
 
@@ -42,7 +42,21 @@ class ProjectPure(ProjectBase):
 class Project(ProjectPure):
     """Таблица комплектации."""
 
-    categories: Annotated[list[Category], Field(max_length=64)]
+    categories: Annotated[list[Group], Field(max_length=64)]
+
+
+class Group(BaseModel):
+    """Группа карточек в таблице комплектации.
+
+    Самый верхний уровень групп – это "категории" товаров.
+    """
+
+    item_type: Literal["group"] = "group"
+
+    name: str
+    items: list[Annotated[Item | Group, Field(discriminator="item_type")]]
+
+    model_config = ConfigDict(from_attributes=True, serialize_by_alias=True)
 
 
 class CurrencyCode(StrEnum):
@@ -78,6 +92,8 @@ class Comment(CommentBase):
 class Item(BaseModel):
     """Вариант предмета в таблице комплектации."""
 
+    item_type: Literal["item"] = "item"
+
     name: Annotated[str, Field(min_length=1, max_length=1024)]
     count: Annotated[int, Field(ge=1, le=256)]
 
@@ -90,32 +106,3 @@ class Item(BaseModel):
     model_config = ConfigDict(
         use_enum_values=True, from_attributes=True, serialize_by_alias=True
     )
-
-
-class OldCategory(BaseModel):
-    """Категория предметов в таблице комплектации."""
-
-    name: Annotated[str, Field(min_length=1, max_length=1024)]
-    items: Annotated[list[Item], Field(min_length=1, max_length=32)]
-
-    model_config = ConfigDict(from_attributes=True, serialize_by_alias=True)
-
-
-class Room(BaseModel):
-    """Комната, для которой выбираются предметы в таблице комплектации."""
-
-    name: Annotated[str, Field(min_length=1, max_length=256)]
-    categories: Annotated[
-        list[OldCategory], Field(min_length=1, max_length=64)
-    ]
-
-    model_config = ConfigDict(from_attributes=True, serialize_by_alias=True)
-
-
-class Category(BaseModel):
-    """Категория карточек в таблице комплектации."""
-
-    name: str
-    rooms: list[Room]
-
-    model_config = ConfigDict(from_attributes=True, serialize_by_alias=True)
