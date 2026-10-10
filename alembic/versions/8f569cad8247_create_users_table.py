@@ -1,7 +1,7 @@
 """Create users table
 
 Revision ID: 8f569cad8247
-Revises: 183e7006a92b
+Revises: e0daba41f48d
 Create Date: 2026-10-09 18:09:28.624046
 
 """
@@ -21,7 +21,7 @@ else:
 
 # revision identifiers, used by Alembic.
 revision: str = "8f569cad8247"
-down_revision: str | Sequence[str] | None = "183e7006a92b"
+down_revision: str | Sequence[str] | None = "e0daba41f48d"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 
