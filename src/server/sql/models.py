@@ -38,10 +38,10 @@ IDENTITY = (
 
 
 class SpecificationTagDB(Base):
-    __tablename__ = "specification_tag"
+    __tablename__ = "project_spec_item_tags"
 
     item_id: Mapped[int] = mapped_column(
-        ForeignKey("specification_items.id", ondelete="CASCADE"),
+        ForeignKey("project_spec_items.id", ondelete="CASCADE"),
         primary_key=True,
     )
     ordinal_no: Mapped[int] = mapped_column(primary_key=True)
@@ -53,11 +53,11 @@ class SpecificationTagDB(Base):
 
 
 class CommentDB(Base, CreatedAtMixin):
-    __tablename__ = "specification_item_comments"
+    __tablename__ = "project_spec_item_comments"
 
     id: Mapped[int] = mapped_column(IDENTITY, primary_key=True)
     item_id: Mapped[int] = mapped_column(
-        ForeignKey("specification_items.id", ondelete="CASCADE")
+        ForeignKey("project_spec_items.id", ondelete="CASCADE")
     )
 
     text: Mapped[str] = mapped_column(String(4096))
@@ -74,7 +74,7 @@ CURRENCY_CODE_ENUM = Enum(CurrencyCode, name="currency_code_enum")
 class ItemDB(Base):
     """Вариант предмета в таблице комплектации."""
 
-    __tablename__ = "specification_items"
+    __tablename__ = "project_spec_items"
 
     id: Mapped[int] = mapped_column(IDENTITY, primary_key=True)
     category_id: Mapped[int] = mapped_column(
@@ -151,7 +151,7 @@ class RoomDB(Base):
 
     id: Mapped[int] = mapped_column(IDENTITY, primary_key=True)
     category_id: Mapped[int] = mapped_column(
-        ForeignKey("project_spec_categories.id", ondelete="CASCADE")
+        ForeignKey("project_spec_groups.id", ondelete="CASCADE")
     )
 
     name: Mapped[str] = mapped_column(String(256))
@@ -165,13 +165,13 @@ class RoomDB(Base):
         lazy="joined",
         order_by=OldCategoryDB.ordinal_no,
     )
-    category: Mapped[CategoryDB] = relationship(back_populates="rooms")
+    category: Mapped[GroupDB] = relationship(back_populates="rooms")
 
 
-class CategoryDB(Base):
+class GroupDB(Base):
     """Категория карточек в таблице комплектации."""
 
-    __tablename__ = "project_spec_categories"
+    __tablename__ = "project_spec_groups"
 
     id: Mapped[int] = mapped_column(IDENTITY, primary_key=True)
     project_id: Mapped[int] = mapped_column(
@@ -203,10 +203,10 @@ class ProjectDB(Base):
     name: Mapped[str] = mapped_column(String(256))
 
     # Relations
-    categories: Mapped[list[CategoryDB]] = relationship(
+    categories: Mapped[list[GroupDB]] = relationship(
         back_populates="project",
         cascade="all, delete, delete-orphan",
         passive_deletes=True,
         lazy="joined",
-        order_by=CategoryDB.ordinal_no,
+        order_by=GroupDB.ordinal_no,
     )

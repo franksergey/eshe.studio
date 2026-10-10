@@ -15,7 +15,7 @@ from server.domain.projects.schemas import (
     Project,
     ProjectPure,
 )
-from server.sql.models import CategoryDB, CommentDB, ItemDB, ProjectDB
+from server.sql.models import CommentDB, GroupDB, ItemDB, ProjectDB
 
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession
@@ -58,7 +58,7 @@ class ProjectsRepo(AbstractProjectsRepo):
         )
 
     @classmethod
-    def _validate_category(cls, obj: CategoryDB) -> Group:
+    def _validate_category(cls, obj: GroupDB) -> Group:
         return Group(
             name=obj.name,
             items=[
