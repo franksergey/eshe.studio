@@ -336,7 +336,7 @@ main header {
 
   & .nav-active {
     border-radius: 0.4em;
-    background-color: rgba(var(--product-hover-color-RGB), 1);    
+    background-color: rgba(var(--product-hover-color-RGB), 1);
 
     @media (max-width: 768px) {
       border-radius: 2em;
