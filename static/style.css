@@ -168,7 +168,85 @@ button {
 
 /* ————————————— item ————————————— */
 
+header {
+  display: flex;
+  justify-content: space-between;
+
+  font-size: 1.4em;
+  padding: 0.5em 1em;
+
+  font-weight: 300;
+  letter-spacing: 0.013em;
+
+  & .select-wrapper {
+    position: relative;
+    display: inline-block;
+
+    &::after {
+      content: '⌄';
+      position: absolute;
+      top: 50%;
+      left: 0.3em;
+      transform: translateY(-65%);
+      font-size: 1.3em;
+      line-height: 1;
+      color: rgba(var(--text-color-inverse-RGB), 1);
+      pointer-events: none;
+    }
+  }
+
+  & select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    border: none;
+
+    font-size: 1em;
+    font-weight: 300;
+    padding: 0.1em 0.5em 0.1em 1.7em;
+    border-radius: 1em;
+    color: rgba(var(--text-color-inverse-RGB), 1);
+    background-color: rgba(var(--link-color-RGB), 1);
+
+    & option {
+      font-weight: 300;
+    }
+  }
+
+
+  & div {
+    display: flex;
+    align-items: center;
+    gap: 1em;
+  }
+
+  & a {
+    text-decoration: none;
+  }
+  
+  & .login {
+    padding: 0.4em 1em;
+    border-radius: 0.5em;
+    color: rgba(var(--text-color-inverse-RGB), 1);
+    background-color: rgba(var(--link-color-RGB), 1);
+  }
+
+  & .login:hover {
+    background-color: rgba(var(--text-color-RGB), 1);
+  }
+
+  & svg {
+    width: 2.3em;
+  }
+}
+
 main header {
+  font-size: 1em;
+  display: block;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+
+
   width: calc(var(--width-main-content) * 1%);
   margin: 0 auto;
 
@@ -834,7 +912,8 @@ main header {
   }
 
   & .button-confirm {
-    font-size: 0.9em;
+    font-weight: 300;
+    font-size: 1.1em;
     width: stretch;
     padding: 1em;
     border-radius: 1em;
