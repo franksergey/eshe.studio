@@ -12,7 +12,13 @@ from sqlalchemy import (
     SmallInteger,
     String,
 )
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+from sqlalchemy.orm import (
+    DeclarativeBase,
+    Mapped,
+    declarative_mixin,
+    mapped_column,
+    relationship,
+)
 
 from server.config import settings
 from server.domain.projects.schemas import CurrencyCode
@@ -77,17 +83,8 @@ PYDANTIC_MAX_URL_LENGTH = 2083
 CURRENCY_CODE_ENUM = Enum(CurrencyCode, name="currency_code_enum")
 
 
-class ItemDB(Base):
-    """Вариант предмета в таблице комплектации."""
-
-    __tablename__ = "project_spec_items"
-
-    id: Mapped[int] = mapped_column(IDENTITY, primary_key=True)
-    group_id: Mapped[int] = mapped_column(
-        ForeignKey("project_spec_groups.id", ondelete="CASCADE")
-    )
-    ordinal_no: Mapped[int] = mapped_column()
-
+@declarative_mixin
+class ItemTableBase:
     name: Mapped[str] = mapped_column(String(1024))
     count: Mapped[int] = mapped_column(SmallInteger)
     approved: Mapped[bool] = mapped_column(default=False)
@@ -101,19 +98,31 @@ class ItemDB(Base):
         CURRENCY_CODE_ENUM
     )
 
+
+class ItemDB(ItemTableBase, Base):
+    """Вариант предмета в таблице комплектации."""
+
+    __tablename__ = "project_spec_items"
+
+    id: Mapped[int] = mapped_column(IDENTITY, primary_key=True)
+    group_id: Mapped[int] = mapped_column(
+        ForeignKey("project_spec_groups.id", ondelete="CASCADE")
+    )
+    ordinal_no: Mapped[int] = mapped_column()
+
     # Relations
     tags: Mapped[list[SpecificationTagDB]] = relationship(
         back_populates="item",
         cascade="all, delete, delete-orphan",
         passive_deletes=True,
-        lazy="joined",
+        lazy="selectin",
         order_by=SpecificationTagDB.ordinal_no,
     )
     comments: Mapped[list[CommentDB]] = relationship(
         back_populates="item",
         cascade="all, delete, delete-orphan",
         passive_deletes=True,
-        lazy="joined",
+        lazy="selectin",
     )
     group: Mapped[GroupDB] = relationship(back_populates="items")
 
@@ -179,7 +188,7 @@ class ProjectDB(Base):
         back_populates="project",
         cascade="all, delete, delete-orphan",
         passive_deletes=True,
-        lazy="joined",
+        lazy="selectin",
         order_by=GroupDB.ordinal_no,
     )
 
@@ -191,3 +200,49 @@ class ProjectDB(Base):
 
 class UserDB(SQLAlchemyBaseUserTableUUID, Base):
     __tablename__ = "users"
+
+    # Relations
+    choices: Mapped[list[ChoiceDB]] = relationship(
+        back_populates="user", order_by="ChoiceDB.created_at"
+    )
+
+
+# ==============
+# Choices Domain
+# ==============
+
+
+class ChoiceDB(CreatedAtMixin, Base):
+    """Заполненная форма с выбором карточек в архитектурном проекте."""
+
+    __tablename__ = "user_choices"
+
+    id: Mapped[int] = mapped_column(IDENTITY, primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+
+    # Relations
+    user: Mapped[UserDB] = relationship(back_populates="choices")
+    items: Mapped[list[ItemChoiceDB]] = relationship(
+        back_populates="choice",
+        cascade="all, delete, delete-orphan",
+        passive_deletes=True,
+        lazy="selectin",
+        order_by="ItemChoiceDB.ordinal_no",
+    )
+
+
+class ItemChoiceDB(ItemTableBase, Base):
+    """Выбор конкретной карточки в рамках формы."""
+
+    __tablename__ = "user_item_choices"
+
+    choice_id: Mapped[int] = mapped_column(
+        ForeignKey("user_choices.id"), primary_key=True
+    )
+    item_id: Mapped[int | None] = mapped_column(
+        ForeignKey("project_spec_items.id", ondelete="SET NULL")
+    )
+    ordinal_no: Mapped[int] = mapped_column(primary_key=True)
+
+    # Relations
+    choice: Mapped[ChoiceDB] = relationship(back_populates="items")
