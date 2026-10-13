@@ -1,3 +1,4 @@
+from collections import defaultdict
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Literal, cast, override
 
@@ -24,7 +25,7 @@ from server.sql.models import ChoiceDB, GroupSnapshotDB, ItemChoiceDB
 
 if TYPE_CHECKING:
     import uuid
-    from collections.abc import Iterator
+    from collections.abc import Iterator, Mapping, Sequence
 
     from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -66,25 +67,36 @@ class ChoicesRepo(AbstractChoicesRepo):
             price=price,
         )
 
-    async def _validate_group(self, obj: GroupSnapshotDB) -> GroupSnapshot:
-        if "subgroups" not in obj.__dict__:
-            await self.session.refresh(obj, ("subgroups",))
-
+    @classmethod
+    def _validate_group(
+        cls,
+        obj: GroupSnapshotDB,
+        groups_map: Mapping[int | None, Sequence[GroupSnapshotDB]],
+    ) -> GroupSnapshot:
         items: list[GroupSnapshot | ItemChoice] = [
-            *(self._validate_item(item) for item in obj.items),
+            *(cls._validate_item(item) for item in obj.items),
             *[
-                await self._validate_group(subgroup)
-                for subgroup in obj.subgroups
+                cls._validate_group(subgroup, groups_map)
+                for subgroup in groups_map[obj.id]
             ],
         ]
         return GroupSnapshot(name=obj.name, items=items)
 
-    async def _to_domain_schema(self, obj: ChoiceDB) -> Choice:
+    @classmethod
+    def _to_domain_schema(cls, obj: ChoiceDB) -> Choice:
+        groups_map: dict[int | None, list[GroupSnapshotDB]] = defaultdict(list)
+
+        for group in obj.groups:
+            groups_map[group.group_id].append(group)
+
         return Choice(
             id=obj.id,
             user_id=obj.user_id,
             created_at=obj.created_at,
-            items=[await self._validate_group(group) for group in obj.groups],
+            items=[
+                cls._validate_group(group, groups_map)
+                for group in groups_map[None]
+            ],
         )
 
     @staticmethod
@@ -101,7 +113,7 @@ class ChoicesRepo(AbstractChoicesRepo):
         if obj is None:
             return None
 
-        return await self._to_domain_schema(obj)
+        return self._to_domain_schema(obj)
 
     @override
     async def get_by_user(self, user_id: uuid.UUID) -> list[ChoicePure]:
