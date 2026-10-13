@@ -242,7 +242,7 @@ class GroupSnapshotDB(Base):
     choice_id: Mapped[int] = mapped_column(
         ForeignKey("user_choices.id", ondelete="CASCADE")
     )
-    group_id: Mapped[int] = mapped_column(
+    group_id: Mapped[int | None] = mapped_column(
         ForeignKey("user_item_choice_groups.id", ondelete="CASCADE")
     )
     ordinal_no: Mapped[int]
