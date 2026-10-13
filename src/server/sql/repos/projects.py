@@ -1,3 +1,4 @@
+from collections import defaultdict
 from typing import TYPE_CHECKING, cast, override
 
 from pydantic import HttpUrl
@@ -18,6 +19,8 @@ from server.domain.projects.schemas import (
 from server.sql.models import CommentDB, GroupDB, ItemDB, ProjectDB
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping, Sequence
+
     from sqlalchemy.ext.asyncio import AsyncSession
 
 
@@ -56,26 +59,32 @@ class ProjectsRepo(AbstractProjectsRepo):
             price=price,
         )
 
-    async def _validate_group(self, obj: GroupDB) -> Group:
-        if "subgroups" not in obj.__dict__:
-            await self.session.refresh(obj, ("subgroups",))
-
+    @classmethod
+    def _validate_group(
+        cls, obj: GroupDB, groups_map: Mapping[int | None, Sequence[GroupDB]]
+    ) -> Group:
         items: list[Group | Item] = [
-            *(self._validate_item(item) for item in obj.items),
+            *(cls._validate_item(item) for item in obj.items),
             *[
-                await self._validate_group(subgroup)
-                for subgroup in obj.subgroups
+                cls._validate_group(subgroup, groups_map)
+                for subgroup in groups_map[obj.id]
             ],
         ]
         return Group(name=obj.name, items=items)
 
-    async def _to_domain_schema(self, obj: ProjectDB) -> Project:
+    @classmethod
+    def _to_domain_schema(cls, obj: ProjectDB) -> Project:
+        groups_map: dict[int | None, list[GroupDB]] = defaultdict(list)
+
+        for group in obj.categories:
+            groups_map[group.group_id].append(group)
+
         return Project(
             id=obj.id,
             name=obj.name,
             categories=[
-                await self._validate_group(category)
-                for category in obj.categories
+                cls._validate_group(category, groups_map)
+                for category in groups_map[None]
             ],
         )
 
@@ -91,7 +100,7 @@ class ProjectsRepo(AbstractProjectsRepo):
         if obj is None:
             return None
 
-        return await self._to_domain_schema(obj)
+        return self._to_domain_schema(obj)
 
     @override
     async def get_pure(self, id: int) -> ProjectPure | None:
@@ -109,7 +118,7 @@ class ProjectsRepo(AbstractProjectsRepo):
     async def get_all(self) -> list[Project]:
         objs = (await self.session.scalars(self.GET_ALL_STMT)).all()
 
-        return [await self._to_domain_schema(obj) for obj in objs]
+        return [self._to_domain_schema(obj) for obj in objs]
 
     GET_ALL_PURE_STMT = select(ProjectDB).options(
         lazyload(ProjectDB.categories)
