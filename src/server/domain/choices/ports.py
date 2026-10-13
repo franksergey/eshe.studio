@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, Protocol
 if TYPE_CHECKING:
     import uuid
 
-    from server.domain.choices.schemas import Choice, ChoiceCreate
+    from .schemas import Choice, ChoiceCreate
 
 
 class AbstractChoicesRepo(Protocol):
