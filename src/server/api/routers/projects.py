@@ -4,7 +4,7 @@ from server.api.dependencies import ContainerDependency
 from server.api.errors import ProjectNotFoundError, error_handler
 from server.domain.projects.schemas import Project, ProjectPure
 
-router = APIRouter(prefix="/specifications", tags=["Rooms Specifications"])
+router = APIRouter(prefix="/projects", tags=["Arhitectural Projects"])
 
 
 @router.get("/")
