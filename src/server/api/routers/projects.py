@@ -10,7 +10,7 @@ router = APIRouter(prefix="/projects", tags=["Arhitectural Projects"])
 @router.get("/")
 async def read_projects(container: ContainerDependency) -> list[ProjectPure]:
     """Получить список сразу всех комплектаций проектов."""
-    return await container.specifications.get_all_pure()
+    return await container.projects.get_all_pure()
 
 
 @router.get(
@@ -21,7 +21,7 @@ async def read_projects(container: ContainerDependency) -> list[ProjectPure]:
 )
 async def read_project(id: int, container: ContainerDependency) -> ProjectPure:
     """Получить данные об архитектурном проекте."""
-    return await container.specifications.get_pure(id)
+    return await container.projects.get_pure(id)
 
 
 @router.get(
@@ -34,4 +34,4 @@ async def read_project_specification(
     id: int, container: ContainerDependency
 ) -> Project:
     """Получить таблицу комплектации архитектурного проекта."""
-    return await container.specifications.get(id)
+    return await container.projects.get(id)
