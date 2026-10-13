@@ -8,9 +8,7 @@ router = APIRouter(prefix="/projects", tags=["Arhitectural Projects"])
 
 
 @router.get("/")
-async def read_specifications(
-    container: ContainerDependency,
-) -> list[ProjectPure]:
+async def read_projects(container: ContainerDependency) -> list[ProjectPure]:
     """Получить список сразу всех комплектаций проектов."""
     return await container.specifications.get_all_pure()
 
@@ -21,8 +19,19 @@ async def read_specifications(
         404: error_handler.generate_swagger_response(ProjectNotFoundError)
     },
 )
-async def read_specification(
+async def read_project(id: int, container: ContainerDependency) -> ProjectPure:
+    """Получить данные об архитектурном проекте."""
+    return await container.specifications.get_pure(id)
+
+
+@router.get(
+    "/{id}/spec",
+    responses={
+        404: error_handler.generate_swagger_response(ProjectNotFoundError)
+    },
+)
+async def read_project_specification(
     id: int, container: ContainerDependency
 ) -> Project:
-    """Получить список сразу всех комплектаций проектов."""
+    """Получить таблицу комплектации архитектурного проекта."""
     return await container.specifications.get(id)

@@ -20,6 +20,14 @@ class ProjectsService:
 
         return obj
 
+    async def get_pure(self, id: int) -> ProjectPure:
+        obj = await self.repo.get_pure(id)
+
+        if obj is None:
+            raise ProjectNotFoundError
+
+        return obj
+
     async def get_all(self) -> list[Project]:
         return await self.repo.get_all()
 
