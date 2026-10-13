@@ -126,7 +126,6 @@ class ItemDB(ItemTableBase, Base):
         back_populates="item",
         cascade="all, delete, delete-orphan",
         passive_deletes=True,
-        lazy="selectin",
     )
     group: Mapped[GroupDB] = relationship(back_populates="items")
 

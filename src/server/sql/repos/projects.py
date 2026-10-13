@@ -54,9 +54,6 @@ class ProjectsRepo(AbstractProjectsRepo):
             link=HttpUrl(obj.link) if obj.link is not None else None,
             tags=[tag.tag for tag in obj.tags],
             price=price,
-            comments=[
-                cls._validate_comment(comment) for comment in obj.comments
-            ],
         )
 
     async def _validate_group(self, obj: GroupDB) -> Group:
@@ -130,6 +127,16 @@ class ProjectsRepo(AbstractProjectsRepo):
         return (await self.session.execute(stmt)).scalar_one()
 
     @override
+    async def get_item(self, item_id: int) -> Item | None:
+        stmt = select(ItemDB).where(ItemDB.id == item_id)
+        obj = await self.session.scalar(stmt)
+
+        if obj is None:
+            return None
+
+        return self._validate_item(obj)
+
+    @override
     async def get_item_comments(self, item_id: int) -> list[Comment] | None:
         stmt = (
             select(ItemDB)
@@ -142,6 +149,24 @@ class ProjectsRepo(AbstractProjectsRepo):
             return None
 
         return [self._validate_comment(comment) for comment in obj.comments]
+
+    @override
+    async def bulk_get_item_comments(
+        self, item_ids: list[int]
+    ) -> dict[int, list[Comment]]:
+        stmt = (
+            select(ItemDB)
+            .options(load_only(ItemDB.id), selectinload(ItemDB.comments))
+            .where(ItemDB.id.in_(item_ids))
+        )
+        objs = (await self.session.scalars(stmt)).all()
+
+        return {
+            obj.id: [
+                self._validate_comment(comment) for comment in obj.comments
+            ]
+            for obj in objs
+        }
 
     # NOTE: Should it return new data of ItemDB?
     @override
