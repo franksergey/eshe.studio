@@ -62,6 +62,7 @@ class ProjectsRepo(AbstractProjectsRepo):
             )
 
         return Item(
+            id=obj.id,
             name=obj.name,
             count=obj.count,
             link=HttpUrl(obj.link) if obj.link is not None else None,

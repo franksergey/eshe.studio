@@ -28,7 +28,7 @@ class ProjectPut(ProjectBase):
 class ProjectUpdate(BaseModel):
     """Модель для частичного обновления объекта спецификации."""
 
-    name: Annotated[str | None, Field(None, min_length=1, max_length=256)]
+    name: Annotated[str, Field(min_length=1, max_length=256)] = ""
 
     model_config = ConfigDict(from_attributes=True, serialize_by_alias=True)
 
@@ -45,18 +45,100 @@ class Project(ProjectPure):
     categories: Annotated[list[Group], Field(max_length=64)]
 
 
-class Group(BaseModel):
+# ==========================
+# Intermediate entity: Group
+# ==========================
+
+
+class ItemType(StrEnum):
+    ITEM = "item"
+    GROUP = "group"
+
+
+class GroupBase(BaseModel):
+    """Базовая модель группы карточек."""
+
+    name: Annotated[str, Field(min_length=1, max_length=256)]
+
+    model_config = ConfigDict(
+        use_enum_values=True, from_attributes=True, serialize_by_alias=True
+    )
+
+
+class GroupCreate(GroupBase):
+    """Модель для создания новой группы."""
+
+
+class GroupPut(GroupBase):
+    """Модель для полного обновления группы."""
+
+
+class Group(GroupBase):
     """Группа карточек в таблице комплектации.
 
     Самый верхний уровень групп – это "категории" товаров.
     """
 
-    item_type: Literal["group"] = "group"
+    item_type: Literal[ItemType.GROUP] = ItemType.GROUP
 
-    name: str
     items: list[Annotated[Item | Group, Field(discriminator="item_type")]]
 
-    model_config = ConfigDict(from_attributes=True, serialize_by_alias=True)
+
+# ===============
+# Tree leaf: Item
+# ===============
+
+
+class ItemBase(BaseModel):
+    """Базовая модель для карточки."""
+
+    name: Annotated[str, Field(min_length=1, max_length=1024)]
+    count: Annotated[int, Field(ge=1, le=256)]
+    price: MoneyType | None
+
+    link: HttpUrl | None = None
+    tags: Annotated[list[str], Field(max_length=16)]
+
+    model_config = ConfigDict(
+        use_enum_values=True, from_attributes=True, serialize_by_alias=True
+    )
+
+
+class ItemCreate(ItemBase):
+    """Модель для создания карточки."""
+
+
+class ItemPut(ItemBase):
+    """Модель для полного обновления карточки."""
+
+
+class ItemUpdate(BaseModel):
+    """Модель для частичного обновления карточки."""
+
+    name: Annotated[str, Field(min_length=1, max_length=1024)] = ""
+    count: Annotated[int, Field(ge=1, le=256)] = 1
+    price: MoneyType | None = None
+
+    link: HttpUrl | None = None
+    tags: Annotated[list[str], Field(max_length=16)] = []
+
+    model_config = ConfigDict(
+        use_enum_values=True, from_attributes=True, serialize_by_alias=True
+    )
+
+
+class ItemPure(ItemBase):
+    """Модель карточки без внешних связей."""
+
+    id: int
+
+
+class Item(ItemPure):
+    """Вариант предмета в таблице комплектации (карточка)."""
+
+    item_type: Literal[ItemType.ITEM] = ItemType.ITEM
+
+    comments: list[Comment]
 
 
 class CurrencyCode(StrEnum):
@@ -87,22 +169,3 @@ class Comment(CommentBase):
     id: int
 
     created_at: AwareDatetime
-
-
-class Item(BaseModel):
-    """Вариант предмета в таблице комплектации."""
-
-    item_type: Literal["item"] = "item"
-
-    name: Annotated[str, Field(min_length=1, max_length=1024)]
-    count: Annotated[int, Field(ge=1, le=256)]
-
-    link: HttpUrl | None = None
-    tags: Annotated[list[str], Field(max_length=16)]
-
-    price: MoneyType | None
-    comments: list[Comment]
-
-    model_config = ConfigDict(
-        use_enum_values=True, from_attributes=True, serialize_by_alias=True
-    )
