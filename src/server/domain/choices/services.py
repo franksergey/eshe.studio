@@ -7,7 +7,7 @@ if TYPE_CHECKING:
     from server.domain.users.schemas import UserRead
 
     from .ports import AbstractChoicesRepo
-    from .schemas import Choice, ChoiceCreate
+    from .schemas import Choice, ChoiceCreate, ChoicePure
 
 
 @dataclass(eq=False, slots=True)
@@ -22,7 +22,7 @@ class ChoicesService:
 
         return obj
 
-    async def get_by_user(self, user: UserRead) -> list[Choice]:
+    async def get_by_user(self, user: UserRead) -> list[ChoicePure]:
         return await self.repo.get_by_user(user.id)
 
     async def create(self, data: ChoiceCreate, user: UserRead) -> None:

@@ -1,3 +1,4 @@
+import uuid
 from decimal import Decimal
 from typing import ClassVar
 
@@ -223,7 +224,7 @@ class ChoiceDB(CreatedAtMixin, Base):
     __tablename__ = "user_choices"
 
     id: Mapped[int] = mapped_column(IDENTITY, primary_key=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"))
 
     # Relations
     user: Mapped[UserDB] = relationship(back_populates="choices")

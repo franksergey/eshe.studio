@@ -1,9 +1,9 @@
+import uuid
 from typing import Annotated, Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import AwareDatetime, BaseModel, ConfigDict, Field
 
 from server.domain.projects.schemas import ItemBase, ItemType
-from server.domain.users.schemas import UserRead
 
 
 class ChoiceCreate(BaseModel):
@@ -12,13 +12,17 @@ class ChoiceCreate(BaseModel):
     model_config = ConfigDict(from_attributes=True, serialize_by_alias=True)
 
 
-class Choice(BaseModel):
+class ChoicePure(BaseModel):
     id: int
 
-    user: UserRead
-    items: list[GroupSnapshot]
+    user_id: uuid.UUID
+    created_at: AwareDatetime
 
     model_config = ConfigDict(from_attributes=True, serialize_by_alias=True)
+
+
+class Choice(ChoicePure):
+    items: list[GroupSnapshot]
 
 
 class GroupSnapshot(BaseModel):
