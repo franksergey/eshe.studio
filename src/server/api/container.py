@@ -23,15 +23,15 @@ class ServiceContainer:
     session: AsyncSession
     request: Request | None
 
-    _specification_service: ProjectsService | None = None
+    _projects_service: ProjectsService | None = None
 
     @property
-    def specifications(self) -> ProjectsService:
-        if self._specification_service is None:
+    def projects(self) -> ProjectsService:
+        if self._projects_service is None:
             repo = ProjectsRepo(self.session)
-            self._specification_service = ProjectsService(repo)
+            self._projects_service = ProjectsService(repo)
 
-        return self._specification_service
+        return self._projects_service
 
     _users_service: UsersService | None = None
 

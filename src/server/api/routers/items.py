@@ -17,7 +17,7 @@ async def read_comment(
     item_id: int, container: ContainerDependency
 ) -> list[Comment]:
     """Получить список комментариев."""
-    return await container.specifications.get_item_comments(item_id)
+    return await container.projects.get_item_comments(item_id)
 
 
 @router.post(
@@ -31,4 +31,4 @@ async def create_comment(
     item_id: int, data: CommentCreate, container: ContainerDependency
 ) -> Comment:
     """Создать новый комментарий."""
-    return await container.specifications.add_comment(item_id, data)
+    return await container.projects.add_comment(item_id, data)

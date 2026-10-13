@@ -4,9 +4,9 @@ from typing import Annotated, Literal
 
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, HttpUrl
 
-# =============================
-# Aggregate Root: Specification
-# =============================
+# ========================
+# Aggregate Root: Projects
+# ========================
 
 
 class ProjectBase(BaseModel):

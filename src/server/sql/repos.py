@@ -110,6 +110,16 @@ class ProjectsRepo(AbstractProjectsRepo):
 
         return await self._to_domain_schema(obj)
 
+    @override
+    async def get_pure(self, id: int) -> ProjectPure | None:
+        stmt = select(ProjectDB).where(ProjectDB.id == id)
+        obj = await self.session.scalar(stmt)
+
+        if obj is None:
+            return None
+
+        return self._to_domain_schema_pure(obj)
+
     GET_ALL_STMT = select(ProjectDB)
 
     @override
