@@ -3,6 +3,7 @@ from typing import ClassVar
 
 from fastapi_users.db import SQLAlchemyBaseUserTableUUID
 from sqlalchemy import (
+    JSON,
     CheckConstraint,
     Enum,
     ForeignKey,
@@ -12,6 +13,7 @@ from sqlalchemy import (
     SmallInteger,
     String,
 )
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import (
     DeclarativeBase,
     Mapped,
@@ -43,6 +45,7 @@ IDENTITY = (
     Identity(always=True) if settings.db.DIALECT == "postgresql" else None
 )
 
+JsonType = JSON().with_variant(JSONB, "postgresql")
 
 # ===============
 # Projects Domain
@@ -211,6 +214,8 @@ class UserDB(SQLAlchemyBaseUserTableUUID, Base):
 # Choices Domain
 # ==============
 
+type GroupsSnapshot = list[int | GroupsSnapshot]
+
 
 class ChoiceDB(CreatedAtMixin, Base):
     """Заполненная форма с выбором карточек в архитектурном проекте."""
@@ -222,12 +227,40 @@ class ChoiceDB(CreatedAtMixin, Base):
 
     # Relations
     user: Mapped[UserDB] = relationship(back_populates="choices")
+    groups: Mapped[list[GroupSnapshotDB]] = relationship(
+        cascade="all, delete, delete-orphan",
+        passive_deletes=True,
+        lazy="selectin",
+        order_by="GroupSnapshotDB.ordinal_no",
+    )
+
+
+class GroupSnapshotDB(Base):
+    __tablename__ = "user_item_choice_groups"
+
+    id: Mapped[int] = mapped_column(IDENTITY, primary_key=True)
+    choice_id: Mapped[int] = mapped_column(
+        ForeignKey("user_choices.id", ondelete="CASCADE")
+    )
+    group_id: Mapped[int] = mapped_column(
+        ForeignKey("user_item_choice_groups.id", ondelete="CASCADE")
+    )
+    ordinal_no: Mapped[int] = mapped_column()
+
+    name: Mapped[str] = mapped_column(String(256))
+
+    # Relations
     items: Mapped[list[ItemChoiceDB]] = relationship(
-        back_populates="choice",
         cascade="all, delete, delete-orphan",
         passive_deletes=True,
         lazy="selectin",
         order_by="ItemChoiceDB.ordinal_no",
+    )
+    subgroups: Mapped[list[GroupSnapshotDB]] = relationship(
+        cascade="all, delete, delete-orphan",
+        passive_deletes=True,
+        lazy="selectin",
+        order_by="GroupSnapshotDB.ordinal_no",
     )
 
 
@@ -236,13 +269,12 @@ class ItemChoiceDB(ItemTableBase, Base):
 
     __tablename__ = "user_item_choices"
 
-    choice_id: Mapped[int] = mapped_column(
-        ForeignKey("user_choices.id"), primary_key=True
+    group_id: Mapped[int] = mapped_column(
+        ForeignKey("user_item_choice_groups.id"), primary_key=True
     )
+    ordinal_no: Mapped[int] = mapped_column(primary_key=True)
     item_id: Mapped[int | None] = mapped_column(
         ForeignKey("project_spec_items.id", ondelete="SET NULL")
     )
-    ordinal_no: Mapped[int] = mapped_column(primary_key=True)
 
-    # Relations
-    choice: Mapped[ChoiceDB] = relationship(back_populates="items")
+    tags: Mapped[list[str]] = mapped_column(JsonType)
