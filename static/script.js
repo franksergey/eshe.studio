@@ -1,9 +1,121 @@
+// Подгрузка вынесенных кусков разметки (например, <div data-include="topbar-admin.html">).
+// Работает только через http(s) — fetch локального файла по file:// браузер блокирует.
+async function loadIncludes() {
+  const nodes = [...document.querySelectorAll('[data-include]')];
+
+  await Promise.all(nodes.map(async (node) => {
+    const src = node.getAttribute('data-include');
+    try {
+      const response = await fetch(src);
+      if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
+      node.outerHTML = await response.text();
+    } catch (error) {
+      console.error(`Не удалось подгрузить ${src}:`, error);
+    }
+  }));
+
+  document.dispatchEvent(new Event('includes:ready'));
+}
+
+loadIncludes();
+
+// .nav-pages-general — единственное место, где ссылки прописаны руками.
+// Все остальные .nav-pages (например, в выпадашке бургера) — пустые
+// заготовки, которые просто получают копию содержимого оттуда.
+// Ждём includes:ready — .nav-pages-general может сам приехать через data-include.
+document.addEventListener('includes:ready', () => {
+  const source = document.querySelector('.nav-pages.nav-pages-general');
+  if (!source) return;
+
+  document.querySelectorAll('.nav-pages').forEach((nav) => {
+    if (nav !== source) nav.innerHTML = source.innerHTML;
+  });
+});
+
 document.addEventListener('click', (event) => {
   const button = event.target.closest('.add-wishlist');
   if (!button) return;
 
   button.closest('li')?.classList.toggle('product-select');
   renderCart();
+});
+
+document.addEventListener('click', (event) => {
+  const toggle = event.target.closest('.burger-toggle');
+
+  if (toggle) {
+    const header = toggle.closest('.topbar');
+    const isOpen = header.classList.toggle('menu-open');
+    toggle.setAttribute('aria-expanded', String(isOpen));
+    return;
+  }
+
+  const openHeader = document.querySelector('.topbar.menu-open');
+  if (openHeader && !openHeader.contains(event.target)) {
+    openHeader.classList.remove('menu-open');
+    openHeader.querySelector('.burger-toggle')?.setAttribute('aria-expanded', 'false');
+  }
+});
+
+// Admin-bar: пункты переезжают в бургер по одному, как только реально
+// перестают помещаться в строку — не по фиксированной ширине экрана.
+// Ждём includes:ready — .topbar может сам приехать через data-include.
+document.addEventListener('includes:ready', () => {
+  const header = document.querySelector('.topbar');
+  const menu = header?.querySelector('.admin-bar-menu');
+  // .admin-bar-overflow может содержать и постоянные пункты (выход, nav-pages) —
+  // JS управляет только вложенной .admin-bar-overflow-items, остальное не трогает.
+  const overflowItems = header?.querySelector('.admin-bar-overflow-items');
+  if (!header || !menu || !overflowItems) return;
+
+  const items = [...menu.children];
+  const mobileQuery = window.matchMedia('(max-width: 768px)');
+
+  function fits() {
+    return menu.scrollWidth <= menu.clientWidth;
+  }
+
+  function lastCollapsible() {
+    return [...menu.children].reverse().find((el) => !el.classList.contains('no-collapse'));
+  }
+
+  function update() {
+    items.forEach((item) => menu.appendChild(item));
+    overflowItems.innerHTML = '';
+
+    if (mobileQuery.matches) {
+      // На мобилке бургер всегда собирает всё целиком, без расчёта —
+      // не полагаемся на scrollWidth у скрытого через display:none блока.
+      // .no-collapse (например, «Админпанель») никогда туда не переносим —
+      // его копия уже постоянно лежит рядом с «Выйти» в самой выпадашке.
+      items.forEach((item) => {
+        if (!item.classList.contains('no-collapse')) overflowItems.appendChild(item);
+      });
+    } else {
+      let next;
+      while (!fits() && (next = lastCollapsible())) {
+        overflowItems.insertBefore(next, overflowItems.firstElementChild);
+      }
+    }
+
+    // «Привет, ...» должно быть первым пунктом в выпадашке, если оно там оказалось.
+    const greet = overflowItems.querySelector('.greet');
+    if (greet) overflowItems.insertBefore(greet, overflowItems.firstElementChild);
+
+    const hasOverflow = overflowItems.children.length > 0;
+    header.classList.toggle('has-overflow', hasOverflow);
+
+    if (!hasOverflow && header.classList.contains('menu-open')) {
+      header.classList.remove('menu-open');
+      header.querySelector('.burger-toggle')?.setAttribute('aria-expanded', 'false');
+    }
+  }
+
+  new ResizeObserver(update).observe(menu);
+  window.addEventListener('resize', update);
+  mobileQuery.addEventListener('change', update);
+  document.fonts?.ready.then(update);
+  update();
 });
 
 function renderCart() {
