@@ -16,3 +16,6 @@ class AbstractProjectsRepo(Protocol):
     async def add_comment(
         self, item_id: int, data: CommentCreate
     ) -> Comment | None: ...
+    async def approve_item(
+        self, item_id: int, *, approved: bool = True
+    ) -> None: ...

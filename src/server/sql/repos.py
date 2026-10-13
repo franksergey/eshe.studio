@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, cast, override
 from fastapi_users import exceptions
 from fastapi_users.db import SQLAlchemyUserDatabase
 from pydantic import HttpUrl
-from sqlalchemy import exists, select
+from sqlalchemy import exists, select, update
 from sqlalchemy.orm import lazyload, load_only, selectinload
 
 from server.api.errors import UserAlreadyExistsError
@@ -65,6 +65,7 @@ class ProjectsRepo(AbstractProjectsRepo):
             id=obj.id,
             name=obj.name,
             count=obj.count,
+            approved=obj.approved,
             link=HttpUrl(obj.link) if obj.link is not None else None,
             tags=[tag.tag for tag in obj.tags],
             price=price,
@@ -173,6 +174,17 @@ class ProjectsRepo(AbstractProjectsRepo):
         await self.session.flush((item,))
 
         return self._validate_comment(obj)
+
+    @override
+    async def approve_item(
+        self, item_id: int, *, approved: bool = True
+    ) -> None:
+        stmt = (
+            update(ItemDB)
+            .where(ItemDB.id == item_id)
+            .values(approved=approved)
+        )
+        await self.session.execute(stmt)
 
 
 class UserDatabase(SQLAlchemyUserDatabase[UserDB, uuid.UUID]):

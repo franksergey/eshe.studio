@@ -90,6 +90,7 @@ class ItemDB(Base):
 
     name: Mapped[str] = mapped_column(String(1024))
     count: Mapped[int] = mapped_column(SmallInteger)
+    approved: Mapped[bool] = mapped_column(default=False)
 
     link: Mapped[str | None] = mapped_column(String(PYDANTIC_MAX_URL_LENGTH))
 

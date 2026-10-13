@@ -132,6 +132,8 @@ class ItemPure(ItemBase):
 
     id: int
 
+    approved: bool
+
 
 class Item(ItemPure):
     """Вариант предмета в таблице комплектации (карточка)."""
