@@ -45,7 +45,28 @@ class Project(ProjectPure):
     categories: Annotated[list[Group], Field(max_length=64)]
 
 
-class Group(BaseModel):
+# ==========================
+# Intermediate entity: Group
+# ==========================
+
+
+class GroupBase(BaseModel):
+    """Базовая модель группы карточек."""
+
+    name: Annotated[str, Field(min_length=1, max_length=256)]
+
+    model_config = ConfigDict(from_attributes=True, serialize_by_alias=True)
+
+
+class GroupCreate(GroupBase):
+    """Модель для создания новой группы."""
+
+
+class GroupPut(GroupBase):
+    """Модель для полного обновления группы."""
+
+
+class Group(GroupBase):
     """Группа карточек в таблице комплектации.
 
     Самый верхний уровень групп – это "категории" товаров.
@@ -53,10 +74,7 @@ class Group(BaseModel):
 
     item_type: Literal["group"] = "group"
 
-    name: str
     items: list[Annotated[Item | Group, Field(discriminator="item_type")]]
-
-    model_config = ConfigDict(from_attributes=True, serialize_by_alias=True)
 
 
 class CurrencyCode(StrEnum):
