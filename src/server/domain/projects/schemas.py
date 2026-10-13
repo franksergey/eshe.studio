@@ -173,3 +173,6 @@ class Comment(CommentBase):
     id: int
 
     created_at: AwareDatetime
+
+
+ItemBase.model_rebuild()

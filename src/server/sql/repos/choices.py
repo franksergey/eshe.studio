@@ -135,6 +135,7 @@ class ChoicesRepo(AbstractChoicesRepo):
             else None,
             ordinal_no=ordinal_no,
             item_id=item.id,
+            tags=item.tags,
         )
 
     @classmethod
