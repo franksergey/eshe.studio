@@ -7,11 +7,14 @@ environment or `.env` file.
 
 from functools import cached_property
 from pathlib import Path
-from typing import Literal, Self
+from typing import TYPE_CHECKING, Literal, Self
 
 from pydantic import BaseModel, DirectoryPath, FilePath, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from sqlalchemy import URL, make_url
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
 
 DATA_FOLDER_SENTIEL = ":DATA_FOLDER:"
 
@@ -75,6 +78,11 @@ class DatabaseConfig(BaseModel):
         else:
             password = None
 
+        query: dict[str, Sequence[str] | str] = {}
+
+        if self.DRIVER == "psycopg":
+            query["client_encoding"] = "utf8"
+
         return URL.create(
             drivername=f"{self.DIALECT}+{self.DRIVER}",
             username=self.USERNAME,
@@ -82,6 +90,7 @@ class DatabaseConfig(BaseModel):
             host=self.HOST,
             port=self.PORT,
             database=self.get_database(),
+            query=query,
         )
 
     def get_database(self) -> str | None:
