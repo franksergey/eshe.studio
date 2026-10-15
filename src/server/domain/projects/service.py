@@ -49,3 +49,8 @@ class ProjectsService:
             raise ItemNotFoundError
 
         return obj
+
+    async def approve_item(
+        self, item_id: int, *, approved: bool = True
+    ) -> None:
+        await self.repo.approve_item(item_id, approved=approved)

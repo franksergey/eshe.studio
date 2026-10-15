@@ -1,15 +1,10 @@
-import logging
-import uuid
-from dataclasses import dataclass
+from collections import defaultdict
 from typing import TYPE_CHECKING, cast, override
 
-from fastapi_users import exceptions
-from fastapi_users.db import SQLAlchemyUserDatabase
 from pydantic import HttpUrl
-from sqlalchemy import exists, select
+from sqlalchemy import exists, select, update
 from sqlalchemy.orm import lazyload, load_only, selectinload
 
-from server.api.errors import UserAlreadyExistsError
 from server.domain.projects.ports import AbstractProjectsRepo
 from server.domain.projects.schemas import (
     Comment,
@@ -21,19 +16,12 @@ from server.domain.projects.schemas import (
     Project,
     ProjectPure,
 )
-from server.domain.users.ports import AbstractUsersRepo
-from server.domain.users.schemas import UserRead
-from server.sql.models import CommentDB, GroupDB, ItemDB, ProjectDB, UserDB
+from server.sql.models import CommentDB, GroupDB, ItemDB, ProjectDB
 
 if TYPE_CHECKING:
-    from fastapi import Request
+    from collections.abc import Mapping, Sequence
+
     from sqlalchemy.ext.asyncio import AsyncSession
-
-    from server.api.auth import UserManager
-    from server.domain.users.schemas import UserCreate, UserUpdate
-
-
-logger = logging.getLogger(__name__)
 
 
 class ProjectsRepo(AbstractProjectsRepo):
@@ -65,34 +53,38 @@ class ProjectsRepo(AbstractProjectsRepo):
             id=obj.id,
             name=obj.name,
             count=obj.count,
+            approved=obj.approved,
             link=HttpUrl(obj.link) if obj.link is not None else None,
             tags=[tag.tag for tag in obj.tags],
             price=price,
-            comments=[
-                cls._validate_comment(comment) for comment in obj.comments
-            ],
         )
 
-    async def _validate_group(self, obj: GroupDB) -> Group:
-        if "subgroups" not in obj.__dict__:
-            await self.session.refresh(obj, ("subgroups",))
-
+    @classmethod
+    def _validate_group(
+        cls, obj: GroupDB, groups_map: Mapping[int | None, Sequence[GroupDB]]
+    ) -> Group:
         items: list[Group | Item] = [
-            *(self._validate_item(item) for item in obj.items),
+            *(cls._validate_item(item) for item in obj.items),
             *[
-                await self._validate_group(subgroup)
-                for subgroup in obj.subgroups
+                cls._validate_group(subgroup, groups_map)
+                for subgroup in groups_map[obj.id]
             ],
         ]
         return Group(name=obj.name, items=items)
 
-    async def _to_domain_schema(self, obj: ProjectDB) -> Project:
+    @classmethod
+    def _to_domain_schema(cls, obj: ProjectDB) -> Project:
+        groups_map: dict[int | None, list[GroupDB]] = defaultdict(list)
+
+        for group in obj.categories:
+            groups_map[group.group_id].append(group)
+
         return Project(
             id=obj.id,
             name=obj.name,
             categories=[
-                await self._validate_group(category)
-                for category in obj.categories
+                cls._validate_group(category, groups_map)
+                for category in groups_map[None]
             ],
         )
 
@@ -108,7 +100,7 @@ class ProjectsRepo(AbstractProjectsRepo):
         if obj is None:
             return None
 
-        return await self._to_domain_schema(obj)
+        return self._to_domain_schema(obj)
 
     @override
     async def get_pure(self, id: int) -> ProjectPure | None:
@@ -126,7 +118,7 @@ class ProjectsRepo(AbstractProjectsRepo):
     async def get_all(self) -> list[Project]:
         objs = (await self.session.scalars(self.GET_ALL_STMT)).all()
 
-        return [await self._to_domain_schema(obj) for obj in objs]
+        return [self._to_domain_schema(obj) for obj in objs]
 
     GET_ALL_PURE_STMT = select(ProjectDB).options(
         lazyload(ProjectDB.categories)
@@ -144,6 +136,16 @@ class ProjectsRepo(AbstractProjectsRepo):
         return (await self.session.execute(stmt)).scalar_one()
 
     @override
+    async def get_item(self, item_id: int) -> Item | None:
+        stmt = select(ItemDB).where(ItemDB.id == item_id)
+        obj = await self.session.scalar(stmt)
+
+        if obj is None:
+            return None
+
+        return self._validate_item(obj)
+
+    @override
     async def get_item_comments(self, item_id: int) -> list[Comment] | None:
         stmt = (
             select(ItemDB)
@@ -156,6 +158,24 @@ class ProjectsRepo(AbstractProjectsRepo):
             return None
 
         return [self._validate_comment(comment) for comment in obj.comments]
+
+    @override
+    async def bulk_get_item_comments(
+        self, item_ids: list[int]
+    ) -> dict[int, list[Comment]]:
+        stmt = (
+            select(ItemDB)
+            .options(load_only(ItemDB.id), selectinload(ItemDB.comments))
+            .where(ItemDB.id.in_(item_ids))
+        )
+        objs = (await self.session.scalars(stmt)).all()
+
+        return {
+            obj.id: [
+                self._validate_comment(comment) for comment in obj.comments
+            ]
+            for obj in objs
+        }
 
     # NOTE: Should it return new data of ItemDB?
     @override
@@ -174,79 +194,14 @@ class ProjectsRepo(AbstractProjectsRepo):
 
         return self._validate_comment(obj)
 
-
-class UserDatabase(SQLAlchemyUserDatabase[UserDB, uuid.UUID]):
-    async def users_table_empty(self) -> bool:
-        stmt = select(select(self.user_table).exists())
-        return not (await self.session.execute(stmt)).scalar_one()
-
-
-@dataclass(eq=False, slots=True)
-class UsersRepo(AbstractUsersRepo):
-    users_db: UserDatabase
-    user_manager: UserManager
-    request: Request | None
-
-    @staticmethod
-    def _to_domain_schema(user: UserDB) -> UserRead:
-        return UserRead(
-            id=user.id,
-            email=user.email,
-            is_active=user.is_active,
-            is_superuser=user.is_superuser,
-            is_verified=user.is_verified,
+    @override
+    async def approve_item(
+        self, item_id: int, *, approved: bool = True
+    ) -> None:
+        stmt = (
+            update(ItemDB)
+            .where(ItemDB.id == item_id)
+            # pyrefly: ignore [unexpected-keyword]
+            .values(approved=approved)
         )
-
-    async def get(self, id: uuid.UUID) -> UserRead | None:
-        user = await self.users_db.get(id)
-
-        if user is None:
-            return None
-
-        return self._to_domain_schema(user)
-
-    async def get_by_email(self, user_email: str) -> UserRead | None:
-        user = await self.users_db.get_by_email(user_email)
-
-        if user is None:
-            return None
-
-        return self._to_domain_schema(user)
-
-    async def users_table_empty(self) -> bool:
-        return await self.users_db.users_table_empty()
-
-    async def create(
-        self, data: UserCreate, *, safe: bool = False
-    ) -> UserRead:
-        try:
-            return self._to_domain_schema(
-                await self.user_manager.create(
-                    data, safe=safe, request=self.request
-                )
-            )
-        except exceptions.UserAlreadyExists as exc:
-            raise UserAlreadyExistsError from exc
-
-    async def update(
-        self, user_email: str, data: UserUpdate, *, safe: bool = False
-    ) -> UserRead | None:
-        user = await self.users_db.get_by_email(user_email)
-
-        if user is None:
-            return None
-
-        return self._to_domain_schema(
-            await self.user_manager.update(
-                data, user, safe=safe, request=self.request
-            )
-        )
-
-    async def delete(self, user_email: str) -> UserRead | None:
-        user = await self.users_db.get_by_email(user_email)
-
-        if user is None:
-            return None
-
-        await self.user_manager.delete(user, self.request)
-        return self._to_domain_schema(user)
+        await self.session.execute(stmt)

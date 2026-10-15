@@ -132,13 +132,17 @@ class ItemPure(ItemBase):
 
     id: int
 
+    approved: bool
+
+
+class ItemWithComments(ItemPure):
+    comments: list[Comment]
+
 
 class Item(ItemPure):
     """Вариант предмета в таблице комплектации (карточка)."""
 
     item_type: Literal[ItemType.ITEM] = ItemType.ITEM
-
-    comments: list[Comment]
 
 
 class CurrencyCode(StrEnum):
@@ -169,3 +173,6 @@ class Comment(CommentBase):
     id: int
 
     created_at: AwareDatetime
+
+
+ItemBase.model_rebuild()

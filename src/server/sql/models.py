@@ -1,8 +1,10 @@
+import uuid
 from decimal import Decimal
 from typing import ClassVar
 
 from fastapi_users.db import SQLAlchemyBaseUserTableUUID
 from sqlalchemy import (
+    JSON,
     CheckConstraint,
     Enum,
     ForeignKey,
@@ -12,7 +14,14 @@ from sqlalchemy import (
     SmallInteger,
     String,
 )
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.orm import (
+    DeclarativeBase,
+    Mapped,
+    declarative_mixin,
+    mapped_column,
+    relationship,
+)
 
 from server.config import settings
 from server.domain.projects.schemas import CurrencyCode
@@ -37,6 +46,7 @@ IDENTITY = (
     Identity(always=True) if settings.db.DIALECT == "postgresql" else None
 )
 
+JsonType = JSON().with_variant(JSONB, "postgresql")
 
 # ===============
 # Projects Domain
@@ -77,19 +87,11 @@ PYDANTIC_MAX_URL_LENGTH = 2083
 CURRENCY_CODE_ENUM = Enum(CurrencyCode, name="currency_code_enum")
 
 
-class ItemDB(Base):
-    """Вариант предмета в таблице комплектации."""
-
-    __tablename__ = "project_spec_items"
-
-    id: Mapped[int] = mapped_column(IDENTITY, primary_key=True)
-    group_id: Mapped[int] = mapped_column(
-        ForeignKey("project_spec_groups.id", ondelete="CASCADE")
-    )
-    ordinal_no: Mapped[int] = mapped_column()
-
+@declarative_mixin
+class ItemTableBase:
     name: Mapped[str] = mapped_column(String(1024))
     count: Mapped[int] = mapped_column(SmallInteger)
+    approved: Mapped[bool] = mapped_column(default=False)
 
     link: Mapped[str | None] = mapped_column(String(PYDANTIC_MAX_URL_LENGTH))
 
@@ -100,19 +102,30 @@ class ItemDB(Base):
         CURRENCY_CODE_ENUM
     )
 
+
+class ItemDB(ItemTableBase, Base):
+    """Вариант предмета в таблице комплектации."""
+
+    __tablename__ = "project_spec_items"
+
+    id: Mapped[int] = mapped_column(IDENTITY, primary_key=True)
+    group_id: Mapped[int] = mapped_column(
+        ForeignKey("project_spec_groups.id", ondelete="CASCADE")
+    )
+    ordinal_no: Mapped[int] = mapped_column()
+
     # Relations
     tags: Mapped[list[SpecificationTagDB]] = relationship(
         back_populates="item",
         cascade="all, delete, delete-orphan",
         passive_deletes=True,
-        lazy="joined",
+        lazy="selectin",
         order_by=SpecificationTagDB.ordinal_no,
     )
     comments: Mapped[list[CommentDB]] = relationship(
         back_populates="item",
         cascade="all, delete, delete-orphan",
         passive_deletes=True,
-        lazy="joined",
     )
     group: Mapped[GroupDB] = relationship(back_populates="items")
 
@@ -178,7 +191,7 @@ class ProjectDB(Base):
         back_populates="project",
         cascade="all, delete, delete-orphan",
         passive_deletes=True,
-        lazy="joined",
+        lazy="selectin",
         order_by=GroupDB.ordinal_no,
     )
 
@@ -190,3 +203,78 @@ class ProjectDB(Base):
 
 class UserDB(SQLAlchemyBaseUserTableUUID, Base):
     __tablename__ = "users"
+
+    # Relations
+    choices: Mapped[list[ChoiceDB]] = relationship(
+        back_populates="user", order_by="ChoiceDB.created_at"
+    )
+
+
+# ==============
+# Choices Domain
+# ==============
+
+type GroupsSnapshot = list[int | GroupsSnapshot]
+
+
+class ChoiceDB(CreatedAtMixin, Base):
+    """Заполненная форма с выбором карточек в архитектурном проекте."""
+
+    __tablename__ = "user_choices"
+
+    id: Mapped[int] = mapped_column(IDENTITY, primary_key=True)
+    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"))
+
+    # Relations
+    user: Mapped[UserDB] = relationship(back_populates="choices")
+    groups: Mapped[list[GroupSnapshotDB]] = relationship(
+        cascade="all, delete, delete-orphan",
+        passive_deletes=True,
+        lazy="selectin",
+        order_by="GroupSnapshotDB.ordinal_no",
+    )
+
+
+class GroupSnapshotDB(Base):
+    __tablename__ = "user_item_choice_groups"
+
+    id: Mapped[int] = mapped_column(IDENTITY, primary_key=True)
+    choice_id: Mapped[int] = mapped_column(
+        ForeignKey("user_choices.id", ondelete="CASCADE")
+    )
+    group_id: Mapped[int | None] = mapped_column(
+        ForeignKey("user_item_choice_groups.id", ondelete="CASCADE")
+    )
+    ordinal_no: Mapped[int]
+
+    name: Mapped[str] = mapped_column(String(256))
+
+    # Relations
+    items: Mapped[list[ItemChoiceDB]] = relationship(
+        cascade="all, delete, delete-orphan",
+        passive_deletes=True,
+        lazy="selectin",
+        order_by="ItemChoiceDB.ordinal_no",
+    )
+    subgroups: Mapped[list[GroupSnapshotDB]] = relationship(
+        cascade="all, delete, delete-orphan",
+        passive_deletes=True,
+        lazy="selectin",
+        order_by="GroupSnapshotDB.ordinal_no",
+    )
+
+
+class ItemChoiceDB(ItemTableBase, Base):
+    """Выбор конкретной карточки в рамках формы."""
+
+    __tablename__ = "user_item_choices"
+
+    group_id: Mapped[int] = mapped_column(
+        ForeignKey("user_item_choice_groups.id"), primary_key=True
+    )
+    ordinal_no: Mapped[int] = mapped_column(primary_key=True)
+    item_id: Mapped[int | None] = mapped_column(
+        ForeignKey("project_spec_items.id", ondelete="SET NULL")
+    )
+
+    tags: Mapped[list[str]] = mapped_column(JsonType)

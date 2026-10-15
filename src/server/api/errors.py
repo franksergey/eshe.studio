@@ -31,3 +31,9 @@ class UserAlreadyExistsError(ConflictProblem):
 class UserNotFoundError(NotFoundProblem):
     type_ = "user-not-found"
     title = "User with the specified email couldn't be found."
+
+
+# Here, the term 'choice' becomes ridiculous
+class ChoiceNotFoundError(NotFoundProblem):
+    type_ = "choice-not-found"
+    title = "Choice with the specified id couldn't be found."

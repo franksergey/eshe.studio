@@ -1,7 +1,11 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, status
 
-from server.api.dependencies import ContainerDependency
+from server.api.dependencies import (
+    ContainerDependency,
+    CurrentVerifiedUserDependency,
+)
 from server.api.errors import ProjectNotFoundError, error_handler
+from server.domain.choices.schemas import ChoiceCreate
 from server.domain.projects.schemas import Project, ProjectPure
 
 router = APIRouter(prefix="/projects", tags=["Arhitectural Projects"])
@@ -16,7 +20,9 @@ async def read_projects(container: ContainerDependency) -> list[ProjectPure]:
 @router.get(
     "/{id}",
     responses={
-        404: error_handler.generate_swagger_response(ProjectNotFoundError)
+        status.HTTP_404_NOT_FOUND: error_handler.generate_swagger_response(
+            ProjectNotFoundError
+        )
     },
 )
 async def read_project(id: int, container: ContainerDependency) -> ProjectPure:
@@ -27,7 +33,9 @@ async def read_project(id: int, container: ContainerDependency) -> ProjectPure:
 @router.get(
     "/{id}/spec",
     responses={
-        404: error_handler.generate_swagger_response(ProjectNotFoundError)
+        status.HTTP_404_NOT_FOUND: error_handler.generate_swagger_response(
+            ProjectNotFoundError
+        )
     },
 )
 async def read_project_specification(
@@ -35,3 +43,24 @@ async def read_project_specification(
 ) -> Project:
     """Получить таблицу комплектации архитектурного проекта."""
     return await container.projects.get(id)
+
+
+@router.post(
+    "/{id}/choose",
+    status_code=status.HTTP_201_CREATED,
+    responses={
+        status.HTTP_404_NOT_FOUND: error_handler.generate_swagger_response(
+            ProjectNotFoundError
+        )
+    },
+)
+async def choose_project_specification_items(
+    id: int,
+    data: ChoiceCreate,
+    user: CurrentVerifiedUserDependency,
+    container: ContainerDependency,
+) -> None:
+    """Отправить выбор карточек таблицы спецификации."""
+    project = await container.projects.get(id)
+
+    await container.choices.create(project, data, user)

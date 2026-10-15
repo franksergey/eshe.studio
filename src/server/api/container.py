@@ -3,10 +3,12 @@ from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Protocol
 
+from server.domain.choices.services import ChoicesService
 from server.domain.projects.service import ProjectsService
 from server.domain.users.service import UsersService
 from server.sql.models import UserDB
 from server.sql.repos import ProjectsRepo, UserDatabase, UsersRepo
+from server.sql.repos.choices import ChoicesRepo
 
 from .auth import UserManager
 
@@ -32,6 +34,16 @@ class ServiceContainer:
             self._projects_service = ProjectsService(repo)
 
         return self._projects_service
+
+    _choices_service: ChoicesService | None = None
+
+    @property
+    def choices(self) -> ChoicesService:
+        if self._choices_service is None:
+            repo = ChoicesRepo(self.session)
+            self._choices_service = ChoicesService(repo)
+
+        return self._choices_service
 
     _users_service: UsersService | None = None
 
