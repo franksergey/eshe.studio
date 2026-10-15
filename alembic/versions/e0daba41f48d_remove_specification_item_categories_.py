@@ -58,7 +58,7 @@ def upgrade() -> None:
     with op.batch_alter_table("project_spec_items", schema=None) as batch_op:
         batch_op.drop_constraint(
             batch_op.f(
-                "fk_specification_items_category_id_specification_item_categories"
+                "fk_specification_items_category_id_specification_item_categorie"
             ),
             type_="foreignkey",
         )
@@ -285,7 +285,7 @@ def downgrade() -> None:
         )
         batch_op.create_foreign_key(
             batch_op.f(
-                "fk_specification_items_category_id_specification_item_categories"
+                "fk_specification_items_category_id_specification_item_categorie"
             ),
             "specification_item_categories",
             ["category_id"],
