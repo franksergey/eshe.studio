@@ -133,52 +133,76 @@ class DatabaseConfig(BaseModel):
         )
 
 
-class AppSettings(BaseSettings):
-    """FastAPI server configuration.
+class APIConfig(BaseModel):
+    """Конфигурация API бекенда.
 
     Attributes:
-        HOST: `$APP_HOST`. FastAPI server host address.
+        HOST: `$APP_API_HOST`. FastAPI server host address.
             Defaults to "0.0.0.0".
-        PORT: `$APP_PORT`. Port the server will listen to.
+        PORT: `$APP_API_PORT`. Port the server will listen to.
             Defaults to 8000.
-        RELOAD: `$APP_RELOAD`. Watch for file updates and reload the
+        RELOAD: `$APP_API_RELOAD`. Watch for file updates and reload the
             server upon any changes. Defaults to true. Avoid in
             production environment.
-        STATICFILES: `$APP_STATICFILES`. Use this directory as a source
+        STATICFILES: `$APP_API_STATICFILES`. Use this directory as a source
             of static files used as the site's content.
-        GRACEFULSHUTDOWNTIMEOUT: `$APP_GRACEFULSHUTDOWNTIMEOUT`. Timeout
+        GRACEFULSHUTDOWNTIMEOUT: `$APP_API_GRACEFULSHUTDOWNTIMEOUT`. Timeout
             of `uvicorn`'s graceful shutdown. Defaults to 10.
-        LOGGINGFORMAT: `$APP_LOGGINGFORMAT`. Format of logging.
-            Determines which logging configuration will be used. Console
-            is used by default.
-        DEBUG: `$APP_DEBUG`. Debug mode. Defaults to False.
-        PYPROJECT: `$APP_PYPROJECT`. Path to `pyproject.toml`.
     """
 
     HOST: str = "0.0.0.0"  # noqa: S104
     PORT: int = 8000
-    SECRET: SecretStr | None = None
-    SECRETFILE: FilePath | None = None
     RELOAD: bool = False
     STATICFILES: DirectoryPath = Path("./static")
     GRACEFULSHUTDOWNTIMEOUT: int = 10
-    LOGGINGFORMAT: Literal["rich", "console", "structured"] = "console"
-    DEBUG: bool = False
-    PYPROJECT: FilePath = Path.cwd() / "pyproject.toml"
+
+
+class UsersConfig(BaseModel):
+    """Конфигурация домена пользователей.
+
+    Attributes:
+        SECRET: `$APP_SECRET`. Секрет, используемый для аутентификации.
+        SECRETFILE: `$APP_SECRETFILE`. Файл с секретом для
+            аутентификации пользователей.
+        CREATEDEFAULTUSER: `$APP_CREATEDEFAULTUSER`. Следует ли создать
+            администратора по умолчанию в случае, если таблица
+            пользователей пуста.
+    """
+
+    SECRET: SecretStr | None = None
+    SECRETFILE: FilePath | None = None
     CREATEDEFAULTUSER: bool = True
 
+
+class AppSettings(BaseSettings):
+    """FastAPI server configuration.
+
+    Attributes:
+        LOGGINGFORMAT: `$APP_LOGGINGFORMAT`. Format of logging.
+            Determines which logging configuration will be used. Console
+            is used by default.
+        PYPROJECT: `$APP_PYPROJECT`. Path to `pyproject.toml`.
+        DEBUG: `$APP_API_DEBUG`. Debug mode. Defaults to False.
+    """
+
+    LOGGINGFORMAT: Literal["rich", "console", "structured"] = "console"
+    PYPROJECT: FilePath = Path.cwd() / "pyproject.toml"
+    DEBUG: bool = False
+
     db: DatabaseConfig = DatabaseConfig()
+    api: APIConfig = APIConfig()
+    users: UsersConfig = UsersConfig()
 
     @cached_property
     def secret(self) -> SecretStr:
-        if self.SECRET is not None:
-            return self.SECRET
+        if self.users.SECRET is not None:
+            return self.users.SECRET
 
-        if self.SECRETFILE is None:
+        if self.users.SECRETFILE is None:
             msg = "At least $APP_SECRET or $APP_SECRETFILE must be set"
             raise ValueError(msg)
 
-        return SecretStr(self.SECRETFILE.read_text().strip())
+        return SecretStr(self.users.SECRETFILE.read_text().strip())
 
     model_config = SettingsConfigDict(
         env_file=".env",

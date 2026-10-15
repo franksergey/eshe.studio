@@ -60,7 +60,7 @@ def setup_routers(app: FastAPI) -> None:
         "Included authentication router with prefix: %r", auth_router.prefix
     )
 
-    static_directory = Path(settings.STATICFILES)
+    static_directory = Path(settings.api.STATICFILES)
     app.mount(
         "/", StaticFiles(directory=static_directory, html=True), name="static"
     )
