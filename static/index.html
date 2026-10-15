@@ -29,8 +29,8 @@
                 <path id="arrow" d="M209 163L299 253L209 343" stroke="black" stroke-width="40" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
             </symbol>
         </svg>
-        
-        <header></header>
+
+        <header data-include="topbar-admin.html"></header>
         
         <main>
             <div class="vertical-space XL"></div>
@@ -45,9 +45,9 @@
                     или оставить комментарий</p>
                 <div class="vertical-space M"></div>
 
-                <nav class="nav-pages">
-                    <a href="index.html" class="active">Мебель</a><a href="santehnika.html">Сантехника</a><a href="tehnika.html">Техника</a><a href="osveshenie.html">Освещение</a><a href="otdelka.html">Отделка</a>
-                    <a href="inzhenernoe-oborudovanie.html">Инженерное оборудование</a><a href="stroitelnye-raboty.html">Строительные работы</a><a href="aksessuary.html">Аксессуары</a>
+                <nav class="nav-pages nav-pages-general">
+                    <a href="index.html" class="active">Мебель</a><a href="page-of-table/santehnika.html">Сантехника</a><a href="page-of-table/tehnika.html">Техника</a><a href="page-of-table/osveshenie.html">Освещение</a><a href="page-of-table/otdelka.html">Отделка</a>
+                    <a href="page-of-table/inzhenernoe-oborudovanie.html">Инженерное оборудование</a><a href="page-of-table/stroitelnye-raboty.html">Строительные работы</a><a href="page-of-table/aksessuary.html">Аксессуары</a>
                 </nav>
             </header>
 
@@ -841,11 +841,14 @@
                         <!-- <div class="vertical-space M"></div>  -->
                     </section>
 
-                    <section class="cart-buttom">
-                        <p>Утверждено <span>40.000 ₽</span></p>
-                        <p>Выбрано <span>40.000 ₽</span></p>
-                        <p class="total">Итого <span>80.000 ₽</span></p>
-                    </section>
+                    <div>
+                        <section class="cart-buttom">
+                            <p>Утверждено <span>40.000 ₽</span></p>
+                            <p>Выбрано <span>40.000 ₽</span></p>
+                            <p class="total">Итого <span>80.000 ₽</span></p>
+                        </section>
+                        <button class="button-confirm">Подтвердить выбор</button>
+                    </div>
                 </aside>
             </article>
 
