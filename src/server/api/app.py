@@ -11,7 +11,7 @@ from fastapi_problem.handler import add_exception_handler
 from starlette.staticfiles import StaticFiles
 
 from server import __version__ as version
-from server.api.routers import api_router, auth_router
+from server.api.routers import ALL_ROUTERS
 from server.config import settings
 from server.sql.database import Database
 
@@ -53,20 +53,19 @@ def setup_routers(app: FastAPI) -> None:
     Args:
         app: Application object.
     """
-    app.include_router(api_router)
-    logger.debug("Included API router with prefix: %r", api_router.prefix)
-    app.include_router(auth_router)
-    logger.debug(
-        "Included authentication router with prefix: %r", auth_router.prefix
-    )
-
     static_directory = Path(settings.api.staticfiles)
     app.mount(
-        "/", StaticFiles(directory=static_directory, html=True), name="static"
+        "/static",
+        StaticFiles(directory=static_directory, html=True),
+        name="static",
     )
     logger.debug(
         "Using static files from directory %s as a root path", static_directory
     )
+
+    for router in ALL_ROUTERS:
+        app.include_router(router)
+        logger.debug("Included a router with prefix: %r", router.prefix)
 
 
 def setup_middlewares(app: FastAPI) -> None:
