@@ -15,7 +15,7 @@ from server.api.routers import api_router, auth_router
 from server.config import settings
 from server.sql.database import Database
 
-from . import cors_configuration
+from .common import cors_configuration
 from .container import container_getter
 from .errors import error_handler
 
@@ -60,7 +60,7 @@ def setup_routers(app: FastAPI) -> None:
         "Included authentication router with prefix: %r", auth_router.prefix
     )
 
-    static_directory = Path(settings.api.STATICFILES)
+    static_directory = Path(settings.api.staticfiles)
     app.mount(
         "/", StaticFiles(directory=static_directory, html=True), name="static"
     )

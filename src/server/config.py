@@ -144,8 +144,14 @@ class APIConfig(BaseModel):
         RELOAD: `$APP_API_RELOAD`. Watch for file updates and reload the
             server upon any changes. Defaults to true. Avoid in
             production environment.
+        FRONTENDDIR: `$APP_API_FRONTENDDIR`. Default directory for all
+            frontend-related files.
         STATICFILES: `$APP_API_STATICFILES`. Use this directory as a source
-            of static files used as the site's content.
+            of static files used as the site's content. Defaults to
+            `${APP_API_FRONTENDDIR}/static`.
+        TEMPLATES: `$APP_API_TEMPLATES`. Directory containing templates
+            used for the frontend rendering. Defaults to
+            `${APP_API_FRONTENDDIR}/templates`.
         GRACEFULSHUTDOWNTIMEOUT: `$APP_API_GRACEFULSHUTDOWNTIMEOUT`. Timeout
             of `uvicorn`'s graceful shutdown. Defaults to 10.
     """
@@ -153,8 +159,24 @@ class APIConfig(BaseModel):
     HOST: str = "0.0.0.0"  # noqa: S104
     PORT: int = 8000
     RELOAD: bool = False
-    STATICFILES: DirectoryPath = Path("./static")
+    FRONTENDDIR: DirectoryPath = Path("./frontend")
+    STATICFILES: DirectoryPath | None = None
+    TEMPLATES: DirectoryPath | None = None
     GRACEFULSHUTDOWNTIMEOUT: int = 10
+
+    @cached_property
+    def staticfiles(self) -> Path:
+        if self.STATICFILES is not None:
+            return self.STATICFILES
+
+        return self.FRONTENDDIR / "static"
+
+    @cached_property
+    def templates(self) -> Path:
+        if self.TEMPLATES is not None:
+            return self.TEMPLATES
+
+        return self.FRONTENDDIR / "templates"
 
 
 class UsersConfig(BaseModel):
