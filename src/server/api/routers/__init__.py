@@ -1,15 +1,10 @@
-from fastapi import APIRouter
+from typing import TYPE_CHECKING
 
+from .api import api_router
 from .auth import router as auth_router
-from .items import router as items_router
-from .projects import router as projects_router
-from .users import router as users_router
+from .root import router as root_router
 
-__all__ = ["api_router", "auth_router"]
+if TYPE_CHECKING:
+    from fastapi.routing import APIRouter
 
-API_ROUTERS = [projects_router, items_router, users_router]
-
-api_router = APIRouter(prefix="/api")
-
-for router in API_ROUTERS:
-    api_router.include_router(router)
+ALL_ROUTERS: list[APIRouter] = [api_router, auth_router, root_router]

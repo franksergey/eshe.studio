@@ -3,7 +3,7 @@ import logging
 from fastapi_problem.handler import new_exception_handler
 from rfc9457 import ConflictProblem, NotFoundProblem
 
-from . import cors_configuration
+from .common import cors_configuration
 
 logger = logging.getLogger(__name__)
 

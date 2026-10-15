@@ -47,15 +47,15 @@ def launch_server() -> None:
     uvicorn.run(
         "server.api.app:setup_app",
         factory=True,
-        host=settings.HOST,
-        port=settings.PORT,
-        reload=settings.RELOAD,
+        host=settings.api.HOST,
+        port=settings.api.PORT,
+        reload=settings.api.RELOAD,
         reload_dirs=["src"],
         log_config=get_config_path(),
         log_level="debug",
         use_colors=True,
         loop="server.__main__:create_asyncio_event_loop",
-        timeout_graceful_shutdown=settings.GRACEFULSHUTDOWNTIMEOUT,
+        timeout_graceful_shutdown=settings.api.GRACEFULSHUTDOWNTIMEOUT,
     )
     logger.info("Main ASGI server runner has exited.")
 
@@ -78,7 +78,7 @@ async def perform_checks() -> None:
             )
 
         if (
-            settings.CREATEDEFAULTUSER
+            settings.users.CREATEDEFAULTUSER
             and await container.users.users_table_empty()
         ):
             user_create = UserCreate(
