@@ -1,10 +1,26 @@
 from fastapi import APIRouter
+from pydantic import BaseModel
 
 from server.api.dependencies import ContainerDependency
 from server.api.errors import ProjectNotFoundError, error_handler
-from server.domain.projects.schemas import Comment, CommentCreate
+from server.domain.projects.schemas import (
+    Comment,
+    CommentCreate,
+    CommentsBulkRead,
+)
 
 router = APIRouter(prefix="/items", tags=["Specification Items"])
+
+
+class BulkReadCommentsRequest(BaseModel):
+    item_ids: list[int]
+
+
+@router.post("/bulk-comments")
+async def bulk_read_comments(
+    data: BulkReadCommentsRequest, container: ContainerDependency
+) -> CommentsBulkRead:
+    return await container.projects.bulk_get_item_comments(data.item_ids)
 
 
 @router.get(

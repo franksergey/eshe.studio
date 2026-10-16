@@ -1,6 +1,8 @@
 from typing import TYPE_CHECKING, Protocol
 
 if TYPE_CHECKING:
+    from server.domain.projects.schemas import ItemOnlyComments
+
     from .schemas import Comment, CommentCreate, Item, Project, ProjectPure
 
 
@@ -16,16 +18,15 @@ class AbstractProjectsRepo(Protocol):
     ) -> list[Comment] | None: ...
     async def bulk_get_item_comments(
         self, item_ids: list[int]
-    ) -> dict[int, list[Comment]]:
+    ) -> tuple[list[ItemOnlyComments], list[int]]:
         """Get lists of comments for multiple items.
 
         Args:
             item_ids: List of item ids.
 
         Returns:
-            A mapping from ids to lists of comments. When item is not
-                found, no error is thrown. Keys of resulting dictionary
-                are formed only by existng items.
+            A list of items with comments and a list of item ids that
+                weren't found.
         """
         ...
 

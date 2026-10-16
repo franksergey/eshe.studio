@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from server.api.errors import ItemNotFoundError, ProjectNotFoundError
+from server.domain.projects.schemas import CommentsBulkRead
 
 if TYPE_CHECKING:
     from .ports import AbstractProjectsRepo
@@ -41,6 +42,16 @@ class ProjectsService:
             raise ItemNotFoundError
 
         return objs
+
+    async def bulk_get_item_comments(
+        self, item_ids: list[int]
+    ) -> CommentsBulkRead:
+        items, items_not_found = await self.repo.bulk_get_item_comments(
+            item_ids
+        )
+        return CommentsBulkRead(
+            items=items, item_ids_not_found=items_not_found
+        )
 
     async def add_comment(self, item_id: int, data: CommentCreate) -> Comment:
         obj = await self.repo.add_comment(item_id, data)

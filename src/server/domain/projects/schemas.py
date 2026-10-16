@@ -145,6 +145,11 @@ class Item(ItemPure):
     item_type: Literal[ItemType.ITEM] = ItemType.ITEM
 
 
+class ItemOnlyComments(BaseModel):
+    id: int
+    comments: list[Comment]
+
+
 class CurrencyCode(StrEnum):
     RUB = "RUB"
     USD = "USD"
@@ -173,6 +178,11 @@ class Comment(CommentBase):
     id: int
 
     created_at: AwareDatetime
+
+
+class CommentsBulkRead(BaseModel):
+    items: list[ItemOnlyComments]
+    item_ids_not_found: list[int]
 
 
 ItemBase.model_rebuild()
