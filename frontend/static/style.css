@@ -329,7 +329,7 @@ button {
     background-color: rgba(var(--text-color-RGB), 1);
   }
 
-  & svg {
+  & svg, img {
     width: 2.3em;
     @media (max-width: 768px) {
       width: 3em;

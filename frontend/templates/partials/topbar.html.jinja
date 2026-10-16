@@ -1,0 +1,55 @@
+<!-- Заготовка: topbar для залогиненного клиента (не админа). Поправь содержимое. -->
+<header class="topbar">
+  <div>
+    <img src="{{ url_for('static', path='media/logo.svg') }}" alt="Логотип eshe.studio" />
+    <p>Ещё студия</p>
+  </div>
+  {% if user is none %}
+  <div>
+    <a class="login">Войти</a>
+  </div>
+  {% elif user.is_superuser %}
+	<div>
+		<div class="admin-bar-menu">
+			<a class="no-collapse">Админпанель</a>
+				<label>Посмотреть выбор:
+					<span class="select-wrapper">
+						<select id="product-select-by" name="persona">
+						<option value="anton">Антона</option>
+						<option value="sergey">Серёжи</option>
+						</select>
+					</span>
+				</label>
+			<p class="greet">Привет, Серёжа</p>
+		</div>
+
+		<button type="button" class="burger-toggle" aria-label="Меню" aria-expanded="false">
+			<span></span><span></span><span></span>
+		</button>
+
+		<div class="admin-bar-overflow">
+
+			<div class="admin-bar-overflow-items"></div>
+			<nav class="nav-pages"></nav>
+			<a>Админпанель</a>
+			<a class="logout">Выйти</a>
+		</div>
+	</div>
+  {% else %}
+  <div>
+    <div class="admin-bar-menu">
+      <p class="greet">Привет, Серёжа</p>
+    </div>
+
+    <button type="button" class="burger-toggle" aria-label="Меню" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+
+    <div class="admin-bar-overflow">
+      <div class="admin-bar-overflow-items"></div>
+      <nav class="nav-pages"></nav>
+      <a class="logout">Выйти</a>
+    </div>
+  </div>
+  {% endif %}
+</header>
