@@ -1,4 +1,3 @@
-from collections import defaultdict
 from typing import TYPE_CHECKING, cast, override
 
 from pydantic import HttpUrl
@@ -20,8 +19,6 @@ from server.domain.projects.schemas import (
 from server.sql.models import CommentDB, GroupDB, ItemDB, ProjectDB
 
 if TYPE_CHECKING:
-    from collections.abc import Mapping, Sequence
-
     from sqlalchemy.ext.asyncio import AsyncSession
 
 
@@ -61,31 +58,20 @@ class ProjectsRepo(AbstractProjectsRepo):
         )
 
     @classmethod
-    def _validate_group(
-        cls, obj: GroupDB, groups_map: Mapping[int | None, Sequence[GroupDB]]
-    ) -> Group:
+    def _validate_group(cls, obj: GroupDB) -> Group:
         items: list[Group | Item] = [
             *(cls._validate_item(item) for item in obj.items),
-            *[
-                cls._validate_group(subgroup, groups_map)
-                for subgroup in groups_map[obj.id]
-            ],
+            *[cls._validate_group(subgroup) for subgroup in obj.subgroups],
         ]
         return Group(name=obj.name, items=items)
 
     @classmethod
     def _to_domain_schema(cls, obj: ProjectDB) -> Project:
-        groups_map: dict[int | None, list[GroupDB]] = defaultdict(list)
-
-        for group in obj.categories:
-            groups_map[group.group_id].append(group)
-
         return Project(
             id=obj.id,
             name=obj.name,
             categories=[
-                cls._validate_group(category, groups_map)
-                for category in groups_map[None]
+                cls._validate_group(category) for category in obj.categories
             ],
         )
 
