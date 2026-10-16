@@ -318,18 +318,18 @@ button {
     text-decoration: none;
   }
   
-  & .login {
+  & #login-button {
     padding: 0.4em 1em;
     border-radius: 0.5em;
     color: rgba(var(--text-color-inverse-RGB), 1);
     background-color: rgba(var(--link-color-RGB), 1);
   }
 
-  & .login:hover {
+  & #login-button:hover {
     background-color: rgba(var(--text-color-RGB), 1);
   }
 
-  & svg {
+  & svg, img {
     width: 2.3em;
     @media (max-width: 768px) {
       width: 3em;

@@ -78,6 +78,9 @@ def make_current_user_dependency(
     return wrapper
 
 
+OptionalUserDependency = Annotated[
+    UserRead | None, Depends(make_current_user_dependency(optional=True))
+]
 CurrentUserDependency = Annotated[
     UserRead, Depends(make_current_user_dependency())
 ]

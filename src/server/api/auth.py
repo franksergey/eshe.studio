@@ -1,11 +1,12 @@
 import logging
 import uuid
+from datetime import timedelta
 from typing import TYPE_CHECKING, override
 
 from fastapi_users import BaseUserManager, UUIDIDMixin
 from fastapi_users.authentication import (
     AuthenticationBackend,
-    BearerTransport,
+    CookieTransport,
     JWTStrategy,
 )
 
@@ -16,7 +17,10 @@ if TYPE_CHECKING:
     from fastapi import Request
 
 logger = logging.getLogger(__name__)
-bearer_transport = BearerTransport(tokenUrl="auth/jwt/login")
+cookie_transport = CookieTransport(
+    cookie_name="auth_token",
+    cookie_max_age=round(timedelta(days=14).total_seconds()),
+)
 
 
 def get_jwt_strategy() -> JWTStrategy[UserDB, uuid.UUID]:
@@ -24,7 +28,7 @@ def get_jwt_strategy() -> JWTStrategy[UserDB, uuid.UUID]:
 
 
 auth_backend = AuthenticationBackend(
-    name="jwt", transport=bearer_transport, get_strategy=get_jwt_strategy
+    name="jwt", transport=cookie_transport, get_strategy=get_jwt_strategy
 )
 
 
