@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING, cast, override
 
 from pydantic import HttpUrl
-from sqlalchemy import exists, select, update
+from sqlalchemy import exists, inspect, select, update
 from sqlalchemy.orm import lazyload, load_only, selectinload
 
 from server.domain.projects.ports import AbstractProjectsRepo
@@ -192,15 +192,27 @@ class ProjectsRepo(AbstractProjectsRepo):
     async def add_comment(
         self, item_id: int, data: CommentCreate
     ) -> Comment | None:
-        stmt = select(ItemDB).where(ItemDB.id == item_id)
+        stmt = (
+            select(ItemDB)
+            .where(ItemDB.id == item_id)
+            .options(load_only(ItemDB.id))
+        )
         item = await self.session.scalar(stmt)
 
         if item is None:
             return None
 
-        obj = CommentDB(text=data.text, author_name=data.author_name)
-        item.comments.append(obj)
-        await self.session.flush((item,))
+        obj = CommentDB(
+            item_id=item_id, text=data.text, author_name=data.author_name
+        )
+        state = inspect(item)
+
+        if "comments" not in state.unloaded:
+            item.comments.append(obj)
+            await self.session.flush((item,))
+        else:
+            self.session.add(obj)
+            await self.session.flush((obj,))
 
         return self._validate_comment(obj)
 
