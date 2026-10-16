@@ -1,24 +1,3 @@
-// Подгрузка вынесенных кусков разметки (например, <div data-include="topbar-admin.html">).
-// Работает только через http(s) — fetch локального файла по file:// браузер блокирует.
-async function loadIncludes() {
-  const nodes = [...document.querySelectorAll('[data-include]')];
-
-  await Promise.all(nodes.map(async (node) => {
-    const src = node.getAttribute('data-include');
-    try {
-      const response = await fetch(src);
-      if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
-      node.outerHTML = await response.text();
-    } catch (error) {
-      console.error(`Не удалось подгрузить ${src}:`, error);
-    }
-  }));
-
-  document.dispatchEvent(new Event('includes:ready'));
-}
-
-loadIncludes();
-
 // .nav-pages-general — единственное место, где ссылки прописаны руками.
 // Все остальные .nav-pages (например, в выпадашке бургера) — пустые
 // заготовки, которые просто получают копию содержимого оттуда.
