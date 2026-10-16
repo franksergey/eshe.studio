@@ -22,7 +22,7 @@
         </span>
       </label>
       {% endif %}
-			<p class="greet">Привет, Серёжа</p>
+			<p class="greet">Привет, {{ user.first_name }}</p>
 		</div>
 
 		<button type="button" class="burger-toggle" aria-label="Меню" aria-expanded="false">
@@ -30,7 +30,6 @@
 		</button>
 
 		<div class="admin-bar-overflow">
-
 			<div class="admin-bar-overflow-items"></div>
 			<nav class="nav-pages"></nav>
       {% if user.is_superuser %}
