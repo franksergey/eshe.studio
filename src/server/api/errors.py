@@ -12,12 +12,17 @@ error_handler = new_exception_handler(logger=logger, cors=cors_configuration)
 
 class ProjectNotFoundError(NotFoundProblem):
     type_ = "project-not-found"
-    title = "Architectural project with specified id hasn't been found"
+    title = "Architectural project with specified id hasn't been found."
+
+
+class GroupNotFoundError(NotFoundProblem):
+    type_ = "group-not-found"
+    title = "Group with the specified index hasn't been found."
 
 
 class ItemNotFoundError(NotFoundProblem):
     type_ = "specification-item-not-found"
-    title = "Specification item with specified id hasn't been found"
+    title = "Specification item with specified id hasn't been found."
 
 
 class UserAlreadyExistsError(ConflictProblem):

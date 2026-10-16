@@ -118,6 +118,24 @@ class ProjectsRepo(AbstractProjectsRepo):
         return [self._to_domain_schema_pure(obj) for obj in objs]
 
     @override
+    async def get_group(self, project_id: int, index: int = 0) -> Group | None:
+        stmt = (
+            select(GroupDB)
+            .where(
+                GroupDB.project_id == project_id, GroupDB.group_id.is_(None)
+            )
+            .order_by(GroupDB.ordinal_no)
+            .limit(1)
+            .offset(index)
+        )
+        obj = await self.session.scalar(stmt)
+
+        if obj is None:
+            return obj
+
+        return self._validate_group(obj)
+
+    @override
     async def check_item_exists(self, item_id: int) -> bool:
         stmt = select(exists(ItemDB).where(ItemDB.id == item_id))
         return (await self.session.execute(stmt)).scalar_one()

@@ -1,9 +1,15 @@
 from typing import TYPE_CHECKING, Protocol
 
 if TYPE_CHECKING:
-    from server.domain.projects.schemas import ItemOnlyComments
-
-    from .schemas import Comment, CommentCreate, Item, Project, ProjectPure
+    from .schemas import (
+        Comment,
+        CommentCreate,
+        Group,
+        Item,
+        ItemOnlyComments,
+        Project,
+        ProjectPure,
+    )
 
 
 class AbstractProjectsRepo(Protocol):
@@ -11,6 +17,9 @@ class AbstractProjectsRepo(Protocol):
     async def get_pure(self, id: int) -> ProjectPure | None: ...
     async def get_all(self) -> list[Project]: ...
     async def get_all_pure(self) -> list[ProjectPure]: ...
+    async def get_group(
+        self, project_id: int, index: int = ...
+    ) -> Group | None: ...
     async def check_item_exists(self, item_id: int) -> bool: ...
     async def get_item(self, item_id: int) -> Item | None: ...
     async def get_item_comments(
