@@ -12,6 +12,7 @@ from server.domain.projects.schemas import (
     CurrencyCode,
     Group,
     Item,
+    ItemOnlyComments,
     MoneyType,
     Project,
     ProjectPure,
@@ -162,20 +163,25 @@ class ProjectsRepo(AbstractProjectsRepo):
     @override
     async def bulk_get_item_comments(
         self, item_ids: list[int]
-    ) -> dict[int, list[Comment]]:
+    ) -> tuple[list[ItemOnlyComments], list[int]]:
+        ids = frozenset(item_ids)
         stmt = (
             select(ItemDB)
             .options(load_only(ItemDB.id), selectinload(ItemDB.comments))
-            .where(ItemDB.id.in_(item_ids))
+            .where(ItemDB.id.in_(ids))
         )
         objs = (await self.session.scalars(stmt)).all()
 
-        return {
-            obj.id: [
-                self._validate_comment(comment) for comment in obj.comments
-            ]
+        items = {
+            obj.id: ItemOnlyComments(
+                id=obj.id,
+                comments=[
+                    self._validate_comment(comment) for comment in obj.comments
+                ],
+            )
             for obj in objs
         }
+        return (list(items.values()), list(ids - items.keys()))
 
     # NOTE: Should it return new data of ItemDB?
     @override
