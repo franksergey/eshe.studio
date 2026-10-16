@@ -82,7 +82,14 @@ class Group(GroupBase):
     item_type: Literal[ItemType.GROUP] = ItemType.GROUP
     id: int
 
-    items: list[Annotated[Item | Group, Field(discriminator="item_type")]]
+    items: list[Item] | list[Group]
+
+    @property
+    def has_items(self) -> bool:
+        if not self.items:
+            return False
+
+        return isinstance(self.items[0], Item)
 
 
 # ===============
@@ -160,6 +167,11 @@ class CurrencyCode(StrEnum):
 class MoneyType(BaseModel):
     amount: Annotated[Decimal, Field(ge=Decimal(0))]
     currency: CurrencyCode
+
+    @property
+    def localized(self) -> str:
+        # TODO(@soucelover): Improve localization property
+        return f"{self.amount} {self.currency}"
 
 
 class CommentBase(BaseModel):
