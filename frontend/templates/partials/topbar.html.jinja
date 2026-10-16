@@ -6,20 +6,22 @@
   </div>
   {% if user is none %}
   <div>
-    <a class="login">Войти</a>
+    <button id="login-button" type="button">Войти</a>
   </div>
-  {% elif user.is_superuser %}
+  {% else %}
 	<div>
 		<div class="admin-bar-menu">
+      {% if user.is_superuser %}
 			<a class="no-collapse">Админпанель</a>
-				<label>Посмотреть выбор:
-					<span class="select-wrapper">
-						<select id="product-select-by" name="persona">
-						<option value="anton">Антона</option>
-						<option value="sergey">Серёжи</option>
-						</select>
-					</span>
-				</label>
+      <label>Посмотреть выбор:
+        <span class="select-wrapper">
+          <select id="product-select-by" name="persona">
+          <option value="anton">Антона</option>
+          <option value="sergey">Серёжи</option>
+          </select>
+        </span>
+      </label>
+      {% endif %}
 			<p class="greet">Привет, Серёжа</p>
 		</div>
 
@@ -31,25 +33,11 @@
 
 			<div class="admin-bar-overflow-items"></div>
 			<nav class="nav-pages"></nav>
+      {% if user.is_superuser %}
 			<a>Админпанель</a>
-			<a class="logout">Выйти</a>
+      {% endif %}
+			<button id="logout-button">Выйти</a>
 		</div>
 	</div>
-  {% else %}
-  <div>
-    <div class="admin-bar-menu">
-      <p class="greet">Привет, Серёжа</p>
-    </div>
-
-    <button type="button" class="burger-toggle" aria-label="Меню" aria-expanded="false">
-      <span></span><span></span><span></span>
-    </button>
-
-    <div class="admin-bar-overflow">
-      <div class="admin-bar-overflow-items"></div>
-      <nav class="nav-pages"></nav>
-      <a class="logout">Выйти</a>
-    </div>
-  </div>
   {% endif %}
 </header>
