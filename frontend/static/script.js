@@ -1,15 +1,12 @@
 // .nav-pages-general — единственное место, где ссылки прописаны руками.
 // Все остальные .nav-pages (например, в выпадашке бургера) — пустые
 // заготовки, которые просто получают копию содержимого оттуда.
-// Ждём includes:ready — .nav-pages-general может сам приехать через data-include.
-document.addEventListener('includes:ready', () => {
-  const source = document.querySelector('.nav-pages.nav-pages-general');
-  if (!source) return;
-
+const navPagesSource = document.querySelector('.nav-pages.nav-pages-general');
+if (navPagesSource) {
   document.querySelectorAll('.nav-pages').forEach((nav) => {
-    if (nav !== source) nav.innerHTML = source.innerHTML;
+    if (nav !== navPagesSource) nav.innerHTML = navPagesSource.innerHTML;
   });
-});
+}
 
 document.addEventListener('click', (event) => {
   const button = event.target.closest('.add-wishlist');
@@ -39,7 +36,7 @@ document.addEventListener('click', (event) => {
 // Admin-bar: пункты переезжают в бургер по одному, как только реально
 // перестают помещаться в строку — не по фиксированной ширине экрана.
 // Ждём includes:ready — .topbar может сам приехать через data-include.
-document.addEventListener('includes:ready', () => {
+(() => {
   const header = document.querySelector('.topbar');
   const menu = header?.querySelector('.admin-bar-menu');
   // .admin-bar-overflow может содержать и постоянные пункты (выход, nav-pages) —
@@ -95,7 +92,7 @@ document.addEventListener('includes:ready', () => {
   mobileQuery.addEventListener('change', update);
   document.fonts?.ready.then(update);
   update();
-});
+})();
 
 function renderCart() {
   const approvedList = document.querySelector('.cart-items-approved ul');
