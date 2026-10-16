@@ -80,6 +80,7 @@ class Group(GroupBase):
     """
 
     item_type: Literal[ItemType.GROUP] = ItemType.GROUP
+    id: int
 
     items: list[Annotated[Item | Group, Field(discriminator="item_type")]]
 

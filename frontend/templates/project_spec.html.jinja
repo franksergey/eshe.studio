@@ -1,3 +1,17 @@
+{# === Nav builder === #}
+{% macro nav_section(group) %}
+<li data-group-id="{{ group.id }}"><a href="#">{{ group.name }}</a></li>
+{% for item in group.items %}
+<li>
+  {% if item.item_type == "group" %}
+  <ul class="nav-subsection">
+    {{ nav_section(item) }}
+  </ul>
+  {% endif %}
+</li>
+{% endfor %}
+{% endmacro %}
+
 <!DOCTYPE html>
 <html lang="ru">
   <head>        
@@ -64,119 +78,11 @@
         <nav>
           <div>
             <ul class="nav-section">
-              <li class=" nav-active"><a href="#">Холл</a></li>
-              <li>
-                <ul class="nav-subsection">
-                  <li>
-                    <a href="#">Мебель заказчицы</a>
-                  </li>
-                  <li>
-                    <a href="#">Трюмо</a>
-                  </li>
-                  <li>
-                    <a href="#">Шкаф платяной</a>
-                  </li>
-                </ul>
-              </li>
-              <li><a href="#">Кухня-Гостиная</a></li>
-              <li>
-                <ul class="nav-subsection">
-                  <li>
-                    <a href="#">Мебель заказчицы</a>
-                  </li>
-                  <li>
-                    <a href="#">Диван</a>
-                  </li>
-                  <li>
-                    <a href="#">Журнальный столик</a>
-                  </li>
-                  <li>
-                    <a href="#">Кресло</a>
-                  </li>
-                  <li>
-                    <a href="#">Кухонный гарнитур</a>
-                  </li>
-                  <li>
-                    <a href="#">Стул полубарный</a>
-                  </li>
-                </ul>
-              </li>
-              <li><a href="#">Санузел</a></li> 
-              <li>
-                <ul class="nav-subsection">
-                  <li>
-                    <a href="#">Столешница над стиральной машиной</a>
-                  </li>
-                  <li>
-                    <a href="#">Шкаф над инсталяцией</a>
-                  </li>
-                </ul>
-              </li>
-              <li><a href="#">Спальня</a></li> 
-              <li>
-                <ul class="nav-subsection">
-                  <li>
-                    <a href="#">Мебель заказчицы</a>
-                  </li>
-                  <li>
-                    <a href="#">Тумба под ТВ</a>
-                  </li>
-                  <li>
-                    <a href="#">Прикроватная тумба</a>
-                  </li>
-                </ul>
-              </li>
-              <li><a href="#">Спальня вторая</a></li> 
-
-              <li><a href="#">Гардеробная</a></li>
-              <li>
-                <ul class="nav-subsection">
-                  <li>
-                    <a href="#">Мебель заказчицы</a>
-                  </li>
-                  <li>
-                    <a href="#">Шкаф</a>
-                  </li>
-                  <li>
-                    <a href="#">Стул</a>
-                  </li>
-                  <li>
-                    <a href="#">Стол</a>
-                  </li>
-                  <li>
-                    <a href="#">Пуф, кушетка</a>
-                  </li> 
-                  <li>
-                    <a href="#">Столик</a>
-                  </li>                                                          
-                </ul>
-              </li>
-              <li><a href="#">Детская</a></li> 
-              <li>
-                <ul class="nav-subsection">
-                  <li>
-                    <a href="#">Мебель заказчицы</a>
-                  </li>
-                  <li>
-                    <a href="#">Кровать</a>
-                  </li>
-                  <li>
-                    <a href="#">Матрас</a>
-                  </li>
-                  <li>
-                    <a href="#">Кресло</a>
-                  </li>
-                  <li>
-                    <a href="#">Стул растущий</a>
-                  </li> 
-                  <li>
-                    <a href="#">Стол растущий</a>
-                  </li> 
-                  <li>
-                    <a href="#">Стеллаж у окна</a>
-                  </li>                                                          
-                </ul>
-              </li>                  
+              {% for item in category.items %}
+                {% if item.item_type == "group" %}
+                  {{ nav_section(item) }}
+                {% endif %}
+              {% endfor %}
             </ul>
           </div>
           <!-- <h3>Мебель</h3> -->

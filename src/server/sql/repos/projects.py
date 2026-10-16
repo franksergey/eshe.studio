@@ -63,7 +63,7 @@ class ProjectsRepo(AbstractProjectsRepo):
             *(cls._validate_item(item) for item in obj.items),
             *[cls._validate_group(subgroup) for subgroup in obj.subgroups],
         ]
-        return Group(name=obj.name, items=items)
+        return Group(id=obj.id, name=obj.name, items=items)
 
     @classmethod
     def _to_domain_schema(cls, obj: ProjectDB) -> Project:

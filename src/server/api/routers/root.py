@@ -15,9 +15,10 @@ async def read_project(
     container: ContainerDependency,
 ) -> HTMLResponse:
     project = await container.projects.get_pure(id)
+    category = await container.projects.get_group(id)
 
     return templates.TemplateResponse(
         request=request,
         name="project_spec.html.jinja",
-        context={"project": project, "user": user},
+        context={"project": project, "user": user, "category": category},
     )
