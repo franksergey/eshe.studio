@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ru">
 	<head>        
-		<title>{{ name }} &mdash; Таблица Комплектации</title>
+		<title>{{ project.name }} &mdash; Таблица Комплектации</title>
 		<meta charset="UTF-8">
 		<meta name="viewport" content="width=device-width," initial-scale="1.0">
 
@@ -30,13 +30,13 @@
 			</symbol>
 		</svg>
 
-		<header data-include="{{ url_for('static', path='/topbar-admin.html') }}"></header>
-		
+		{% include "partials/topbar.html.jinja" %}
+
 		<main>
 			<div class="vertical-space XL"></div>
 			
 			<header>
-				<p>{{ name }}</p>
+				<p>{{ project.name }}</p>
 				<div class="vertical-space S"></div>
 				<h1>Таблица комплектации</h1>
 				<div class="vertical-space S"></div>
