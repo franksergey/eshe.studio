@@ -232,36 +232,64 @@ function createCommentElement(text) {
   return comment;
 }
 
-// 3. Fetch comments on page load
-async function loadComments() {
-  const items = document.querySelectorAll('li[data-item-id]');
+// 3. Fetch comments on page load (single bulk request)
+async function loadComments(root = document) {
+  const items = [...root.querySelectorAll('li[data-item-id]')];
+  if (!items.length) return;
 
-  for (const item of items) {
-    const itemId = item.getAttribute('data-item-id');
-    if (!itemId) continue;
+  // id -> список карточек (на случай, если один id встречается несколько раз)
+  const itemsById = new Map();
+  items.forEach((item) => {
+    const id = Number(item.getAttribute('data-item-id'));
+    if (!Number.isFinite(id)) return;
+    if (!itemsById.has(id)) itemsById.set(id, []);
+    itemsById.get(id).push(item);
+  });
 
-    try {
-      const response = await fetch(`/api/items/${itemId}/comments`);
-      if (response.ok) {
-        const comments = await response.json();
-        const list = item.querySelector('.comments-list');
-        if (list) {
-          list.innerHTML = ''; // Ensure it's empty before appending
-          comments.forEach(c => {
-            list.appendChild(createCommentElement(c.text));
-          });
-        }
-      } else if (response.status !== 404) {
-        console.error(`Failed to load comments for item ${itemId}. Status: ${response.status}`);
-      }
-    } catch (error) {
-      console.error(`Network error while loading comments for item ${itemId}:`, error);
+  const itemIds = [...itemsById.keys()];
+  if (!itemIds.length) return;
+
+  try {
+    const response = await fetch('/api/items/bulk-comments', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ item_ids: itemIds })
+    });
+
+    if (!response.ok) {
+      console.error(`Failed to load comments. Status: ${response.status}`);
+      return;
     }
+
+    const data = await response.json();
+
+    (data.items ?? []).forEach((entry) => {
+      (itemsById.get(entry.id) ?? []).forEach((item) => {
+        const list = item.querySelector('.comments-list');
+        if (!list) return;
+
+        list.innerHTML = ''; // Ensure it's empty before appending
+        (entry.comments ?? []).forEach((c) => {
+          list.appendChild(createCommentElement(c.text));
+        });
+      });
+    });
+
+    if (data.item_ids_not_found?.length) {
+      console.warn('Items not found for comments:', data.item_ids_not_found);
+    }
+  } catch (error) {
+    console.error('Network error while loading comments:', error);
   }
 }
 
 // Initialize comments fetching
-document.addEventListener('DOMContentLoaded', loadComments);
+// Скрипт может подключаться после DOMContentLoaded, поэтому проверяем readyState.
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => loadComments());
+} else {
+  loadComments();
+}
 
 // 4. Handle Comment Submission
 document.addEventListener('submit', async (event) => {
