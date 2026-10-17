@@ -48,9 +48,9 @@ class ProjectsService:
         return await self.repo.get_all_pure()
 
     async def get_categories(
-        self, project_id: int, index: int = 0
+        self, project_id: int, group_id: int
     ) -> GroupOnlyItems:
-        group = await self.repo.get_category(project_id, index)
+        group = await self.repo.get_category(project_id, group_id)
 
         if group is None:
             raise GroupNotFoundError
