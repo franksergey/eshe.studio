@@ -219,7 +219,6 @@ class ProjectsRepo(AbstractProjectsRepo):
         stmt = (
             update(ItemDB)
             .where(ItemDB.id == item_id)
-            # pyrefly: ignore [unexpected-keyword]
             .values(approved=approved)
         )
         await self.session.execute(stmt)
