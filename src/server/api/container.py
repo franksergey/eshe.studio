@@ -19,6 +19,8 @@ if TYPE_CHECKING:
     from fastapi import Request
     from sqlalchemy.ext.asyncio import AsyncSession
 
+    from server.domain.files.service import FilesService
+
 
 @dataclass(eq=False, slots=True)
 class ServiceContainer:
@@ -54,6 +56,15 @@ class ServiceContainer:
             self._users_service = UsersService(repo)
 
         return self._users_service
+
+    _files_service: FilesService | None = None
+
+    @property
+    def files(self) -> FilesService:
+        if self._files_service is None:
+            raise NotImplementedError
+
+        return self._files_service
 
     _user_db: UserDatabase | None = None
 

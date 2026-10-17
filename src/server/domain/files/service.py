@@ -4,14 +4,12 @@ from typing import TYPE_CHECKING, BinaryIO
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from server.domain.files.schemas import ObjectKey
-
     from .ports import AbstractImagesRepo, AbstractObjectStorage
-    from .schemas import ImageContentType, ImageRef
+    from .schemas import ImageContentType, ImageRef, ObjectKey
 
 
 @dataclass(eq=False, slots=True)
-class StorageService:
+class FilesService:
     storage: AbstractObjectStorage
 
     def get(self, key: ObjectKey) -> Path:
