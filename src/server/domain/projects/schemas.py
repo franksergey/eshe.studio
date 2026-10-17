@@ -168,19 +168,38 @@ class ItemOnlyComments(BaseModel):
 
 
 class CurrencyCode(StrEnum):
+    def get_symbol(self) -> str:
+        return CURRENCY_SYMBOLS_TABLE[self]
+
     RUB = "RUB"
     USD = "USD"
     EUR = "EUR"
+
+
+CURRENCY_SYMBOLS_TABLE: dict[CurrencyCode, str] = {
+    CurrencyCode.RUB: "&#x20bd;",
+    CurrencyCode.USD: "&dollar;",
+    CurrencyCode.EUR: "&euro;",
+}
 
 
 class MoneyType(BaseModel):
     amount: Annotated[Decimal, Field(ge=Decimal(0))]
     currency: CurrencyCode
 
+    @staticmethod
+    def format_decimal(d: Decimal, sep: str = "&nbsp;") -> str:
+        integral = d.to_integral_value()
+
+        s = f"{integral:,f}" if d == integral else f"{d.normalize():,f}"
+        return s.replace(",", sep)
+
     @property
-    def localized(self) -> str:
-        # TODO(@soucelover): Improve localization property
-        return f"{self.amount} {self.currency}"
+    def html_formatted(self) -> str:
+        return (
+            f"{self.format_decimal(self.amount)}&nbsp;"
+            f"{self.currency.get_symbol()}"
+        )
 
 
 class CommentBase(BaseModel):
