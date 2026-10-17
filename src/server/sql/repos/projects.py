@@ -21,6 +21,8 @@ from server.domain.projects.schemas import (
 from server.sql.models import CommentDB, GroupDB, ItemDB, ProjectDB
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+
     from sqlalchemy.ext.asyncio import AsyncSession
 
 
@@ -60,12 +62,32 @@ class ProjectsRepo(AbstractProjectsRepo):
         )
 
     @classmethod
+    def _validate_group_items(
+        cls, items: Iterable[ItemDB], subgroups: Iterable[GroupDB]
+    ) -> list[Item] | list[Group]:
+        if items and subgroups:
+            msg = "Group in database cannot contain both subgroups and items"
+            raise ValueError(msg)
+
+        if items:
+            return [cls._validate_item(item) for item in items]
+
+        if subgroups:
+            return [cls._validate_group(subgroup) for subgroup in subgroups]
+
+        return []
+
+    @classmethod
     def _validate_group(cls, obj: GroupDB) -> Group:
-        items: list[Group | Item] = [
-            *(cls._validate_item(item) for item in obj.items),
-            *[cls._validate_group(subgroup) for subgroup in obj.subgroups],
-        ]
-        return Group(id=obj.id, name=obj.name, items=items)
+        if obj.items and obj.subgroups:
+            msg = "Group in database cannot contain both subgroups and items"
+            raise ValueError(msg)
+
+        return Group(
+            id=obj.id,
+            name=obj.name,
+            items=cls._validate_group_items(obj.items, obj.subgroups),
+        )
 
     @classmethod
     def _validate_group_pure(cls, obj: GroupDB) -> GroupPure:
@@ -145,11 +167,11 @@ class ProjectsRepo(AbstractProjectsRepo):
         if obj is None:
             return obj
 
-        items: list[Group | Item] = [
-            *(self._validate_item(item) for item in obj.items),
-            *[self._validate_group(subgroup) for subgroup in obj.subgroups],
-        ]
-        return GroupOnlyItems(id=obj.id, name=obj.name, items=items)
+        return GroupOnlyItems(
+            id=obj.id,
+            name=obj.name,
+            items=self._validate_group_items(obj.items, obj.subgroups),
+        )
 
     async def get_categories_pure(self, project_id: int) -> list[GroupPure]:
         stmt = (
