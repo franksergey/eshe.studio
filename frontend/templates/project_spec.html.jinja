@@ -48,12 +48,12 @@
           {% if item.tags %}
             <p>{{ item.tags | join(" &middot; ") }}</p>
           {% endif %}
-          <p class="price-row">
+          <p class="price-row" data-item-price="{{ item.price.amount }}" data-item-currency-code="{{ item.price.currency }}">
             <span class="price">
               {% if item.price is none %}
                 В наличии
               {% else %}
-                {{ item.price.localized }}
+                {{ item.price.html_formatted }}
               {% endif %}
             </span> &middot;
             <span class="quantity">{{ item.count }} шт</span>
