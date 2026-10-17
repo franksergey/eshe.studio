@@ -14,6 +14,7 @@ from sqlalchemy.ext.asyncio import (
 from alembic import command
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
     from types import TracebackType
 
     import sqlalchemy
@@ -39,6 +40,7 @@ class Database(AbstractAsyncContextManager["Database"]):
 
     engine: AsyncEngine
     sessionmaker: async_sessionmaker[AsyncSession]
+    get_session: Callable[[], AsyncSession]
 
     def __init__(
         self, db_url: str | URL, *, echo: bool | Literal["debug"] = False
@@ -97,9 +99,6 @@ class Database(AbstractAsyncContextManager["Database"]):
     ) -> bool | None:
         await self.engine.dispose()
         logger.info("Объект базы данных был закрыт")
-
-    def get_session(self) -> AsyncSession:
-        raise NotImplementedError
 
 
 class DatabaseChecker:
