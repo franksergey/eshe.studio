@@ -73,15 +73,32 @@ class GroupPut(GroupBase):
     """Модель для полного обновления группы."""
 
 
-class Group(GroupBase):
+class GroupPure(GroupBase):
+    """Модель для группы без внешних связей."""
+
+    id: int
+
+
+class GroupOnlyItems(GroupPure):
+    """Группа с внешней связью групп и карточек."""
+
+    items: list[Item] | list[Group]
+
+    @property
+    def has_items(self) -> bool:
+        if not self.items:
+            return False
+
+        return isinstance(self.items[0], Item)
+
+
+class Group(GroupOnlyItems):
     """Группа карточек в таблице комплектации.
 
     Самый верхний уровень групп – это "категории" товаров.
     """
 
     item_type: Literal[ItemType.GROUP] = ItemType.GROUP
-
-    items: list[Annotated[Item | Group, Field(discriminator="item_type")]]
 
 
 # ===============
@@ -145,6 +162,11 @@ class Item(ItemPure):
     item_type: Literal[ItemType.ITEM] = ItemType.ITEM
 
 
+class ItemOnlyComments(BaseModel):
+    id: int
+    comments: list[Comment]
+
+
 class CurrencyCode(StrEnum):
     RUB = "RUB"
     USD = "USD"
@@ -154,6 +176,11 @@ class CurrencyCode(StrEnum):
 class MoneyType(BaseModel):
     amount: Annotated[Decimal, Field(ge=Decimal(0))]
     currency: CurrencyCode
+
+    @property
+    def localized(self) -> str:
+        # TODO(@soucelover): Improve localization property
+        return f"{self.amount} {self.currency}"
 
 
 class CommentBase(BaseModel):
@@ -173,6 +200,11 @@ class Comment(CommentBase):
     id: int
 
     created_at: AwareDatetime
+
+
+class CommentsBulkRead(BaseModel):
+    items: list[ItemOnlyComments]
+    item_ids_not_found: list[int]
 
 
 ItemBase.model_rebuild()

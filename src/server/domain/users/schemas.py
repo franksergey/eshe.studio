@@ -4,7 +4,9 @@ from fastapi_users.schemas import BaseUser, BaseUserCreate, BaseUserUpdate
 
 
 class UserRead(BaseUser[uuid.UUID]):
-    pass
+    @property
+    def first_name(self) -> str:
+        return self.email
 
 
 class UserCreate(BaseUserCreate):

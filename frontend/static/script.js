@@ -1,36 +1,12 @@
-// Подгрузка вынесенных кусков разметки (например, <div data-include="topbar-admin.html">).
-// Работает только через http(s) — fetch локального файла по file:// браузер блокирует.
-async function loadIncludes() {
-  const nodes = [...document.querySelectorAll('[data-include]')];
-
-  await Promise.all(nodes.map(async (node) => {
-    const src = node.getAttribute('data-include');
-    try {
-      const response = await fetch(src);
-      if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
-      node.outerHTML = await response.text();
-    } catch (error) {
-      console.error(`Не удалось подгрузить ${src}:`, error);
-    }
-  }));
-
-  document.dispatchEvent(new Event('includes:ready'));
-}
-
-loadIncludes();
-
 // .nav-pages-general — единственное место, где ссылки прописаны руками.
 // Все остальные .nav-pages (например, в выпадашке бургера) — пустые
 // заготовки, которые просто получают копию содержимого оттуда.
-// Ждём includes:ready — .nav-pages-general может сам приехать через data-include.
-document.addEventListener('includes:ready', () => {
-  const source = document.querySelector('.nav-pages.nav-pages-general');
-  if (!source) return;
-
+const navPagesSource = document.querySelector('.nav-pages.nav-pages-general');
+if (navPagesSource) {
   document.querySelectorAll('.nav-pages').forEach((nav) => {
-    if (nav !== source) nav.innerHTML = source.innerHTML;
+    if (nav !== navPagesSource) nav.innerHTML = navPagesSource.innerHTML;
   });
-});
+}
 
 document.addEventListener('click', (event) => {
   const button = event.target.closest('.add-wishlist');
@@ -60,7 +36,7 @@ document.addEventListener('click', (event) => {
 // Admin-bar: пункты переезжают в бургер по одному, как только реально
 // перестают помещаться в строку — не по фиксированной ширине экрана.
 // Ждём includes:ready — .topbar может сам приехать через data-include.
-document.addEventListener('includes:ready', () => {
+(() => {
   const header = document.querySelector('.topbar');
   const menu = header?.querySelector('.admin-bar-menu');
   // .admin-bar-overflow может содержать и постоянные пункты (выход, nav-pages) —
@@ -116,7 +92,7 @@ document.addEventListener('includes:ready', () => {
   mobileQuery.addEventListener('change', update);
   document.fonts?.ready.then(update);
   update();
-});
+})();
 
 function renderCart() {
   const approvedList = document.querySelector('.cart-items-approved ul');
@@ -253,36 +229,64 @@ function createCommentElement(text) {
   return comment;
 }
 
-// 3. Fetch comments on page load
-async function loadComments() {
-  const items = document.querySelectorAll('li[data-item-id]');
+// 3. Fetch comments on page load (single bulk request)
+async function loadComments(root = document) {
+  const items = [...root.querySelectorAll('li[data-item-id]')];
+  if (!items.length) return;
 
-  for (const item of items) {
-    const itemId = item.getAttribute('data-item-id');
-    if (!itemId) continue;
+  // id -> список карточек (на случай, если один id встречается несколько раз)
+  const itemsById = new Map();
+  items.forEach((item) => {
+    const id = Number(item.getAttribute('data-item-id'));
+    if (!Number.isFinite(id)) return;
+    if (!itemsById.has(id)) itemsById.set(id, []);
+    itemsById.get(id).push(item);
+  });
 
-    try {
-      const response = await fetch(`/api/items/${itemId}/comments`);
-      if (response.ok) {
-        const comments = await response.json();
-        const list = item.querySelector('.comments-list');
-        if (list) {
-          list.innerHTML = ''; // Ensure it's empty before appending
-          comments.forEach(c => {
-            list.appendChild(createCommentElement(c.text));
-          });
-        }
-      } else if (response.status !== 404) {
-        console.error(`Failed to load comments for item ${itemId}. Status: ${response.status}`);
-      }
-    } catch (error) {
-      console.error(`Network error while loading comments for item ${itemId}:`, error);
+  const itemIds = [...itemsById.keys()];
+  if (!itemIds.length) return;
+
+  try {
+    const response = await fetch('/api/items/bulk-comments', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ item_ids: itemIds })
+    });
+
+    if (!response.ok) {
+      console.error(`Failed to load comments. Status: ${response.status}`);
+      return;
     }
+
+    const data = await response.json();
+
+    (data.items ?? []).forEach((entry) => {
+      (itemsById.get(entry.id) ?? []).forEach((item) => {
+        const list = item.querySelector('.comments-list');
+        if (!list) return;
+
+        list.innerHTML = ''; // Ensure it's empty before appending
+        (entry.comments ?? []).forEach((c) => {
+          list.appendChild(createCommentElement(c.text));
+        });
+      });
+    });
+
+    if (data.item_ids_not_found?.length) {
+      console.warn('Items not found for comments:', data.item_ids_not_found);
+    }
+  } catch (error) {
+    console.error('Network error while loading comments:', error);
   }
 }
 
 // Initialize comments fetching
-document.addEventListener('DOMContentLoaded', loadComments);
+// Скрипт может подключаться после DOMContentLoaded, поэтому проверяем readyState.
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => loadComments());
+} else {
+  loadComments();
+}
 
 // 4. Handle Comment Submission
 document.addEventListener('submit', async (event) => {

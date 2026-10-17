@@ -1,0 +1,43 @@
+<!-- Заготовка: topbar для залогиненного клиента (не админа). Поправь содержимое. -->
+<header class="topbar">
+  <div>
+    <img src="{{ url_for('static', path='media/logo.svg') }}" alt="Логотип eshe.studio" loading="lazy" draggable="false" />
+    <p>Ещё студия</p>
+  </div>
+  {% if user is none %}
+  <div>
+    <button id="login-button" type="button">Войти</a>
+  </div>
+  {% else %}
+	<div>
+		<div class="admin-bar-menu">
+      {% if user.is_superuser %}
+			<a class="no-collapse">Админпанель</a>
+      {# TODO: Use JavaScript to get the list of selections #}
+      <label>Посмотреть выбор:
+        <span class="select-wrapper">
+          <select id="product-select-by" name="persona">
+          <option value="anton">Антона</option>
+          <option value="sergey">Серёжи</option>
+          </select>
+        </span>
+      </label>
+      {% endif %}
+			<p class="greet">Привет, {{ user.first_name }}</p>
+		</div>
+
+		<button type="button" class="burger-toggle" aria-label="Меню" aria-expanded="false">
+			<span></span><span></span><span></span>
+		</button>
+
+		<div class="admin-bar-overflow">
+			<div class="admin-bar-overflow-items"></div>
+			<nav class="nav-pages"></nav>
+      {% if user.is_superuser %}
+			<a>Админпанель</a>
+      {% endif %}
+			<button id="logout-button">Выйти</a>
+		</div>
+	</div>
+  {% endif %}
+</header>
