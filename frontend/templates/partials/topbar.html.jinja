@@ -12,7 +12,7 @@
 	<div>
 		<div class="admin-bar-menu">
       {% if user.is_superuser %}
-			<a class="no-collapse">Админпанель</a>
+			<a href="{{ url_for('read_admin_page') }}"  class="no-collapse">Админпанель</a>
       {# TODO: Use JavaScript to get the list of selections #}
       <label>Посмотреть выбор:
         <span class="select-wrapper">
@@ -34,7 +34,7 @@
 			<div class="admin-bar-overflow-items"></div>
 			<nav class="nav-pages"></nav>
       {% if user.is_superuser %}
-			<a>Админпанель</a>
+			<a href="{{ url_for('read_admin_page') }}">Админпанель</a>
       {% endif %}
 			<button id="logout-button">Выйти</button>
 		</div>
