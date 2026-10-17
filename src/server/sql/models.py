@@ -168,12 +168,15 @@ class GroupDB(Base):
         cascade="all, delete, delete-orphan",
         passive_deletes=True,
         lazy="selectin",
+        join_depth=10,
         order_by="GroupDB.ordinal_no",
     )
     parent_group: Mapped[GroupDB | None] = relationship(
         back_populates="subgroups", remote_side="GroupDB.id"
     )
-    project: Mapped[ProjectDB] = relationship(back_populates="categories")
+    project: Mapped[ProjectDB] = relationship(
+        foreign_keys=[project_id], back_populates="categories"
+    )
 
 
 class ProjectDB(Base):
@@ -188,7 +191,12 @@ class ProjectDB(Base):
 
     # Relations
     categories: Mapped[list[GroupDB]] = relationship(
+        primaryjoin=(
+            "and_(ProjectDB.id == GroupDB.project_id, "
+            "GroupDB.group_id.is_(None))"
+        ),
         back_populates="project",
+        viewonly=True,
         cascade="all, delete, delete-orphan",
         passive_deletes=True,
         lazy="selectin",

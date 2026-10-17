@@ -1,7 +1,7 @@
 <!-- Заготовка: topbar для залогиненного клиента (не админа). Поправь содержимое. -->
 <header class="topbar">
   <div>
-    <img src="{{ url_for('static', path='media/logo.svg') }}" alt="Логотип eshe.studio" />
+    <img src="{{ url_for('static', path='media/logo.svg') }}" alt="Логотип eshe.studio" loading="lazy" draggable="false" />
     <p>Ещё студия</p>
   </div>
   {% if user is none %}
