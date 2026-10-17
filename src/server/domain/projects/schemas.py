@@ -73,14 +73,14 @@ class GroupPut(GroupBase):
     """Модель для полного обновления группы."""
 
 
-class Group(GroupBase):
-    """Группа карточек в таблице комплектации.
+class GroupPure(GroupBase):
+    """Модель для группы без внешних связей."""
 
-    Самый верхний уровень групп – это "категории" товаров.
-    """
-
-    item_type: Literal[ItemType.GROUP] = ItemType.GROUP
     id: int
+
+
+class GroupOnlyItems(GroupPure):
+    """Группа с внешней связью групп и карточек."""
 
     items: list[Item] | list[Group]
 
@@ -90,6 +90,15 @@ class Group(GroupBase):
             return False
 
         return isinstance(self.items[0], Item)
+
+
+class Group(GroupOnlyItems):
+    """Группа карточек в таблице комплектации.
+
+    Самый верхний уровень групп – это "категории" товаров.
+    """
+
+    item_type: Literal[ItemType.GROUP] = ItemType.GROUP
 
 
 # ===============

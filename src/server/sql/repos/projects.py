@@ -10,6 +10,8 @@ from server.domain.projects.schemas import (
     CommentCreate,
     CurrencyCode,
     Group,
+    GroupOnlyItems,
+    GroupPure,
     Item,
     ItemOnlyComments,
     MoneyType,
@@ -66,6 +68,10 @@ class ProjectsRepo(AbstractProjectsRepo):
         return Group(id=obj.id, name=obj.name, items=items)
 
     @classmethod
+    def _validate_group_pure(cls, obj: GroupDB) -> GroupPure:
+        return GroupPure(id=obj.id, name=obj.name)
+
+    @classmethod
     def _to_domain_schema(cls, obj: ProjectDB) -> Project:
         return Project(
             id=obj.id,
@@ -91,7 +97,11 @@ class ProjectsRepo(AbstractProjectsRepo):
 
     @override
     async def get_pure(self, id: int) -> ProjectPure | None:
-        stmt = select(ProjectDB).where(ProjectDB.id == id)
+        stmt = (
+            select(ProjectDB)
+            .where(ProjectDB.id == id)
+            .options(lazyload(ProjectDB.categories))
+        )
         obj = await self.session.scalar(stmt)
 
         if obj is None:
@@ -118,7 +128,9 @@ class ProjectsRepo(AbstractProjectsRepo):
         return [self._to_domain_schema_pure(obj) for obj in objs]
 
     @override
-    async def get_group(self, project_id: int, index: int = 0) -> Group | None:
+    async def get_category(
+        self, project_id: int, index: int = 0
+    ) -> GroupOnlyItems | None:
         stmt = (
             select(GroupDB)
             .where(
@@ -133,7 +145,23 @@ class ProjectsRepo(AbstractProjectsRepo):
         if obj is None:
             return obj
 
-        return self._validate_group(obj)
+        items: list[Group | Item] = [
+            *(self._validate_item(item) for item in obj.items),
+            *[self._validate_group(subgroup) for subgroup in obj.subgroups],
+        ]
+        return GroupOnlyItems(id=obj.id, name=obj.name, items=items)
+
+    async def get_categories_pure(self, project_id: int) -> list[GroupPure]:
+        stmt = (
+            select(GroupDB)
+            .where(
+                GroupDB.project_id == project_id, GroupDB.group_id.is_(None)
+            )
+            .order_by(GroupDB.ordinal_no)
+            .options(lazyload(GroupDB.items), lazyload(GroupDB.subgroups))
+        )
+        objs = await self.session.scalars(stmt)
+        return [self._validate_group_pure(group) for group in objs]
 
     @override
     async def check_item_exists(self, item_id: int) -> bool:

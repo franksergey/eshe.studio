@@ -11,7 +11,14 @@ from .schemas import CommentsBulkRead
 
 if TYPE_CHECKING:
     from .ports import AbstractProjectsRepo
-    from .schemas import Comment, CommentCreate, Group, Project, ProjectPure
+    from .schemas import (
+        Comment,
+        CommentCreate,
+        GroupOnlyItems,
+        GroupPure,
+        Project,
+        ProjectPure,
+    )
 
 
 @dataclass(eq=False, slots=True)
@@ -40,13 +47,18 @@ class ProjectsService:
     async def get_all_pure(self) -> list[ProjectPure]:
         return await self.repo.get_all_pure()
 
-    async def get_group(self, project_id: int, index: int = 0) -> Group:
-        group = await self.repo.get_group(project_id, index)
+    async def get_categories(
+        self, project_id: int, index: int = 0
+    ) -> GroupOnlyItems:
+        group = await self.repo.get_category(project_id, index)
 
         if group is None:
             raise GroupNotFoundError
 
         return group
+
+    async def get_categories_pure(self, project_id: int) -> list[GroupPure]:
+        return await self.repo.get_categories_pure(project_id)
 
     async def get_item_comments(self, item_id: int) -> list[Comment]:
         objs = await self.repo.get_item_comments(item_id)

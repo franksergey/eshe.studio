@@ -120,14 +120,9 @@
         <div class="vertical-space M"></div>
 
         <nav class="nav-pages nav-pages-general">
-          <a href="" class="active">Мебель</a>
-          <a href="page-of-table/santehnika.html">Сантехника</a>
-          <a href="page-of-table/tehnika.html">Техника</a>
-          <a href="page-of-table/osveshenie.html">Освещение</a>
-          <a href="page-of-table/otdelka.html">Отделка</a>
-          <a href="page-of-table/inzhenernoe-oborudovanie.html">Инженерное оборудование</a>
-          <a href="page-of-table/stroitelnye-raboty.html">Строительные работы</a>
-          <a href="page-of-table/aksessuary.html">Аксессуары</a>
+          {% for cat in categories %}
+            <a href="{{ url_for('read_project_category', id=project.id, index=loop.index) }}" {% if cat.id == category.id %}class="active"{% endif %}>{{ cat.name }}</a>
+          {% endfor %}
         </nav>
       </header>
 

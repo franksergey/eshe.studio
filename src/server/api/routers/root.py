@@ -15,10 +15,40 @@ async def read_project(
     container: ContainerDependency,
 ) -> HTMLResponse:
     project = await container.projects.get_pure(id)
-    category = await container.projects.get_group(id)
+    category = await container.projects.get_categories(id)
+    categories = await container.projects.get_categories_pure(id)
 
     return templates.TemplateResponse(
         request=request,
         name="project_spec.html.jinja",
-        context={"project": project, "user": user, "category": category},
+        context={
+            "project": project,
+            "user": user,
+            "category": category,
+            "categories": categories,
+        },
+    )
+
+
+@router.get("/project-{id}/{index}")
+async def read_project_category(
+    request: Request,
+    id: int,
+    index: int,
+    user: OptionalUserDependency,
+    container: ContainerDependency,
+) -> HTMLResponse:
+    project = await container.projects.get_pure(id)
+    category = await container.projects.get_categories(id, index=index - 1)
+    categories = await container.projects.get_categories_pure(id)
+
+    return templates.TemplateResponse(
+        request=request,
+        name="project_spec.html.jinja",
+        context={
+            "project": project,
+            "user": user,
+            "category": category,
+            "categories": categories,
+        },
     )
