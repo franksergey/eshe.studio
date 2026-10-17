@@ -6,6 +6,14 @@ from pydantic import AwareDatetime, BaseModel
 type ObjectKey = uuid.UUID
 
 
+class ImageContentType(StrEnum):
+    IMAGE_JPEG = "image/jpeg"
+    IMAGE_PNG = "image/png"
+    IMAGE_WEBP = "image/webp"
+    IMAGE_GIF = "image/gif"
+    IMAGE_SVG = "image/svg+xml"
+
+
 class ContentType(StrEnum):
     IMAGE_JPEG = "image/jpeg"
     IMAGE_PNG = "image/png"
@@ -22,3 +30,8 @@ class ObjectInfo(BaseModel):
 
     created_at: AwareDatetime
     updated_at: AwareDatetime
+
+
+class ImageRef(BaseModel):
+    id: int
+    object_id: ObjectKey
