@@ -1,7 +1,8 @@
 import uuid
 from enum import StrEnum
+from typing import Annotated
 
-from pydantic import AwareDatetime, BaseModel
+from pydantic import AwareDatetime, BaseModel, Field
 
 type ObjectKey = uuid.UUID
 
@@ -25,8 +26,12 @@ class ContentType(StrEnum):
 class ObjectInfo(BaseModel):
     id: uuid.UUID
 
-    original_filename: str | None
-    content_type: ContentType
+    size: int
+    sha256: str
+    etag: str
+
+    original_filename: Annotated[str, Field(max_length=1024)] | None
+    content_type: ContentType | None
 
     created_at: AwareDatetime
     updated_at: AwareDatetime

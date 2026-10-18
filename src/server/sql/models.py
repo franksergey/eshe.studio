@@ -3,6 +3,7 @@ from decimal import Decimal
 from typing import ClassVar
 
 from fastapi_users.db import SQLAlchemyBaseUserTableUUID
+from fastapi_users_db_sqlalchemy.generics import GUID
 from sqlalchemy import (
     JSON,
     CheckConstraint,
@@ -24,8 +25,9 @@ from sqlalchemy.orm import (
 )
 
 from server.config import settings
+from server.domain.files.schemas import ContentType
 from server.domain.projects.schemas import CurrencyCode
-from server.sql.mixins import CreatedAtMixin
+from server.sql.mixins import CreatedAtMixin, TimestampMixin
 
 
 class Base(DeclarativeBase):
@@ -198,7 +200,6 @@ class ProjectDB(Base):
         back_populates="project",
         viewonly=True,
         cascade="all, delete, delete-orphan",
-        passive_deletes=True,
         lazy="selectin",
         order_by=GroupDB.ordinal_no,
     )
@@ -286,3 +287,31 @@ class ItemChoiceDB(ItemTableBase, Base):
     )
 
     tags: Mapped[list[str]] = mapped_column(JsonType)
+
+
+# ============
+# Files Domain
+# ============
+
+CONTENT_TYPE_ENUM = Enum(
+    ContentType,
+    name="content_Type_enum",
+    # pyrefly: ignore[implicit-any-lambda]
+    values_callable=lambda obj: [item.value for item in obj],  # pyright: ignore[reportUnknownLambdaType, reportUnknownMemberType, reportUnknownVariableType]
+)
+
+
+class StorageObjectDB(TimestampMixin, Base):
+    __tablename__ = "storage_objects"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        GUID, primary_key=True, default=uuid.uuid4
+    )
+    blob_id: Mapped[uuid.UUID] = mapped_column(GUID, default=uuid.uuid4)
+
+    size: Mapped[int]
+    sha256: Mapped[str] = mapped_column(String(64))
+
+    etag: Mapped[str] = mapped_column(String(32))
+    original_filename: Mapped[str | None] = mapped_column(String(1024))
+    content_type: Mapped[ContentType | None] = mapped_column(CONTENT_TYPE_ENUM)
