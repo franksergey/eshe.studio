@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 from alembic import context
 from server.__main__ import create_asyncio_event_loop
 from server.config import settings
-from server.logging import setup_logging
+from server.logging import setup_logging_sync
 from server.sql.models import Base
 
 if TYPE_CHECKING:
@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 config = context.config
 
 if not logging.getLogger().hasHandlers():
-    setup_logging()
+    setup_logging_sync()
 
 target_metadata = Base.metadata
 

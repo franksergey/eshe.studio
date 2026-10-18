@@ -2,8 +2,11 @@
 
 import http
 import logging.config
+from contextlib import contextmanager
 from copy import copy
 from importlib import resources
+from logging.handlers import QueueHandler, QueueListener
+from queue import Queue
 from typing import TYPE_CHECKING, cast, override
 
 import yaml
@@ -13,20 +16,51 @@ from rich.logging import RichHandler
 from .config import settings
 
 if TYPE_CHECKING:
-    from collections.abc import Callable
+    from collections.abc import Callable, Generator
     from pathlib import Path
 
     from rich.console import ConsoleRenderable
 
 
-def setup_logging() -> None:
+@contextmanager
+def setup_logging() -> Generator[None]:
     """Set up logging from the chosen logging configuration."""
+    setup_logging_sync()
+
+    with setup_asynchronous_logging(logging.getLogger()):
+        yield
+
+
+def setup_logging_sync() -> None:
     path = get_config_path()
 
     with path.open("rb") as fd:
         config = yaml.safe_load(fd)
 
     logging.config.dictConfig(config)
+
+
+@contextmanager
+def setup_asynchronous_logging(root_logger: logging.Logger) -> Generator[None]:
+    queue: Queue[logging.LogRecord] = Queue(-1)
+
+    handlers = root_logger.handlers.copy()
+    listener = QueueListener(queue, *handlers, respect_handler_level=True)
+    listener.start()
+
+    for handler in handlers:
+        root_logger.removeHandler(handler)
+
+    handler = QueueHandler(queue)
+    root_logger.addHandler(handler)
+
+    yield
+
+    listener.stop()
+    root_logger.removeHandler(handler)
+
+    for handler in handlers:
+        root_logger.addHandler(handler)
 
 
 def get_config_path() -> Path:

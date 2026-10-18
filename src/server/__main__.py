@@ -97,13 +97,13 @@ async def perform_checks() -> None:
 
 def main() -> None:
     """Entry point of the whole FastAPI backend."""
-    setup_logging()
-    logger.info("Backend version: %s", version)
+    with setup_logging():
+        logger.info("Backend version: %s", version)
 
-    with asyncio.Runner(loop_factory=create_asyncio_event_loop) as runner:
-        runner.run(perform_checks())
+        with asyncio.Runner(loop_factory=create_asyncio_event_loop) as runner:
+            runner.run(perform_checks())
 
-    launch_server()
+        launch_server()
 
 
 if __name__ == "__main__":
