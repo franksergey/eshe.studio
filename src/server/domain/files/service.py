@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, BinaryIO
 
+from server.api.errors import ObjectNotFoundError
+
 if TYPE_CHECKING:
     from pathlib import Path
 
@@ -12,8 +14,11 @@ if TYPE_CHECKING:
 class FilesService:
     storage: AbstractObjectStorage
 
-    def get(self, key: ObjectKey) -> Path:
-        return self.storage.get(key)
+    async def get(self, key: ObjectKey) -> Path:
+        if (obj := await self.storage.get(key)) is None:
+            raise ObjectNotFoundError
+
+        return obj
 
 
 @dataclass(eq=False, slots=True)

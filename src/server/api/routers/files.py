@@ -52,7 +52,7 @@ def is_not_modified(
 async def read_file(
     key: ObjectKey, request: Request, container: ContainerDependency
 ) -> FileResponse | Response:
-    path = container.files.get(key)
+    path = await container.files.get(key)
     response = FileResponse(
         path,
         # makes FileResponse compute ETag/Last-Modified now
