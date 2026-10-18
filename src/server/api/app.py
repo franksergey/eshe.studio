@@ -1,5 +1,6 @@
 """Creation and the setup of application object of ASGI server."""
 
+import functools
 import logging
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -11,12 +12,12 @@ from fastapi_problem.handler import add_exception_handler
 from starlette.staticfiles import StaticFiles
 
 from server import __version__ as version
+from server.api.container import ServiceContainer
 from server.api.routers import ALL_ROUTERS
 from server.config import settings
 from server.sql.database import Database
 
 from .common import cors_configuration
-from .container import container_getter
 from .errors import error_handler
 
 if TYPE_CHECKING:
@@ -106,7 +107,9 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[AppInitialState]:
     async with Database(
         db_url=settings.db.database_url, echo=settings.db.ECHO
     ) as database:
-        get_container = container_getter(database.get_session)
+        get_container = functools.partial(
+            ServiceContainer, database.get_session, settings.STORAGEDIR
+        )
 
         logger.info("Сервер полностью настроен и готов к началу работы.")
         yield {"get_container": get_container}

@@ -210,6 +210,7 @@ class AppSettings(BaseSettings):
     LOGGINGFORMAT: Literal["rich", "console", "structured"] = "console"
     PYPROJECT: FilePath = Path.cwd() / "pyproject.toml"
     DEBUG: bool = False
+    STORAGEDIR: Path = Path.cwd() / "data/storage"
 
     db: DatabaseConfig = DatabaseConfig()
     api: APIConfig = APIConfig()

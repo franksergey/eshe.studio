@@ -1,29 +1,102 @@
 import asyncio
-from contextlib import asynccontextmanager
+import logging
+from contextlib import AbstractAsyncContextManager
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Protocol
+from typing import TYPE_CHECKING, Protocol, Self, override
+
+from sqlalchemy.exc import DBAPIError
 
 from server.domain.choices.services import ChoicesService
+from server.domain.files.service import FilesService
 from server.domain.projects.service import ProjectsService
 from server.domain.users.service import UsersService
 from server.sql.models import UserDB
 from server.sql.repos import ProjectsRepo, UserDatabase, UsersRepo
 from server.sql.repos.choices import ChoicesRepo
+from server.sql.repos.files import LocalObjectsStorage
 
 from .auth import UserManager
 
 if TYPE_CHECKING:
-    from collections.abc import AsyncGenerator, Callable
-    from contextlib import AbstractAsyncContextManager
+    from collections.abc import Callable
+    from pathlib import Path
 
     from fastapi import Request
     from sqlalchemy.ext.asyncio import AsyncSession
 
 
+logger = logging.getLogger(__name__)
+
+
 @dataclass(eq=False, slots=True)
-class ServiceContainer:
+class ServiceContainer(AbstractAsyncContextManager["ServiceContainer"]):
+    _get_session: Callable[[], AsyncSession]
+
     session: AsyncSession
     request: Request | None
+    storage_dir: Path
+
+    def __init__(
+        self,
+        get_session: Callable[[], AsyncSession],
+        storage_dir: Path,
+        request: Request | None = None,
+    ) -> None:
+        self._get_session = get_session
+        self.request = request
+        self.storage_dir = storage_dir
+
+    @override
+    async def __aenter__(self) -> Self:
+        self.session = self._get_session()
+        return self
+
+    @override
+    async def __aexit__(
+        self, exc_type: object, exc: object, tb: object
+    ) -> bool:
+        try:
+            if exc_type is None:
+                await asyncio.shield(self._commit())
+            else:
+                await asyncio.shield(self._rollback())
+        finally:
+            await asyncio.shield(self.session.close())
+
+        return False
+
+    @staticmethod
+    def _commit_outcome_unknown(exc: BaseException) -> bool:
+        if isinstance(exc, asyncio.CancelledError):
+            return True
+
+        return isinstance(exc, DBAPIError) and exc.connection_invalidated
+
+    async def _commit(self) -> None:
+        try:
+            await asyncio.shield(self.session.commit())
+        except BaseException as exc:
+            await asyncio.shield(
+                self._rollback(
+                    commit_outcome_unknown=self._commit_outcome_unknown(exc)
+                )
+            )
+            raise
+
+        if self._objects_storage is not None:
+            await asyncio.shield(self._objects_storage.confirm())
+
+    async def _rollback(self, *, commit_outcome_unknown: bool = False) -> None:
+        try:
+            await asyncio.shield(self.session.rollback())
+        except Exception:
+            logger.exception("Failed to rollback SQLAlchemy session")
+
+        if self._objects_storage is not None:
+            if commit_outcome_unknown:
+                self._objects_storage.forget()
+            else:
+                await asyncio.shield(self._objects_storage.rollback())
 
     _projects_service: ProjectsService | None = None
 
@@ -55,6 +128,19 @@ class ServiceContainer:
 
         return self._users_service
 
+    _files_service: FilesService | None = None
+    _objects_storage: LocalObjectsStorage | None = None
+
+    @property
+    def files(self) -> FilesService:
+        if self._files_service is None:
+            self._objects_storage = LocalObjectsStorage(
+                self.session, self.storage_dir
+            )
+            self._files_service = FilesService(self._objects_storage)
+
+        return self._files_service
+
     _user_db: UserDatabase | None = None
 
     @property
@@ -79,22 +165,3 @@ class ContainerGetter(Protocol):
         self, request: Request | None = None
     ) -> AbstractAsyncContextManager[ServiceContainer]:
         raise NotImplementedError
-
-
-def container_getter(
-    sessionmaker: Callable[[], AsyncSession],
-) -> ContainerGetter:
-    @asynccontextmanager
-    async def get_container(
-        request: Request | None = None,
-    ) -> AsyncGenerator[ServiceContainer]:
-        async with sessionmaker() as session:
-            try:
-                yield ServiceContainer(session, request)
-            except:
-                await asyncio.shield(session.rollback())
-                raise
-            else:
-                await asyncio.shield(session.commit())
-
-    return get_container

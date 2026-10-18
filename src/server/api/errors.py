@@ -42,3 +42,8 @@ class UserNotFoundError(NotFoundProblem):
 class ChoiceNotFoundError(NotFoundProblem):
     type_ = "choice-not-found"
     title = "Choice with the specified id couldn't be found."
+
+
+class ObjectNotFoundError(NotFoundProblem):
+    type_ = "object-not-found"
+    title = "Object (file) with the specified key couldn't be found."
