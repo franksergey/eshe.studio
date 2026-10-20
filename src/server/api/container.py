@@ -7,13 +7,15 @@ from typing import TYPE_CHECKING, Protocol, Self, override
 from sqlalchemy.exc import DBAPIError
 
 from server.domain.choices.services import ChoicesService
-from server.domain.files.service import FilesService
+from server.domain.files.processor import ImagesProcessor
+from server.domain.files.service import FilesService, ImagesService
 from server.domain.projects.service import ProjectsService
 from server.domain.users.service import UsersService
 from server.sql.models import UserDB
 from server.sql.repos import ProjectsRepo, UserDatabase, UsersRepo
 from server.sql.repos.choices import ChoicesRepo
 from server.sql.repos.files import LocalObjectsStorage
+from server.sql.repos.images import ImagesRepo
 
 from .auth import UserManager
 
@@ -52,6 +54,7 @@ class ServiceContainer(AbstractAsyncContextManager["ServiceContainer"]):
         self._files_service = None
         self._objects_storage = None
         self._user_db = None
+        self._images_service = None
         self._user_manager = None
 
     @override
@@ -136,18 +139,38 @@ class ServiceContainer(AbstractAsyncContextManager["ServiceContainer"]):
 
         return self._users_service
 
-    _files_service: FilesService | None
     _objects_storage: LocalObjectsStorage | None
+
+    @property
+    def objects_storage(self) -> LocalObjectsStorage:
+        if self._objects_storage is None:
+            self._objects_storage = LocalObjectsStorage(
+                self.session, self.storage_dir
+            )
+
+        return self._objects_storage
+
+    _files_service: FilesService | None
 
     @property
     def files(self) -> FilesService:
         if self._files_service is None:
-            self._objects_storage = LocalObjectsStorage(
-                self.session, self.storage_dir
-            )
-            self._files_service = FilesService(self._objects_storage)
+            self._files_service = FilesService(self.objects_storage)
 
         return self._files_service
+
+    _images_service: ImagesService | None
+
+    @property
+    def images(self) -> ImagesService:
+        if self._images_service is None:
+            self._images_service = ImagesService(
+                ImagesRepo(self.session),
+                self.objects_storage,
+                ImagesProcessor(),
+            )
+
+        return self._images_service
 
     _user_db: UserDatabase | None
 
