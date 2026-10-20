@@ -1,7 +1,7 @@
 import logging
 
 from fastapi_problem.handler import new_exception_handler
-from rfc9457 import ConflictProblem, NotFoundProblem
+from rfc9457 import ConflictProblem, NotFoundProblem, UnprocessableProblem
 
 from .common import cors_configuration
 
@@ -52,3 +52,13 @@ class ObjectNotFoundError(NotFoundProblem):
 class ImageNotFoundError(NotFoundProblem):
     type_ = "image-not-found"
     title = "Image with the specified id couldn't be found."
+
+
+class InvalidImageError(UnprocessableProblem):
+    type_ = "invalid-image"
+    title = "Uploaded image is invalid and could not be processed."
+
+
+class InvalidTooLargeError(UnprocessableProblem):
+    type_ = "image-too-large"
+    title = "Uploaded image's dimensions are too large.."
