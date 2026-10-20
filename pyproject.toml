@@ -31,6 +31,7 @@ dependencies = [
     "fastapi-users[sqlalchemy]>=15.0.5",
     "fastapi[standard]~=0.141.0",
     "python-json-logger~=4.2",
+    "pyvips[binary]>=3.2.0",
     "sqlalchemy[aiosqlite]~=2.0.54",
     "uvloop>=0.22.1 ; sys_platform == 'linux'",
     "winloop>=0.6.3 ; sys_platform == 'win32'",
