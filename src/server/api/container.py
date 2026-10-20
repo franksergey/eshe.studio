@@ -46,6 +46,14 @@ class ServiceContainer(AbstractAsyncContextManager["ServiceContainer"]):
         self.request = request
         self.storage_dir = storage_dir
 
+        self._projects_service = None
+        self._choices_service = None
+        self._users_service = None
+        self._files_service = None
+        self._objects_storage = None
+        self._user_db = None
+        self._user_manager = None
+
     @override
     async def __aenter__(self) -> Self:
         self.session = self._get_session()
@@ -98,7 +106,7 @@ class ServiceContainer(AbstractAsyncContextManager["ServiceContainer"]):
             else:
                 await asyncio.shield(self._objects_storage.rollback())
 
-    _projects_service: ProjectsService | None = None
+    _projects_service: ProjectsService | None
 
     @property
     def projects(self) -> ProjectsService:
@@ -108,7 +116,7 @@ class ServiceContainer(AbstractAsyncContextManager["ServiceContainer"]):
 
         return self._projects_service
 
-    _choices_service: ChoicesService | None = None
+    _choices_service: ChoicesService | None
 
     @property
     def choices(self) -> ChoicesService:
@@ -118,7 +126,7 @@ class ServiceContainer(AbstractAsyncContextManager["ServiceContainer"]):
 
         return self._choices_service
 
-    _users_service: UsersService | None = None
+    _users_service: UsersService | None
 
     @property
     def users(self) -> UsersService:
@@ -128,8 +136,8 @@ class ServiceContainer(AbstractAsyncContextManager["ServiceContainer"]):
 
         return self._users_service
 
-    _files_service: FilesService | None = None
-    _objects_storage: LocalObjectsStorage | None = None
+    _files_service: FilesService | None
+    _objects_storage: LocalObjectsStorage | None
 
     @property
     def files(self) -> FilesService:
@@ -141,7 +149,7 @@ class ServiceContainer(AbstractAsyncContextManager["ServiceContainer"]):
 
         return self._files_service
 
-    _user_db: UserDatabase | None = None
+    _user_db: UserDatabase | None
 
     @property
     def user_db(self) -> UserDatabase:
@@ -150,7 +158,7 @@ class ServiceContainer(AbstractAsyncContextManager["ServiceContainer"]):
 
         return self._user_db
 
-    _user_manager: UserManager | None = None
+    _user_manager: UserManager | None
 
     @property
     def user_manager(self) -> UserManager:

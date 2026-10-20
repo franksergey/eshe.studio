@@ -1,5 +1,9 @@
 name: eshe-studio
 
+secrets:
+  api_secret:
+    file: ../.secrets/api_secret.txt
+
 networks:
   backend-network:
     driver: bridge
@@ -14,5 +18,11 @@ services:
     image: franksergey/eshe.studio
     restart: unless-stopped
 
+    environment:
+      - APP_USERS_SECRETFILE=/run/secrets/api_secret
+
     networks:
       - backend-network
+
+    secrets:
+      - api_secret
