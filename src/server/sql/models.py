@@ -315,3 +315,17 @@ class StorageObjectDB(TimestampMixin, Base):
     etag: Mapped[str] = mapped_column(String(32))
     original_filename: Mapped[str | None] = mapped_column(String(1024))
     content_type: Mapped[ContentType | None] = mapped_column(CONTENT_TYPE_ENUM)
+
+
+class ImageDB(Base):
+    __tablename__ = "images"
+
+    id: Mapped[int] = mapped_column(IDENTITY, primary_key=True)
+    object_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("storage_objects.id", ondelete="CASCADE")
+    )
+
+    width: Mapped[int] = mapped_column(SmallInteger)
+    height: Mapped[int] = mapped_column(SmallInteger)
+
+    quality: Mapped[int] = mapped_column(SmallInteger)

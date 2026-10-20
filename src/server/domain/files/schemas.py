@@ -40,3 +40,6 @@ class ObjectInfo(BaseModel):
 class ImageRef(BaseModel):
     id: int
     object_id: ObjectKey
+
+    size: tuple[int, int]
+    quality: int
