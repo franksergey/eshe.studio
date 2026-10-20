@@ -17,12 +17,12 @@ services:
     environment:
       - APP_DB_DIALECT=postgresql
       - APP_DB_DRIVER=psycopg
-      - APP_DB_USERNAME=eshe-studio
+      - APP_DB_USERNAME=eshe_studio
       - APP_DB_PASSWORD=
       - APP_DB_PASSWORDFILE=/run/secrets/db_password
       - APP_DB_HOST=postgres
       - APP_DB_PORT=5432
-      - APP_DB_DATABASE=eshe-studio
+      - APP_DB_DATABASE=eshe_studio
       - APP_DB_ECHO=${APP_DB_ECHO:-False}
       - APP_DB_CHECKSCHEMA=${APP_DB_CHECKSCHEMA:-True}
       - APP_DB_UPGRADEIFEMPTY=${APP_DB_UPGRADEIFEMPTY:-True}
@@ -51,8 +51,8 @@ services:
     restart: unless-stopped
 
     environment:
-      - POSTGRES_USER=eshe-studio
-      - POSTGRES_DB=eshe-studio
+      - POSTGRES_USER=eshe_studio
+      - POSTGRES_DB=eshe_studio
       - POSTGRES_PASSWORD_FILE=/run/secrets/db_password
 
     volumes:
