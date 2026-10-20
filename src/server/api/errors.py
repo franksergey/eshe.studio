@@ -47,3 +47,8 @@ class ChoiceNotFoundError(NotFoundProblem):
 class ObjectNotFoundError(NotFoundProblem):
     type_ = "object-not-found"
     title = "Object (file) with the specified key couldn't be found."
+
+
+class ImageNotFoundError(NotFoundProblem):
+    type_ = "image-not-found"
+    title = "Image with the specified id couldn't be found."

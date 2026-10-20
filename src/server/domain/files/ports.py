@@ -3,13 +3,7 @@ from typing import TYPE_CHECKING, BinaryIO, Protocol
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from .schemas import (
-        ContentType,
-        ImageContentType,
-        ImageRef,
-        ObjectInfo,
-        ObjectKey,
-    )
+    from .schemas import ContentType, ImageRef, ObjectInfo, ObjectKey
 
 
 class AbstractObjectStorage(Protocol):
@@ -34,15 +28,12 @@ class AbstractObjectStorage(Protocol):
 
 class AbstractImagesRepo(Protocol):
     async def create(
-        self,
-        content: BinaryIO,
-        filename: str | None = None,
-        content_type: ImageContentType | None = None,
+        self, object_id: ObjectKey, size: tuple[int, int], quality: int
     ) -> ImageRef: ...
-    async def put(
-        self,
-        id: int,
-        content: BinaryIO,
-        filename: str | None = None,
-        content_type: ImageContentType | None = None,
-    ) -> ImageRef | None: ...
+    async def delete(self, id: int) -> ImageRef: ...
+
+
+class AbstractImagesProcessor(Protocol):
+    async def compress(
+        self, image: BinaryIO, size: tuple[int, int], quality: int
+    ) -> BinaryIO: ...
