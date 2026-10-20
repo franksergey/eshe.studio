@@ -204,7 +204,7 @@ class AppSettings(BaseSettings):
             Determines which logging configuration will be used. Console
             is used by default.
         PYPROJECT: `$APP_PYPROJECT`. Path to `pyproject.toml`.
-        DEBUG: `$APP_API_DEBUG`. Debug mode. Defaults to False.
+        DEBUG: `$APP_DEBUG`. Debug mode. Defaults to False.
     """
 
     LOGGINGFORMAT: Literal["rich", "console", "structured"] = "console"
