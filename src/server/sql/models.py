@@ -114,6 +114,7 @@ class ItemDB(ItemTableBase, Base):
     group_id: Mapped[int] = mapped_column(
         ForeignKey("project_spec_groups.id", ondelete="CASCADE")
     )
+    image_id: Mapped[int | None] = mapped_column(ForeignKey("images.id"))
     ordinal_no: Mapped[int] = mapped_column()
 
     # Relations
@@ -130,6 +131,7 @@ class ItemDB(ItemTableBase, Base):
         passive_deletes=True,
     )
     group: Mapped[GroupDB] = relationship(back_populates="items")
+    image: Mapped[ImageDB | None] = relationship()
 
     # Constraints
     __table_args__ = (
