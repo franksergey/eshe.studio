@@ -10,6 +10,8 @@ from server.api.errors import (
 from .schemas import CommentsBulkRead
 
 if TYPE_CHECKING:
+    from server.domain.files.schemas import ImageRef
+
     from .ports import AbstractProjectsRepo
     from .schemas import (
         Comment,
@@ -85,6 +87,21 @@ class ProjectsService:
             raise ItemNotFoundError
 
         return obj
+
+    async def get_item_image(self, item_id: int) -> ImageRef | None:
+        return await self.repo.get_item_image(item_id)
+
+    async def attach_image(self, item_id: int, image_id: int) -> int:
+        if (id := await self.repo.attach_image(item_id, image_id)) is None:
+            raise ItemNotFoundError
+
+        return id
+
+    async def detach_image(self, item_id: int) -> int:
+        if (id := await self.repo.detach_image(item_id)) is None:
+            raise ItemNotFoundError
+
+        return id
 
     async def approve_item(
         self, item_id: int, *, approved: bool = True

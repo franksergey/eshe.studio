@@ -4,6 +4,8 @@ from pydantic import HttpUrl
 from sqlalchemy import exists, inspect, select, update
 from sqlalchemy.orm import lazyload, load_only, selectinload
 
+from server.api.errors import ItemNotFoundError
+from server.domain.files.schemas import ImageRef
 from server.domain.projects.ports import AbstractProjectsRepo
 from server.domain.projects.schemas import (
     Comment,
@@ -265,6 +267,63 @@ class ProjectsRepo(AbstractProjectsRepo):
             await self.session.flush((obj,))
 
         return self._validate_comment(obj)
+
+    async def get_item_image(self, item_id: int) -> ImageRef | None:
+        stmt = (
+            select(ItemDB)
+            .options(load_only(ItemDB.image))
+            .where(ItemDB.id == item_id)
+        )
+        obj = await self.session.scalar(stmt)
+
+        if obj is None:
+            raise ItemNotFoundError
+
+        image = obj.image
+
+        if image is None:
+            return None
+
+        return ImageRef(
+            id=image.id,
+            object_id=image.object_id,
+            size=(image.width, image.height),
+            quality=image.quality,
+        )
+
+    async def attach_image(self, item_id: int, image_id: int) -> int | None:
+        stmt = (
+            select(ItemDB)
+            .options(load_only(ItemDB.image_id))
+            .where(ItemDB.id == item_id)
+        )
+        obj = await self.session.scalar(stmt)
+
+        if obj is None:
+            return None
+
+        old_image_id = obj.image_id
+        obj.image_id = image_id
+        await self.session.flush((obj,))
+
+        return old_image_id
+
+    async def detach_image(self, item_id: int) -> int | None:
+        stmt = (
+            select(ItemDB)
+            .options(load_only(ItemDB.image_id))
+            .where(ItemDB.id == item_id)
+        )
+        obj = await self.session.scalar(stmt)
+
+        if obj is None:
+            return None
+
+        old_image_id = obj.image_id
+        obj.image_id = None
+        await self.session.flush((obj,))
+
+        return old_image_id
 
     @override
     async def approve_item(

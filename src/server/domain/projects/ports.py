@@ -1,6 +1,8 @@
 from typing import TYPE_CHECKING, Protocol
 
 if TYPE_CHECKING:
+    from server.domain.files.schemas import ImageRef
+
     from .schemas import (
         Comment,
         CommentCreate,
@@ -46,6 +48,11 @@ class AbstractProjectsRepo(Protocol):
     async def add_comment(
         self, item_id: int, data: CommentCreate
     ) -> Comment | None: ...
+    async def get_item_image(self, item_id: int) -> ImageRef | None: ...
+    async def attach_image(
+        self, item_id: int, image_id: int
+    ) -> int | None: ...
+    async def detach_image(self, item_id: int) -> int | None: ...
     async def approve_item(
         self, item_id: int, *, approved: bool = True
     ) -> None: ...
