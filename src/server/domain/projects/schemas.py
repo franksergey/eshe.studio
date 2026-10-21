@@ -152,14 +152,12 @@ class ItemPure(ItemBase):
     approved: bool
 
 
-class ItemWithComments(ItemPure):
-    comments: list[Comment]
-
-
 class Item(ItemPure):
     """Вариант предмета в таблице комплектации (карточка)."""
 
     item_type: Literal[ItemType.ITEM] = ItemType.ITEM
+
+    image: HttpUrl | None
 
 
 class ItemOnlyComments(BaseModel):

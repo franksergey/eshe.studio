@@ -131,7 +131,7 @@ class ItemDB(ItemTableBase, Base):
         passive_deletes=True,
     )
     group: Mapped[GroupDB] = relationship(back_populates="items")
-    image: Mapped[ImageDB | None] = relationship()
+    image: Mapped[ImageDB | None] = relationship(lazy="joined")
 
     # Constraints
     __table_args__ = (

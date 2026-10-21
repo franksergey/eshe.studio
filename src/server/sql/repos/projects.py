@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, cast, override
 
 from pydantic import HttpUrl
@@ -20,19 +21,18 @@ from server.domain.projects.schemas import (
     Project,
     ProjectPure,
 )
-from server.sql.models import CommentDB, GroupDB, ItemDB, ProjectDB
+from server.sql.models import CommentDB, GroupDB, ImageDB, ItemDB, ProjectDB
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable
+    from collections.abc import Callable, Iterable
 
     from sqlalchemy.ext.asyncio import AsyncSession
 
 
+@dataclass(eq=False, slots=True)
 class ProjectsRepo(AbstractProjectsRepo):
     session: AsyncSession
-
-    def __init__(self, session: AsyncSession) -> None:
-        self.session = session
+    get_image_url: Callable[[ImageRef], HttpUrl]
 
     @classmethod
     def _validate_comment(cls, obj: CommentDB) -> Comment:
@@ -43,8 +43,7 @@ class ProjectsRepo(AbstractProjectsRepo):
             created_at=obj.created_at,
         )
 
-    @classmethod
-    def _validate_item(cls, obj: ItemDB) -> Item:
+    def _validate_item(self, obj: ItemDB) -> Item:
         if obj.price is None:
             price = None
         else:
@@ -61,26 +60,27 @@ class ProjectsRepo(AbstractProjectsRepo):
             link=HttpUrl(obj.link) if obj.link is not None else None,
             tags=[tag.tag for tag in obj.tags],
             price=price,
+            image=self.get_image_url(self._image_to_domain_schema(obj.image))
+            if obj.image is not None
+            else None,
         )
 
-    @classmethod
     def _validate_group_items(
-        cls, items: Iterable[ItemDB], subgroups: Iterable[GroupDB]
+        self, items: Iterable[ItemDB], subgroups: Iterable[GroupDB]
     ) -> list[Item] | list[Group]:
         if items and subgroups:
             msg = "Group in database cannot contain both subgroups and items"
             raise ValueError(msg)
 
         if items:
-            return [cls._validate_item(item) for item in items]
+            return [self._validate_item(item) for item in items]
 
         if subgroups:
-            return [cls._validate_group(subgroup) for subgroup in subgroups]
+            return [self._validate_group(subgroup) for subgroup in subgroups]
 
         return []
 
-    @classmethod
-    def _validate_group(cls, obj: GroupDB) -> Group:
+    def _validate_group(self, obj: GroupDB) -> Group:
         if obj.items and obj.subgroups:
             msg = "Group in database cannot contain both subgroups and items"
             raise ValueError(msg)
@@ -88,26 +88,34 @@ class ProjectsRepo(AbstractProjectsRepo):
         return Group(
             id=obj.id,
             name=obj.name,
-            items=cls._validate_group_items(obj.items, obj.subgroups),
+            items=self._validate_group_items(obj.items, obj.subgroups),
         )
 
     @classmethod
     def _validate_group_pure(cls, obj: GroupDB) -> GroupPure:
         return GroupPure(id=obj.id, name=obj.name)
 
-    @classmethod
-    def _to_domain_schema(cls, obj: ProjectDB) -> Project:
+    def _to_domain_schema(self, obj: ProjectDB) -> Project:
         return Project(
             id=obj.id,
             name=obj.name,
             categories=[
-                cls._validate_group(category) for category in obj.categories
+                self._validate_group(category) for category in obj.categories
             ],
         )
 
     @staticmethod
     def _to_domain_schema_pure(obj: ProjectDB) -> ProjectPure:
         return ProjectPure(id=obj.id, name=obj.name)
+
+    @staticmethod
+    def _image_to_domain_schema(image: ImageDB) -> ImageRef:
+        return ImageRef(
+            id=image.id,
+            object_id=image.object_id,
+            size=(image.width, image.height),
+            quality=image.quality,
+        )
 
     @override
     async def get(self, id: int) -> Project | None:
@@ -284,12 +292,7 @@ class ProjectsRepo(AbstractProjectsRepo):
         if image is None:
             return None
 
-        return ImageRef(
-            id=image.id,
-            object_id=image.object_id,
-            size=(image.width, image.height),
-            quality=image.quality,
-        )
+        return self._image_to_domain_schema(image)
 
     async def attach_image(self, item_id: int, image_id: int) -> int | None:
         stmt = (

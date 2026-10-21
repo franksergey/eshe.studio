@@ -4,6 +4,7 @@ from contextlib import AbstractAsyncContextManager
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Protocol, Self, override
 
+from pydantic import HttpUrl
 from sqlalchemy.exc import DBAPIError
 
 from server.domain.choices.services import ChoicesService
@@ -114,7 +115,15 @@ class ServiceContainer(AbstractAsyncContextManager["ServiceContainer"]):
     @property
     def projects(self) -> ProjectsService:
         if self._projects_service is None:
-            repo = ProjectsRepo(self.session)
+            if self.request is None:
+                raise TypeError
+
+            repo = ProjectsRepo(
+                self.session,
+                lambda image: HttpUrl(
+                    str(self.request.url_for("read_file", key=image.object_id))
+                ),
+            )
             self._projects_service = ProjectsService(repo)
 
         return self._projects_service
