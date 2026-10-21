@@ -5,7 +5,7 @@ from typing import IO, TYPE_CHECKING, BinaryIO
 
 import pyvips
 
-from server.api.errors import InvalidTooLargeError
+from server.api.errors import InvalidImageError, InvalidTooLargeError
 
 from .ports import AbstractImagesProcessor
 
@@ -67,8 +67,7 @@ class ImagesProcessor(AbstractImagesProcessor):
                 self._compress_sync, image, target_w, target_h, quality
             )
         except pyvips.Error as e:
-            msg = "Invalid image"
-            raise ValueError(msg) from e
+            raise InvalidImageError from e
 
     def _compress_sync(
         self, image: BinaryIO, width: int, height: int, quality: int
@@ -77,7 +76,7 @@ class ImagesProcessor(AbstractImagesProcessor):
             self._make_source(image), "", access="sequential"
         ).autorot()
 
-        if header.width * header.hegiht > MAX_PIXELS:
+        if header.width * header.height > MAX_PIXELS:
             raise InvalidTooLargeError
 
         img = pyvips.Image.thumbnail_source(
@@ -85,7 +84,7 @@ class ImagesProcessor(AbstractImagesProcessor):
             width,
             height=height,
             size="both",
-            crop="center",
+            crop="centre",
             output_profile="srgb",
         )
         dst = self._get_tmp_file()
