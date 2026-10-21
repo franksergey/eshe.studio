@@ -2,7 +2,7 @@ from fastapi import APIRouter
 from pydantic import BaseModel
 
 from server.api.dependencies import ContainerDependency
-from server.api.errors import ProjectNotFoundError, error_handler
+from server.api.errors import ItemNotFoundError, error_handler
 from server.domain.projects.schemas import (
     Comment,
     CommentCreate,
@@ -26,7 +26,7 @@ async def bulk_read_comments(
 @router.get(
     "/{item_id}/comments",
     responses={
-        404: error_handler.generate_swagger_response(ProjectNotFoundError)
+        404: error_handler.generate_swagger_response(ItemNotFoundError)
     },
 )
 async def read_comment(
@@ -39,7 +39,7 @@ async def read_comment(
 @router.post(
     "/{item_id}/comments",
     responses={
-        404: error_handler.generate_swagger_response(ProjectNotFoundError)
+        404: error_handler.generate_swagger_response(ItemNotFoundError)
     },
     status_code=201,
 )
