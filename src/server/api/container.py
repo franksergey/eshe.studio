@@ -118,10 +118,11 @@ class ServiceContainer(AbstractAsyncContextManager["ServiceContainer"]):
             if self.request is None:
                 raise TypeError
 
+            url_for = self.request.url_for
             repo = ProjectsRepo(
                 self.session,
                 lambda image: HttpUrl(
-                    str(self.request.url_for("read_file", key=image.object_id))
+                    str(url_for("read_file", key=image.object_id))
                 ),
             )
             self._projects_service = ProjectsService(repo)
