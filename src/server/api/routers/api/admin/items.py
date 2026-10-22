@@ -5,7 +5,6 @@ from server.api.dependencies import (
     ContainerDependency,
     CurrentSuperuserDependency,
 )
-from server.domain.files.schemas import ImageContentType
 
 router = APIRouter(prefix="/items")
 
@@ -23,13 +22,7 @@ async def admin_upload_image(
     request: Request,
 ) -> HttpUrl:
     uploaded = await container.images.upload(
-        image.file,
-        ITEM_IMAGE_SIZE,
-        ITEM_IMAGE_QUALITY,
-        image.filename,
-        ImageContentType(image.content_type)
-        if image.content_type is not None
-        else None,
+        image.file, ITEM_IMAGE_SIZE, ITEM_IMAGE_QUALITY, image.filename
     )
     previous = await container.projects.attach_image(item_id, uploaded.id)
 

@@ -13,7 +13,7 @@ if TYPE_CHECKING:
         AbstractImagesRepo,
         AbstractObjectStorage,
     )
-    from .schemas import ImageContentType, ImageRef, ObjectKey
+    from .schemas import ImageRef, ObjectKey
 
 
 @dataclass(eq=False, slots=True)
@@ -39,12 +39,11 @@ class ImagesService:
         size: tuple[int, int],
         quality: int,
         filename: str | None = None,
-        content_type: ImageContentType | None = None,
     ) -> ImageRef:
         compressed = await self.processor.compress(content, size, quality)
 
         obj = await self.objects_repo.create(
-            compressed, filename, ContentType(content_type)
+            compressed, filename, ContentType.IMAGE_WEBP
         )
 
         return await self.images_repo.create(obj.id, size, quality)
