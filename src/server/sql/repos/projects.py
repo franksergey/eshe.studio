@@ -303,7 +303,7 @@ class ProjectsRepo(AbstractProjectsRepo):
         obj = await self.session.scalar(stmt)
 
         if obj is None:
-            return None
+            raise ItemNotFoundError
 
         old_image_id = obj.image_id
         obj.image_id = image_id
