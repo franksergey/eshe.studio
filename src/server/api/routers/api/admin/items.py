@@ -31,6 +31,9 @@ async def admin_upload_image(
         if image.content_type is not None
         else None,
     )
-    await container.projects.attach_image(item_id, uploaded.id)
+    previous = await container.projects.attach_image(item_id, uploaded.id)
+
+    if previous is not None:
+        await container.images.delete(previous)
 
     return HttpUrl(str(request.url_for("read_file", key=uploaded.object_id)))
