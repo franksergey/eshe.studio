@@ -38,16 +38,19 @@ class ServiceContainer(AbstractAsyncContextManager["ServiceContainer"]):
     session: AsyncSession
     request: Request | None
     storage_dir: Path
+    temp_dir: Path | None
 
     def __init__(
         self,
         get_session: Callable[[], AsyncSession],
         storage_dir: Path,
+        temp_dir: Path | None = None,
         request: Request | None = None,
     ) -> None:
         self._get_session = get_session
         self.request = request
         self.storage_dir = storage_dir
+        self.temp_dir = temp_dir
 
         self._projects_service = None
         self._choices_service = None
@@ -174,10 +177,13 @@ class ServiceContainer(AbstractAsyncContextManager["ServiceContainer"]):
     @property
     def images(self) -> ImagesService:
         if self._images_service is None:
+            if self.temp_dir is None:
+                raise TypeError
+
             self._images_service = ImagesService(
                 ImagesRepo(self.session),
                 self.objects_storage,
-                ImagesProcessor(),
+                ImagesProcessor(self.temp_dir),
             )
 
         return self._images_service
