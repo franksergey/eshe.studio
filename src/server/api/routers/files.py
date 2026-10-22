@@ -48,7 +48,7 @@ def is_not_modified(
     return False
 
 
-@router.get("/{key}")
+@router.get("/{key}", response_model=None)
 async def read_file(
     key: ObjectKey, request: Request, container: ContainerDependency
 ) -> FileResponse | Response:
