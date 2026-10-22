@@ -1,13 +1,19 @@
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, BinaryIO
 
-from server.api.errors import ObjectNotFoundError
+from server.api.errors import ImageNotFoundError, ObjectNotFoundError
+
+from .schemas import ContentType
 
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from .ports import AbstractImagesRepo, AbstractObjectStorage
-    from .schemas import ImageContentType, ImageRef, ObjectKey
+    from .ports import (
+        AbstractImagesProcessor,
+        AbstractImagesRepo,
+        AbstractObjectStorage,
+    )
+    from .schemas import ImageRef, ObjectKey
 
 
 @dataclass(eq=False, slots=True)
@@ -23,12 +29,27 @@ class FilesService:
 
 @dataclass(eq=False, slots=True)
 class ImagesService:
-    repo: AbstractImagesRepo
+    images_repo: AbstractImagesRepo
+    objects_repo: AbstractObjectStorage
+    processor: AbstractImagesProcessor
 
-    async def create(
+    async def upload(
         self,
         content: BinaryIO,
+        size: tuple[int, int],
+        quality: int,
         filename: str | None = None,
-        content_type: ImageContentType | None = None,
     ) -> ImageRef:
-        return await self.repo.create(content, filename, content_type)
+        compressed = await self.processor.compress(content, size, quality)
+
+        obj = await self.objects_repo.create(
+            compressed, filename, ContentType.IMAGE_WEBP
+        )
+
+        return await self.images_repo.create(obj.id, size, quality)
+
+    async def delete(self, id: int) -> None:
+        if (deleted := await self.images_repo.delete(id)) is None:
+            raise ImageNotFoundError
+
+        await self.objects_repo.delete(deleted.object_id)

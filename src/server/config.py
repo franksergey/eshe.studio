@@ -103,10 +103,6 @@ class DatabaseConfig(BaseModel):
             folder = Path.cwd() / "data"
 
         folder.mkdir(parents=True, exist_ok=True)
-        gitignore = folder / ".gitignore"
-
-        if not gitignore.is_file():
-            gitignore.write_text("*\n")
 
         path = folder / "db.sqlite"
         return str(path.absolute())

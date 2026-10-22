@@ -114,6 +114,7 @@ class ItemDB(ItemTableBase, Base):
     group_id: Mapped[int] = mapped_column(
         ForeignKey("project_spec_groups.id", ondelete="CASCADE")
     )
+    image_id: Mapped[int | None] = mapped_column(ForeignKey("images.id"))
     ordinal_no: Mapped[int] = mapped_column()
 
     # Relations
@@ -130,6 +131,7 @@ class ItemDB(ItemTableBase, Base):
         passive_deletes=True,
     )
     group: Mapped[GroupDB] = relationship(back_populates="items")
+    image: Mapped[ImageDB | None] = relationship(lazy="joined")
 
     # Constraints
     __table_args__ = (
@@ -315,3 +317,17 @@ class StorageObjectDB(TimestampMixin, Base):
     etag: Mapped[str] = mapped_column(String(32))
     original_filename: Mapped[str | None] = mapped_column(String(1024))
     content_type: Mapped[ContentType | None] = mapped_column(CONTENT_TYPE_ENUM)
+
+
+class ImageDB(Base):
+    __tablename__ = "images"
+
+    id: Mapped[int] = mapped_column(IDENTITY, primary_key=True)
+    object_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("storage_objects.id", ondelete="CASCADE")
+    )
+
+    width: Mapped[int] = mapped_column(SmallInteger)
+    height: Mapped[int] = mapped_column(SmallInteger)
+
+    quality: Mapped[int] = mapped_column(SmallInteger)

@@ -4,16 +4,19 @@ from contextlib import AbstractAsyncContextManager
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Protocol, Self, override
 
+from pydantic import HttpUrl
 from sqlalchemy.exc import DBAPIError
 
 from server.domain.choices.services import ChoicesService
-from server.domain.files.service import FilesService
+from server.domain.files.processor import ImagesProcessor
+from server.domain.files.service import FilesService, ImagesService
 from server.domain.projects.service import ProjectsService
 from server.domain.users.service import UsersService
 from server.sql.models import UserDB
 from server.sql.repos import ProjectsRepo, UserDatabase, UsersRepo
 from server.sql.repos.choices import ChoicesRepo
 from server.sql.repos.files import LocalObjectsStorage
+from server.sql.repos.images import ImagesRepo
 
 from .auth import UserManager
 
@@ -35,16 +38,19 @@ class ServiceContainer(AbstractAsyncContextManager["ServiceContainer"]):
     session: AsyncSession
     request: Request | None
     storage_dir: Path
+    temp_dir: Path | None
 
     def __init__(
         self,
         get_session: Callable[[], AsyncSession],
         storage_dir: Path,
+        temp_dir: Path | None = None,
         request: Request | None = None,
     ) -> None:
         self._get_session = get_session
         self.request = request
         self.storage_dir = storage_dir
+        self.temp_dir = temp_dir
 
         self._projects_service = None
         self._choices_service = None
@@ -52,6 +58,7 @@ class ServiceContainer(AbstractAsyncContextManager["ServiceContainer"]):
         self._files_service = None
         self._objects_storage = None
         self._user_db = None
+        self._images_service = None
         self._user_manager = None
 
     @override
@@ -111,7 +118,16 @@ class ServiceContainer(AbstractAsyncContextManager["ServiceContainer"]):
     @property
     def projects(self) -> ProjectsService:
         if self._projects_service is None:
-            repo = ProjectsRepo(self.session)
+            if self.request is None:
+                raise TypeError
+
+            url_for = self.request.url_for
+            repo = ProjectsRepo(
+                self.session,
+                lambda image: HttpUrl(
+                    str(url_for("read_file", key=image.object_id))
+                ),
+            )
             self._projects_service = ProjectsService(repo)
 
         return self._projects_service
@@ -136,18 +152,41 @@ class ServiceContainer(AbstractAsyncContextManager["ServiceContainer"]):
 
         return self._users_service
 
-    _files_service: FilesService | None
     _objects_storage: LocalObjectsStorage | None
+
+    @property
+    def objects_storage(self) -> LocalObjectsStorage:
+        if self._objects_storage is None:
+            self._objects_storage = LocalObjectsStorage(
+                self.session, self.storage_dir
+            )
+
+        return self._objects_storage
+
+    _files_service: FilesService | None
 
     @property
     def files(self) -> FilesService:
         if self._files_service is None:
-            self._objects_storage = LocalObjectsStorage(
-                self.session, self.storage_dir
-            )
-            self._files_service = FilesService(self._objects_storage)
+            self._files_service = FilesService(self.objects_storage)
 
         return self._files_service
+
+    _images_service: ImagesService | None
+
+    @property
+    def images(self) -> ImagesService:
+        if self._images_service is None:
+            if self.temp_dir is None:
+                raise TypeError
+
+            self._images_service = ImagesService(
+                ImagesRepo(self.session),
+                self.objects_storage,
+                ImagesProcessor(self.temp_dir),
+            )
+
+        return self._images_service
 
     _user_db: UserDatabase | None
 
