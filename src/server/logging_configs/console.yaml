@@ -49,3 +49,5 @@ loggers:
     level: INFO
   alembic.runtime.plugins:
     level: WARNING
+  pyvips:
+    level: INFO

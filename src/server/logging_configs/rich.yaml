@@ -41,3 +41,5 @@ loggers:
   sqlalchemy.engine.Engine:
     handlers: [default]
     propagate: false
+  pyvips:
+    level: INFO
