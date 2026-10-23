@@ -1,15 +1,15 @@
 {# === Nav builder === #}
 {% macro nav_section(group) %}
 <li data-group-id="{{ group.id }}"><a href="#">{{ group.name }}</a></li>
-{% for item in group.items %}
-<li>
-  {% if item.item_type == "group" %}
-  <ul class="nav-subsection">
-    {{ nav_section(item) }}
-  </ul>
-  {% endif %}
-</li>
-{% endfor %}
+{% if group.has_groups %}
+  <li>
+    <ul class="nav-subsection">
+      {% for group in group.items %}
+        {{ nav_section(group) }}
+      {% endfor %}
+    </ul>
+  </li>
+{% endif %}
 {% endmacro %}
 
 {# === Item Cards table builder === #}

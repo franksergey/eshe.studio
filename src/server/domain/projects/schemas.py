@@ -91,6 +91,13 @@ class GroupOnlyItems(GroupPure):
 
         return isinstance(self.items[0], Item)
 
+    @property
+    def has_groups(self) -> bool:
+        if not self.items:
+            return False
+
+        return isinstance(self.items[0], Group)
+
 
 class Group(GroupOnlyItems):
     """Группа карточек в таблице комплектации.
