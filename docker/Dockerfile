@@ -65,7 +65,7 @@ FROM base AS production
 COPY --from=build-prod --chown=appuser:appgroup /opt/venv ${VIRTUAL_ENV}
 
 # No need for src folder, it's already in venv
-COPY --chown=appuser:appgroup ./static ./static/
+COPY --chown=appuser:appgroup ./frontend ./frontend/
 COPY --chown=appuser:appgroup ./alembic ./alembic/
 COPY --chown=appuser:appgroup README.md pyproject.toml ./
 
@@ -80,13 +80,13 @@ RUN mkdir "${APP_DB_DATAFOLDER}" -p && \
 
 USER appuser
 
-ENV APP_HOST=0.0.0.0 \
-    APP_PORT=8000
+ENV APP_API_HOST=0.0.0.0 \
+    APP_API_PORT=8000
 EXPOSE 8000
 
-ENV APP_RELOAD="False" \
-    APP_STATICFILES="/app/static/" \
-    APP_GRACEFULSHUTDOWNTIMEOUT="10" \
+ENV APP_API_RELOAD="False" \
+    APP_API_FRONTENDDIR="/app/frontend/" \
+    APP_API_GRACEFULSHUTDOWNTIMEOUT="10" \
     APP_LOGGINGFORMAT="structured" \
     APP_DEBUG="False"
 
@@ -121,7 +121,7 @@ VOLUME ["${UV_CACHE_DIR}"]
 # Copy pre-built dependencies
 COPY --from=build-dev --chown=appuser:appgroup /opt/venv ${VIRTUAL_ENV}
 
-COPY --chown=appuser:appgroup ./static ./static/
+COPY --chown=appuser:appgroup ./frontend ./frontend/
 COPY --chown=appuser:appgroup ./alembic ./alembic/
 COPY --chown=appuser:appgroup README.md pyproject.toml ./
 
@@ -138,9 +138,9 @@ ENV APP_HOST=0.0.0.0 \
     APP_PORT=8000
 EXPOSE 8000
 
-ENV APP_RELOAD="True" \
-    APP_STATICFILES="/app/static/" \
-    APP_GRACEFULSHUTDOWNTIMEOUT="10" \
+ENV APP_API_RELOAD="True" \
+    APP_API_FRONTENDDIR="/app/frontend/" \
+    APP_API_GRACEFULSHUTDOWNTIMEOUT="10" \
     APP_LOGGINGFORMAT="rich" \
     APP_DEBUG="True"
 

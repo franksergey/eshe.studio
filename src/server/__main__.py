@@ -7,7 +7,7 @@ import sys
 import uvicorn
 from alembic.config import Config
 
-from server.api.container import container_getter
+from server.api.container import ServiceContainer
 from server.domain.users.schemas import UserCreate
 from server.sql.database import Database, DatabaseChecker
 from server.sql.models import Base
@@ -67,7 +67,9 @@ async def perform_checks() -> None:
         Database(
             db_url=settings.db.database_url, echo=settings.db.ECHO
         ) as database,
-        container_getter(database.get_session)() as container,
+        ServiceContainer(
+            database.get_session, settings.STORAGEDIR
+        ) as container,
     ):
         if settings.db.CHECKSCHEMA:
             alembic_config = Config(toml_file=settings.PYPROJECT)
