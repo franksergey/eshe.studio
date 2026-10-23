@@ -7,8 +7,23 @@ from server.api.dependencies import ContainerDependency, OptionalUserDependency
 router = APIRouter(prefix="", tags=["Root Router"])
 
 
+@router.get("/")
+async def read_root_page(
+    request: Request,
+    user: OptionalUserDependency,
+    container: ContainerDependency,
+) -> HTMLResponse:
+    projects = await container.projects.get_all_pure()
+
+    return templates.TemplateResponse(
+        request=request,
+        name="index.html.jinja",
+        context={"projects": projects, "user": user},
+    )
+
+
 @router.get("/project-{id}")
-async def read_project(
+async def read_project_page(
     request: Request,
     id: int,
     user: OptionalUserDependency,
@@ -31,7 +46,7 @@ async def read_project(
 
 
 @router.get("/project-{id}/{index}")
-async def read_project_category(
+async def read_project_category_page(
     request: Request,
     id: int,
     index: int,

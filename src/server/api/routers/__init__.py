@@ -1,5 +1,6 @@
 from typing import TYPE_CHECKING
 
+from .admin import router as admin_router
 from .api import api_router
 from .auth import router as auth_router
 from .files import router as files_router
@@ -13,4 +14,5 @@ ALL_ROUTERS: list[APIRouter] = [
     auth_router,
     root_router,
     files_router,
+    admin_router,
 ]

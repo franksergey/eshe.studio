@@ -121,7 +121,7 @@
 
         <nav class="nav-pages nav-pages-general">
           {% for cat in categories %}
-            <a href="{{ url_for('read_project_category', id=project.id, index=loop.index) }}" {% if cat.id == category.id %}class="active"{% endif %}>{{ cat.name }}</a>
+            <a href="{{ url_for('read_project_category_page', id=project.id, index=loop.index) }}" {% if cat.id == category.id %}class="active"{% endif %}>{{ cat.name }}</a>
           {% endfor %}
         </nav>
       </header>
