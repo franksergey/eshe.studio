@@ -6,13 +6,13 @@ from pydantic import AwareDatetime, BaseModel, ConfigDict, Field
 from server.domain.projects.schemas import ItemBase, ItemType
 
 
-class ChoiceCreate(BaseModel):
+class SelectionCreate(BaseModel):
     item_ids: list[int]
 
     model_config = ConfigDict(from_attributes=True, serialize_by_alias=True)
 
 
-class ChoicePure(BaseModel):
+class SelectionPure(BaseModel):
     id: int
 
     user_id: uuid.UUID
@@ -21,7 +21,7 @@ class ChoicePure(BaseModel):
     model_config = ConfigDict(from_attributes=True, serialize_by_alias=True)
 
 
-class Choice(ChoicePure):
+class Selection(SelectionPure):
     items: list[GroupSnapshot]
 
 
@@ -31,7 +31,9 @@ class GroupSnapshot(BaseModel):
     name: Annotated[str, Field(min_length=1, max_length=256)]
 
     items: list[
-        Annotated[ItemChoice | GroupSnapshot, Field(discriminator="item_type")]
+        Annotated[
+            ItemSelection | GroupSnapshot, Field(discriminator="item_type")
+        ]
     ]
 
     model_config = ConfigDict(
@@ -39,7 +41,7 @@ class GroupSnapshot(BaseModel):
     )
 
 
-class ItemChoice(ItemBase, BaseModel):
+class ItemSelection(ItemBase, BaseModel):
     item_type: Literal[ItemType.ITEM] = ItemType.ITEM
 
     item_id: int | None

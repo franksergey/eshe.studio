@@ -38,10 +38,10 @@ class UserNotFoundError(NotFoundProblem):
     title = "User with the specified email couldn't be found."
 
 
-# Here, the term 'choice' becomes ridiculous
-class ChoiceNotFoundError(NotFoundProblem):
-    type_ = "choice-not-found"
-    title = "Choice with the specified id couldn't be found."
+# Here, the term 'selection' becomes ridiculous
+class SelectionNotFoundError(NotFoundProblem):
+    type_ = "seletion-not-found"
+    title = "Selection with the specified id couldn't be found."
 
 
 class ObjectNotFoundError(NotFoundProblem):

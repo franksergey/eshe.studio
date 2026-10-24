@@ -15,13 +15,13 @@ from server.domain.projects.schemas import (
 )
 from server.domain.selections.ports import AbstractSelectionsRepo
 from server.domain.selections.schemas import (
-    Choice,
-    ChoiceCreate,
-    ChoicePure,
     GroupSnapshot,
-    ItemChoice,
+    ItemSelection,
+    Selection,
+    SelectionCreate,
+    SelectionPure,
 )
-from server.sql.models import ChoiceDB, GroupSnapshotDB, ItemChoiceDB
+from server.sql.models import GroupSnapshotDB, ItemSelectionDB, SelectionDB
 
 if TYPE_CHECKING:
     import uuid
@@ -48,7 +48,7 @@ class SelectionsRepo(AbstractSelectionsRepo):
     session: AsyncSession
 
     @staticmethod
-    def _validate_item(obj: ItemChoiceDB) -> ItemChoice:
+    def _validate_item(obj: ItemSelectionDB) -> ItemSelection:
         if obj.price is None:
             price = None
         else:
@@ -57,7 +57,7 @@ class SelectionsRepo(AbstractSelectionsRepo):
                 currency=cast("CurrencyCode", obj.price_currency),
             )
 
-        return ItemChoice(
+        return ItemSelection(
             item_id=obj.item_id,
             name=obj.name,
             count=obj.count,
@@ -73,7 +73,7 @@ class SelectionsRepo(AbstractSelectionsRepo):
         obj: GroupSnapshotDB,
         groups_map: Mapping[int | None, Sequence[GroupSnapshotDB]],
     ) -> GroupSnapshot:
-        items: list[GroupSnapshot | ItemChoice] = [
+        items: list[GroupSnapshot | ItemSelection] = [
             *(cls._validate_item(item) for item in obj.items),
             *[
                 cls._validate_group(subgroup, groups_map)
@@ -83,13 +83,13 @@ class SelectionsRepo(AbstractSelectionsRepo):
         return GroupSnapshot(name=obj.name, items=items)
 
     @classmethod
-    def _to_domain_schema(cls, obj: ChoiceDB) -> Choice:
+    def _to_domain_schema(cls, obj: SelectionDB) -> Selection:
         groups_map: dict[int | None, list[GroupSnapshotDB]] = defaultdict(list)
 
         for group in obj.groups:
             groups_map[group.group_id].append(group)
 
-        return Choice(
+        return Selection(
             id=obj.id,
             user_id=obj.user_id,
             created_at=obj.created_at,
@@ -100,14 +100,14 @@ class SelectionsRepo(AbstractSelectionsRepo):
         )
 
     @staticmethod
-    def _to_domain_schema_pure(obj: ChoiceDB) -> ChoicePure:
-        return ChoicePure(
+    def _to_domain_schema_pure(obj: SelectionDB) -> SelectionPure:
+        return SelectionPure(
             id=obj.id, user_id=obj.user_id, created_at=obj.created_at
         )
 
     @override
-    async def get(self, id: int) -> Choice | None:
-        stmt = select(ChoiceDB).where(ChoiceDB.id == id)
+    async def get(self, id: int) -> Selection | None:
+        stmt = select(SelectionDB).where(SelectionDB.id == id)
         obj = await self.session.scalar(stmt)
 
         if obj is None:
@@ -116,15 +116,15 @@ class SelectionsRepo(AbstractSelectionsRepo):
         return self._to_domain_schema(obj)
 
     @override
-    async def get_by_user(self, user_id: uuid.UUID) -> list[ChoicePure]:
-        stmt = select(ChoiceDB).where(ChoiceDB.user_id == user_id)
+    async def get_by_user(self, user_id: uuid.UUID) -> list[SelectionPure]:
+        stmt = select(SelectionDB).where(SelectionDB.user_id == user_id)
         objs = (await self.session.scalars(stmt)).all()
 
         return [self._to_domain_schema_pure(obj) for obj in objs]
 
     @staticmethod
-    def _item_to_snapshot(item: Item, ordinal_no: int) -> ItemChoiceDB:
-        return ItemChoiceDB(
+    def _item_to_snapshot(item: Item, ordinal_no: int) -> ItemSelectionDB:
+        return ItemSelectionDB(
             name=item.name,
             count=item.count,
             approved=item.approved,
@@ -140,10 +140,10 @@ class SelectionsRepo(AbstractSelectionsRepo):
 
     @classmethod
     def _group_to_snapshot(
-        cls, choice_id: int, group: ProjectSnapshotGroup, ordinal_no: int
+        cls, selection_id: int, group: ProjectSnapshotGroup, ordinal_no: int
     ) -> GroupSnapshotDB:
         root = GroupSnapshotDB(
-            choice_id=choice_id, name=group.name, ordinal_no=ordinal_no
+            selection_id=selection_id, name=group.name, ordinal_no=ordinal_no
         )
         stack: list[
             tuple[
@@ -160,7 +160,7 @@ class SelectionsRepo(AbstractSelectionsRepo):
                     obj.items.append(cls._item_to_snapshot(item, i))
                 else:
                     child = GroupSnapshotDB(
-                        choice_id=choice_id, name=item.name, ordinal_no=i
+                        selection_id=selection_id, name=item.name, ordinal_no=i
                     )
                     obj.subgroups.append(child)
                     stack.append(
@@ -177,7 +177,7 @@ class SelectionsRepo(AbstractSelectionsRepo):
 
     @override
     async def create(
-        self, project: Project, data: ChoiceCreate, user_id: uuid.UUID
+        self, project: Project, data: SelectionCreate, user_id: uuid.UUID
     ) -> None:
         ids = set(data.item_ids)
 
@@ -221,11 +221,13 @@ class SelectionsRepo(AbstractSelectionsRepo):
         tree: list[ProjectSnapshotGroup] = [
             process_group(group) for group in project.categories
         ]
-        choice = ChoiceDB(user_id=user_id, groups=[])
-        self.session.add(choice)
-        await self.session.flush((choice,))
+        selection = SelectionDB(user_id=user_id, groups=[])
+        self.session.add(selection)
+        await self.session.flush((selection,))
 
         for i, group in enumerate(tree, start=STATIC_ORDINALS_START):
-            choice.groups.append(self._group_to_snapshot(choice.id, group, i))
+            selection.groups.append(
+                self._group_to_snapshot(selection.id, group, i)
+            )
 
         await self.session.flush()

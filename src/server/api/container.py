@@ -53,7 +53,7 @@ class ServiceContainer(AbstractAsyncContextManager["ServiceContainer"]):
         self.temp_dir = temp_dir
 
         self._projects_service = None
-        self._choices_service = None
+        self._selections_service = None
         self._users_service = None
         self._files_service = None
         self._objects_storage = None
@@ -132,15 +132,15 @@ class ServiceContainer(AbstractAsyncContextManager["ServiceContainer"]):
 
         return self._projects_service
 
-    _choices_service: SelectionsService | None
+    _selections_service: SelectionsService | None
 
     @property
-    def choices(self) -> SelectionsService:
-        if self._choices_service is None:
+    def selections(self) -> SelectionsService:
+        if self._selections_service is None:
             repo = SelectionsRepo(self.session)
-            self._choices_service = SelectionsService(repo)
+            self._selections_service = SelectionsService(repo)
 
-        return self._choices_service
+        return self._selections_service
 
     _users_service: UsersService | None
 

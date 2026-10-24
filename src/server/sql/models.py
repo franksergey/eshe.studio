@@ -214,28 +214,28 @@ class UserDB(SQLAlchemyBaseUserTableUUID, Base):
     __tablename__ = "users"
 
     # Relations
-    choices: Mapped[list[ChoiceDB]] = relationship(
-        back_populates="user", order_by="ChoiceDB.created_at"
+    selections: Mapped[list[SelectionDB]] = relationship(
+        back_populates="user", order_by="SelectionDB.created_at"
     )
 
 
-# ==============
-# Choices Domain
-# ==============
+# =================
+# Selections Domain
+# =================
 
 type GroupsSnapshot = list[int | GroupsSnapshot]
 
 
-class ChoiceDB(CreatedAtMixin, Base):
+class SelectionDB(CreatedAtMixin, Base):
     """Заполненная форма с выбором карточек в архитектурном проекте."""
 
-    __tablename__ = "user_choices"
+    __tablename__ = "user_item_selections"
 
     id: Mapped[int] = mapped_column(IDENTITY, primary_key=True)
     user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"))
 
     # Relations
-    user: Mapped[UserDB] = relationship(back_populates="choices")
+    user: Mapped[UserDB] = relationship(back_populates="selections")
     groups: Mapped[list[GroupSnapshotDB]] = relationship(
         cascade="all, delete, delete-orphan",
         passive_deletes=True,
@@ -245,25 +245,27 @@ class ChoiceDB(CreatedAtMixin, Base):
 
 
 class GroupSnapshotDB(Base):
-    __tablename__ = "user_item_choice_groups"
+    __tablename__ = "user_item_selection_group_snapshots"
 
     id: Mapped[int] = mapped_column(IDENTITY, primary_key=True)
-    choice_id: Mapped[int] = mapped_column(
-        ForeignKey("user_choices.id", ondelete="CASCADE")
+    selection_id: Mapped[int] = mapped_column(
+        ForeignKey("user_item_selections.id", ondelete="CASCADE")
     )
     group_id: Mapped[int | None] = mapped_column(
-        ForeignKey("user_item_choice_groups.id", ondelete="CASCADE")
+        ForeignKey(
+            "user_item_selection_group_snapshots.id", ondelete="CASCADE"
+        )
     )
     ordinal_no: Mapped[int]
 
     name: Mapped[str] = mapped_column(String(256))
 
     # Relations
-    items: Mapped[list[ItemChoiceDB]] = relationship(
+    items: Mapped[list[ItemSelectionDB]] = relationship(
         cascade="all, delete, delete-orphan",
         passive_deletes=True,
         lazy="selectin",
-        order_by="ItemChoiceDB.ordinal_no",
+        order_by="ItemSelectionDB.ordinal_no",
     )
     subgroups: Mapped[list[GroupSnapshotDB]] = relationship(
         cascade="all, delete, delete-orphan",
@@ -273,13 +275,13 @@ class GroupSnapshotDB(Base):
     )
 
 
-class ItemChoiceDB(ItemTableBase, Base):
+class ItemSelectionDB(ItemTableBase, Base):
     """Выбор конкретной карточки в рамках формы."""
 
-    __tablename__ = "user_item_choices"
+    __tablename__ = "user_item_selection_item_snapshots"
 
     group_id: Mapped[int] = mapped_column(
-        ForeignKey("user_item_choice_groups.id"), primary_key=True
+        ForeignKey("user_item_selection_group_snapshots.id"), primary_key=True
     )
     ordinal_no: Mapped[int] = mapped_column(primary_key=True)
     item_id: Mapped[int | None] = mapped_column(

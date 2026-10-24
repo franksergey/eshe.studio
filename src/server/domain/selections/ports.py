@@ -5,12 +5,12 @@ if TYPE_CHECKING:
 
     from server.domain.projects.schemas import Project
 
-    from .schemas import Choice, ChoiceCreate, ChoicePure
+    from .schemas import Selection, SelectionCreate, SelectionPure
 
 
 class AbstractSelectionsRepo(Protocol):
-    async def get(self, id: int) -> Choice | None: ...
-    async def get_by_user(self, user_id: uuid.UUID) -> list[ChoicePure]: ...
+    async def get(self, id: int) -> Selection | None: ...
+    async def get_by_user(self, user_id: uuid.UUID) -> list[SelectionPure]: ...
     async def create(
-        self, project: Project, data: ChoiceCreate, user_id: uuid.UUID
+        self, project: Project, data: SelectionCreate, user_id: uuid.UUID
     ) -> None: ...

@@ -6,7 +6,7 @@ from server.api.dependencies import (
 )
 from server.api.errors import ProjectNotFoundError, error_handler
 from server.domain.projects.schemas import Project, ProjectPure
-from server.domain.selections.schemas import ChoiceCreate
+from server.domain.selections.schemas import SelectionCreate
 
 router = APIRouter(prefix="/projects", tags=["Arhitectural Projects"])
 
@@ -56,11 +56,11 @@ async def read_project_specification(
 )
 async def select_project_specification_items(
     id: int,
-    data: ChoiceCreate,
+    data: SelectionCreate,
     user: CurrentVerifiedUserDependency,
     container: ContainerDependency,
 ) -> None:
     """Отправить выбор карточек таблицы спецификации."""
     project = await container.projects.get(id)
 
-    await container.choices.create(project, data, user)
+    await container.selections.create(project, data, user)
