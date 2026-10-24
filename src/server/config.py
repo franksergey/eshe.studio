@@ -103,10 +103,6 @@ class DatabaseConfig(BaseModel):
             folder = Path.cwd() / "data"
 
         folder.mkdir(parents=True, exist_ok=True)
-        gitignore = folder / ".gitignore"
-
-        if not gitignore.is_file():
-            gitignore.write_text("*\n")
 
         path = folder / "db.sqlite"
         return str(path.absolute())
@@ -204,12 +200,13 @@ class AppSettings(BaseSettings):
             Determines which logging configuration will be used. Console
             is used by default.
         PYPROJECT: `$APP_PYPROJECT`. Path to `pyproject.toml`.
-        DEBUG: `$APP_API_DEBUG`. Debug mode. Defaults to False.
+        DEBUG: `$APP_DEBUG`. Debug mode. Defaults to False.
     """
 
     LOGGINGFORMAT: Literal["rich", "console", "structured"] = "console"
     PYPROJECT: FilePath = Path.cwd() / "pyproject.toml"
     DEBUG: bool = False
+    STORAGEDIR: Path = Path.cwd() / "data/storage"
 
     db: DatabaseConfig = DatabaseConfig()
     api: APIConfig = APIConfig()

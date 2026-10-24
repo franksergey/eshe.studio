@@ -1,15 +1,15 @@
 {# === Nav builder === #}
 {% macro nav_section(group) %}
 <li data-group-id="{{ group.id }}"><a href="#">{{ group.name }}</a></li>
-{% for item in group.items %}
-<li>
-  {% if item.item_type == "group" %}
-  <ul class="nav-subsection">
-    {{ nav_section(item) }}
-  </ul>
-  {% endif %}
-</li>
-{% endfor %}
+{% if group.has_groups %}
+  <li>
+    <ul class="nav-subsection">
+      {% for group in group.items %}
+        {{ nav_section(group) }}
+      {% endfor %}
+    </ul>
+  </li>
+{% endif %}
 {% endmacro %}
 
 {# === Item Cards table builder === #}
@@ -24,7 +24,7 @@
       <div>
         {# Stub link #}
         {# TODO(@soucelover): Incorporate ObjectsStorage when it's implemented #}
-        <img src="{{ url_for('static', path='/media/konsol_s_yashhikami_08-scaled.jpg') }}">
+        <img src="{% if item.image is none %}{{ url_for('static', path='/media/konsol_s_yashhikami_08-scaled.jpg') }}{% else %}{{ item.image }}{% endif %}">
         <button type="button" class="add-wishlist">
           <svg class="icon" aria-hidden="true"><use href="#icon-add-wishlist"></use></svg>
         </button>
@@ -48,12 +48,12 @@
           {% if item.tags %}
             <p>{{ item.tags | join(" &middot; ") }}</p>
           {% endif %}
-          <p class="price-row">
+          <p class="price-row" data-item-price="{{ item.price.amount }}" data-item-currency-code="{{ item.price.currency }}">
             <span class="price">
               {% if item.price is none %}
                 В наличии
               {% else %}
-                {{ item.price.localized }}
+                {{ item.price.html_formatted }}
               {% endif %}
             </span> &middot;
             <span class="quantity">{{ item.count }} шт</span>
@@ -121,7 +121,7 @@
 
         <nav class="nav-pages nav-pages-general">
           {% for cat in categories %}
-            <a href="{{ url_for('read_project_category', id=project.id, index=loop.index) }}" {% if cat.id == category.id %}class="active"{% endif %}>{{ cat.name }}</a>
+            <a href="{{ url_for('read_project_category_page', id=project.id, index=loop.index) }}" {% if cat.id == category.id %}class="active"{% endif %}>{{ cat.name }}</a>
           {% endfor %}
         </nav>
       </header>

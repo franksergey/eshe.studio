@@ -1,6 +1,10 @@
 """Creation and the setup of application object of ASGI server."""
 
+import asyncio
+import functools
 import logging
+import tempfile
+import typing
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import TYPE_CHECKING, TypedDict
@@ -11,12 +15,12 @@ from fastapi_problem.handler import add_exception_handler
 from starlette.staticfiles import StaticFiles
 
 from server import __version__ as version
+from server.api.container import ServiceContainer
 from server.api.routers import ALL_ROUTERS
 from server.config import settings
 from server.sql.database import Database
 
 from .common import cors_configuration
-from .container import container_getter
 from .errors import error_handler
 
 if TYPE_CHECKING:
@@ -102,11 +106,33 @@ class AppInitialState(TypedDict):
 
 
 @asynccontextmanager
+async def get_temp_dir() -> typing.AsyncGenerator[Path]:
+    temp_dir = await asyncio.to_thread(
+        tempfile.TemporaryDirectory, prefix="eshe-studio"
+    )
+    path = Path(temp_dir.name)
+    await asyncio.to_thread(path.mkdir, parents=True, exist_ok=True)
+
+    try:
+        yield path
+    finally:
+        await asyncio.shield(asyncio.to_thread(temp_dir.cleanup))
+
+
+@asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[AppInitialState]:
-    async with Database(
-        db_url=settings.db.database_url, echo=settings.db.ECHO
-    ) as database:
-        get_container = container_getter(database.get_session)
+    async with (
+        Database(
+            db_url=settings.db.database_url, echo=settings.db.ECHO
+        ) as database,
+        get_temp_dir() as temp_dir,
+    ):
+        get_container = functools.partial(
+            ServiceContainer,
+            database.get_session,
+            settings.STORAGEDIR,
+            temp_dir,
+        )
 
         logger.info("Сервер полностью настроен и готов к началу работы.")
         yield {"get_container": get_container}
