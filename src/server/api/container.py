@@ -7,16 +7,16 @@ from typing import TYPE_CHECKING, Protocol, Self, override
 from pydantic import HttpUrl
 from sqlalchemy.exc import DBAPIError
 
-from server.domain.choices.services import ChoicesService
 from server.domain.files.processor import ImagesProcessor
 from server.domain.files.service import FilesService, ImagesService
 from server.domain.projects.service import ProjectsService
+from server.domain.selections.services import SelectionsService
 from server.domain.users.service import UsersService
 from server.sql.models import UserDB
 from server.sql.repos import ProjectsRepo, UserDatabase, UsersRepo
-from server.sql.repos.choices import ChoicesRepo
 from server.sql.repos.files import LocalObjectsStorage
 from server.sql.repos.images import ImagesRepo
+from server.sql.repos.selections import SelectionsRepo
 
 from .auth import UserManager
 
@@ -132,13 +132,13 @@ class ServiceContainer(AbstractAsyncContextManager["ServiceContainer"]):
 
         return self._projects_service
 
-    _choices_service: ChoicesService | None
+    _choices_service: SelectionsService | None
 
     @property
-    def choices(self) -> ChoicesService:
+    def choices(self) -> SelectionsService:
         if self._choices_service is None:
-            repo = ChoicesRepo(self.session)
-            self._choices_service = ChoicesService(repo)
+            repo = SelectionsRepo(self.session)
+            self._choices_service = SelectionsService(repo)
 
         return self._choices_service
 

@@ -7,13 +7,13 @@ if TYPE_CHECKING:
     from server.domain.projects.schemas import Project
     from server.domain.users.schemas import UserRead
 
-    from .ports import AbstractChoicesRepo
+    from .ports import AbstractSelectionsRepo
     from .schemas import Choice, ChoiceCreate, ChoicePure
 
 
 @dataclass(eq=False, slots=True)
-class ChoicesService:
-    repo: AbstractChoicesRepo
+class SelectionsService:
+    repo: AbstractSelectionsRepo
 
     async def get(self, id: int) -> Choice:
         obj = await self.repo.get(id)

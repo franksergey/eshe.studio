@@ -5,14 +5,6 @@ from typing import TYPE_CHECKING, Literal, cast, override
 from pydantic import HttpUrl
 from sqlalchemy import select
 
-from server.domain.choices.ports import AbstractChoicesRepo
-from server.domain.choices.schemas import (
-    Choice,
-    ChoiceCreate,
-    ChoicePure,
-    GroupSnapshot,
-    ItemChoice,
-)
 from server.domain.projects.schemas import (
     CurrencyCode,
     Group,
@@ -20,6 +12,14 @@ from server.domain.projects.schemas import (
     ItemType,
     MoneyType,
     Project,
+)
+from server.domain.selections.ports import AbstractSelectionsRepo
+from server.domain.selections.schemas import (
+    Choice,
+    ChoiceCreate,
+    ChoicePure,
+    GroupSnapshot,
+    ItemChoice,
 )
 from server.sql.models import ChoiceDB, GroupSnapshotDB, ItemChoiceDB
 
@@ -44,7 +44,7 @@ class ProjectSnapshotGroup:
 
 
 @dataclass(eq=False, slots=True)
-class ChoicesRepo(AbstractChoicesRepo):
+class SelectionsRepo(AbstractSelectionsRepo):
     session: AsyncSession
 
     @staticmethod
