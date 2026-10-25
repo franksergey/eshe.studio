@@ -10,16 +10,16 @@ function createLoginDialog() {
     dialog.innerHTML = `
         <form action="${LOGIN_URL}" method="post"
               enctype="application/x-www-form-urlencoded">
-            <h2>Log in</h2>
+            <h2>Вход</h2>
 
             <label>
-                Username
+                Имя или почта
                 <input name="username" type="text"
                        autocomplete="username" required>
             </label>
 
             <label>
-                Password
+                Пароль
                 <input name="password" type="password"
                        autocomplete="current-password" required>
             </label>
@@ -27,8 +27,8 @@ function createLoginDialog() {
             <p role="alert" aria-live="polite" hidden></p>
 
             <div class="login-actions">
-                <button type="button" data-close>Cancel</button>
-                <button type="submit">Log in</button>
+                <button type="button" data-close>Отмена</button>
+                <button class="login-button" type="submit">Войти</button>
             </div>
         </form>
     `;

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>        
+    <title>Вход · Ещё студия</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- conect-file -->
+    <link href="{{ url_for('static', path='/style.css') }}" rel="stylesheet" type="text/css" />
+    <script src="{{ url_for('static', path='/script.js') }}" defer></script>
+    <script src="{{ url_for('static', path='/login.js') }}" defer></script>
+  </head>
+
+  <body>
+    <article class="login">
+        <h1>Вход</h1>
+        <label for="name">Имя или почта
+          <input id="name" type="email">
+        </label>
+        <label for="password">Пароль
+          <input id="password" type="password">
+        </label>
+        <button id="login-button" type="button">Войти</button>
+    </article>
+  </body>
+</html>

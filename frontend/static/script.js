@@ -95,12 +95,12 @@ document.addEventListener('click', (event) => {
 })();
 
 function renderCart() {
-  const approvedList = document.querySelector('.cart-items-approved ul');
-  const doneList = document.querySelector('.cart-items-done ul');
-  const totalEls = document.querySelectorAll('.cart-buttom p span');
-  if (!approvedList || !doneList || totalEls.length < 3) return;
-
-  const [approvedTotalEl, selectedTotalEl, grandTotalEl] = totalEls;
+  const approvedList = document.querySelector('#cart-items-approved ul');
+  const doneList = document.querySelector('#cart-items-done ul');
+  const approvedTotalEl = document.querySelector('#sum-approved span');
+  const selectedTotalEl = document.querySelector('#sum-done span');
+  const grandTotalEl = document.querySelector('#total span');
+  if (!approvedList || !doneList || !approvedTotalEl || !selectedTotalEl || !grandTotalEl) return;
 
   function cardData(card) {
     const link = card.querySelector('hgroup a');
@@ -123,8 +123,24 @@ function renderCart() {
     };
   }
 
-  function formatRUB(amount) {
-    return amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') + ' ₽';
+  // 950 → 950, 41 000 → 41К, 41 500 → 41,5К, 1 500 000 → 1,5М
+  function formatAmount(amount) {
+    const suffixes = ['', 'К', 'М', 'Млрд'];
+    const round = (value) => Math.round(value * 10) / 10;
+
+    let value = amount;
+    let i = 0;
+    while (round(value) >= 1000 && i < suffixes.length - 1) {
+      value /= 1000;
+      i++;
+    }
+
+    return round(value).toString().replace('.', ',') + suffixes[i];
+  }
+
+  // 1500000 → 1.500.000
+  function formatFullAmount(amount) {
+    return amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
   }
 
   approvedList.innerHTML = '';
@@ -165,9 +181,9 @@ function renderCart() {
     doneList.appendChild(li);
   });
 
-  approvedTotalEl.textContent = formatRUB(approvedTotal);
-  selectedTotalEl.textContent = formatRUB(selectedTotal);
-  grandTotalEl.textContent = formatRUB(approvedTotal + selectedTotal);
+  approvedTotalEl.textContent = formatAmount(approvedTotal);
+  selectedTotalEl.textContent = formatAmount(selectedTotal);
+  grandTotalEl.textContent = formatFullAmount(approvedTotal + selectedTotal);
 }
 
 renderCart();
@@ -221,11 +237,12 @@ function getAuthorName() {
 }
 
 // 2. Helper to create a comment DOM element
-function createCommentElement(text) {
+function createCommentElement(text, authorName) {
   const comment = document.createElement('div');
   comment.className = 'comment';
-  comment.innerHTML = '<span class="comment-avatar"></span><p></p>';
-  comment.querySelector('p').textContent = text;
+  comment.innerHTML = '<p><small class="comment-author"></small><span class="comment-text"></span></p>';
+  comment.querySelector('.comment-author').textContent = authorName;
+  comment.querySelector('.comment-text').textContent = text;
   return comment;
 }
 
@@ -267,7 +284,7 @@ async function loadComments(root = document) {
 
         list.innerHTML = ''; // Ensure it's empty before appending
         (entry.comments ?? []).forEach((c) => {
-          list.appendChild(createCommentElement(c.text));
+          list.appendChild(createCommentElement(c.text, c.author_name));
         });
       });
     });
@@ -334,7 +351,7 @@ document.addEventListener('submit', async (event) => {
 
       // Append to DOM
       const list = form.closest('.comments').querySelector('.comments-list');
-      list.appendChild(createCommentElement(newComment.text));
+      list.appendChild(createCommentElement(newComment.text, newComment.author_name));
 
       // Reset form
       textarea.value = '';

@@ -78,3 +78,10 @@ async def read_project_category_page(
             "categories": categories,
         },
     )
+
+
+@router.get("/login")
+async def read_login_page(request: Request) -> HTMLResponse:
+    return templates.TemplateResponse(
+        request=request, name="login.html.jinja", context={}
+    )

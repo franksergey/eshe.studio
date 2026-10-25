@@ -76,7 +76,7 @@
   <head>        
     <title>{{ project.name }} &mdash; Таблица Комплектации</title>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width," initial-scale="1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <!-- conect-file -->
     <link href="{{ url_for('static', path='/style.css') }}" rel="stylesheet" type="text/css" />
@@ -152,8 +152,8 @@
         </article>
 
         <aside class="cart-panel"> <!-- Карзина -->
-          <section class="cart-items-approved">
-            <p>Утверждено</p>
+          <section class="cart-items-approved" id="cart-items-approved">
+            <h1>Утверждено</h1>
             <ul>
               <li>
                 <a>Трюмо винтаж Art-deco</a>
@@ -163,9 +163,9 @@
             <!-- <div class="vertical-space S"></div> -->
           </section>
 
-          <section class="cart-items-done">
+          <section class="cart-items-done" id="cart-items-done">
             <!-- <div class="vertical-space S"></div> -->
-            <p>Выбрано</p>
+            <h1>Выбрано</h1>
             <ul>
               <li>
                 <div>
@@ -180,9 +180,10 @@
 
           <div>
             <section class="cart-buttom">
-              <p>Утверждено <span>40.000 ₽</span></p>
-              <p>Выбрано <span>40.000 ₽</span></p>
-              <p class="total">Итого <span>80.000 ₽</span></p>
+              <p id="total">Итого: <span>0</span>&nbsp&#8381</p>
+              <p id="sum-approved"><span>0</span>&nbsp&#8381</p>
+              <p id="sum-done"><span>0</span>&nbsp&#8381</p>
+              <p id="sum-paid"><span>0</span>&nbsp&#8381</p>
             </section>
             <button class="button-confirm">Подтвердить выбор</button>
           </div>
