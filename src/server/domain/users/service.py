@@ -37,6 +37,9 @@ class UsersService:
     ) -> Sequence[UserRead]:
         return await self.repo.bulk_get_users(user_ids)
 
+    async def list_user_ids(self) -> Sequence[UserID]:
+        return await self.repo.list_user_ids()
+
     async def users_table_empty(self) -> bool:
         return await self.repo.users_table_empty()
 
