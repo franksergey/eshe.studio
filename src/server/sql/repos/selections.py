@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Literal, override
 
-from sqlalchemy import select
+from sqlalchemy import delete, select
 
 from server.domain.projects.schemas import Item, ItemType, ProjectPure
 from server.domain.selections.ports import AbstractSelectionsRepo
@@ -78,20 +78,45 @@ class SelectionsRepo(AbstractSelectionsRepo):
     async def create(
         self, project: ProjectPure, data: SelectionCreate, user_id: UserID
     ) -> None:
+        stmt = select(SelectionDB).where(
+            SelectionDB.project_id == project.id,
+            SelectionDB.user_id == user_id,
+        )
+        selection = await self.session.scalar(stmt)
+
         stmt = (
             select(ItemDB.id)
             .join(GroupDB, ItemDB.group_id == GroupDB.id)
             .where(GroupDB.project_id == project.id)
             .where(ItemDB.id.in_(data.item_ids))
         )
-        item_ids = (await self.session.scalars(stmt)).all()
+        item_ids = set((await self.session.scalars(stmt)).all())
 
-        selection = SelectionDB(
-            project_id=project.id,
-            user_id=user_id,
-            items=[ItemSelectionDB(item_id=item_id) for item_id in item_ids],
-        )
-        self.session.add(selection)
-        self.session.add_all(selection.items)
+        if selection is None:
+            selection = SelectionDB(
+                project_id=project.id,
+                user_id=user_id,
+                items=[
+                    ItemSelectionDB(item_id=item_id) for item_id in item_ids
+                ],
+            )
+            self.session.add(selection)
+            self.session.add_all(selection.items)
+        else:
+            selected_ids = {item.item_id for item in selection.items}
+            to_delete = selected_ids - item_ids
+
+            stmt = delete(ItemSelectionDB).where(
+                ItemSelectionDB.selection_id == selection.id,
+                ItemSelectionDB.item_id.in_(to_delete),
+            )
+            await self.session.execute(stmt)
+
+            to_create = item_ids - selected_ids
+
+            for id in to_create:
+                item = ItemSelectionDB(selection_id=selection.id, item_id=id)
+                selection.items.append(item)
+                self.session.add(item)
 
         await self.session.flush()

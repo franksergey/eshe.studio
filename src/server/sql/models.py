@@ -249,7 +249,9 @@ class SelectionDB(TimestampMixin, Base):
     project_id: Mapped[int] = mapped_column(
         ForeignKey("projects.id", ondelete="CASCADE")
     )
-    user_id: Mapped[UserID] = mapped_column(ForeignKey("users.id"))
+    user_id: Mapped[UserID] = mapped_column(
+        ForeignKey("users.id"), unique=True
+    )
 
     # Relations
     user: Mapped[UserDB] = relationship(back_populates="selections")
