@@ -7,6 +7,7 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
 
     from server.domain.projects.schemas import ProjectPure
+    from server.domain.selections.schemas import SelectionPure
     from server.domain.users.schemas import UserID, UserRead
 
     from .ports import AbstractSelectionsRepo
@@ -32,6 +33,11 @@ class SelectionsService:
 
     async def get_users(self, project_id: int) -> Sequence[UserID]:
         return await self.repo.get_users(project_id)
+
+    async def get_for_project(
+        self, project_id: int
+    ) -> Sequence[SelectionPure]:
+        return await self.repo.get_for_project(project_id)
 
     async def create(
         self, project: ProjectPure, data: SelectionCreate, user: UserRead

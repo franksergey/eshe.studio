@@ -529,3 +529,171 @@ document.addEventListener('submit', async (event) => {
 
   watched.forEach((w) => observer.observe(w.el));
 })();
+
+// ==========================================
+// ADMIN: view another user's selection
+// ==========================================
+(() => {
+  const PICKER = '.persona-picker';
+  let activeController = null;
+
+  // Full overwrite: cards with product-done are never touched.
+  function applySelection(itemIds) {
+    const ids = new Set(itemIds.map(Number));
+
+    document.querySelectorAll('ul.product-grid > li').forEach((li) => {
+      if (li.classList.contains('product-done')) return;
+
+      const id = Number(li.getAttribute('data-item-id'));
+      li.classList.toggle('product-select', ids.has(id));
+    });
+
+    renderCart();
+  }
+
+  async function loadSelection(userEmail) {
+    const projectId = document.querySelector('main[data-project-id]')?.dataset.projectId;
+    if (!projectId || !userEmail) {
+      console.error('Cannot load selection: missing project id or user email.');
+      return;
+    }
+
+    // Cancel the previous in-flight request so only the latest one can touch the DOM.
+    activeController?.abort();
+    const controller = new AbortController();
+    activeController = controller;
+
+    const url = `/api/admin/projects/${encodeURIComponent(projectId)}/selections`
+      + `?user_email=${encodeURIComponent(userEmail)}`;
+
+    try {
+      const response = await fetch(url, { signal: controller.signal });
+
+      if (!response.ok) {
+        console.error(`Failed to load selection. Status: ${response.status}`);
+        return;
+      }
+
+      const selection = await response.json();
+
+      // Superseded by a newer request, or no selection made yet: do nothing.
+      if (controller.signal.aborted || !selection) return;
+
+      applySelection(selection.items ?? []);
+    } catch (error) {
+      if (error.name === 'AbortError') return;
+      console.error('Network error while loading selection:', error);
+    } finally {
+      if (activeController === controller) activeController = null;
+    }
+  }
+
+  // ---- dropdown behaviour ----
+
+  function closeList(picker, { restoreFocus = false } = {}) {
+    const toggle = picker.querySelector('.persona-toggle');
+    picker.querySelector('.persona-list').hidden = true;
+    picker.querySelector('.select-wrapper').classList.remove('is-open');
+    toggle.setAttribute('aria-expanded', 'false');
+    if (restoreFocus) toggle.focus();
+  }
+
+  function closeAll() {
+    document.querySelectorAll(PICKER).forEach((picker) => closeList(picker));
+  }
+
+  function openList(picker) {
+    const toggle = picker.querySelector('.persona-toggle');
+    const list = picker.querySelector('.persona-list');
+    const rect = toggle.getBoundingClientRect();
+
+    list.hidden = false;
+    list.style.top = `${rect.bottom + 4}px`;
+    list.style.left = `${rect.left}px`;
+    list.style.minWidth = `${rect.width}px`;
+
+    picker.querySelector('.select-wrapper').classList.add('is-open');
+    toggle.setAttribute('aria-expanded', 'true');
+
+    (list.querySelector('[aria-selected="true"]') ?? list.querySelector('[role="option"]'))
+      ?.focus({ preventScroll: true });
+  }
+
+  function choose(picker, option) {
+    picker.querySelectorAll('[role="option"]').forEach((o) => {
+      o.setAttribute('aria-selected', String(o === option));
+    });
+    picker.querySelector('#persona-current').textContent = option.textContent.trim();
+
+    closeList(picker, { restoreFocus: true });
+
+    // Fires on every click, even on the already-selected or the only entry.
+    loadSelection(option.dataset.email);
+  }
+
+  document.addEventListener('click', (event) => {
+    const option = event.target.closest('.persona-list [role="option"]');
+    if (option) {
+      choose(option.closest(PICKER), option);
+      return;
+    }
+
+    const toggle = event.target.closest('.persona-toggle');
+
+    // Click anywhere else (or on another picker's toggle) closes open lists.
+    document.querySelectorAll(PICKER).forEach((picker) => {
+      if (!toggle || !picker.contains(toggle)) closeList(picker);
+    });
+
+    if (toggle) {
+      const picker = toggle.closest(PICKER);
+      const isOpen = !picker.querySelector('.persona-list').hidden;
+      if (isOpen) closeList(picker);
+      else openList(picker);
+    }
+  });
+
+  document.addEventListener('keydown', (event) => {
+    const picker = event.target.closest?.(PICKER);
+    if (!picker) return;
+
+    const list = picker.querySelector('.persona-list');
+
+    if (event.key === 'Escape' && !list.hidden) {
+      event.preventDefault();
+      closeList(picker, { restoreFocus: true });
+      return;
+    }
+
+    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      event.preventDefault();
+      if (list.hidden) {
+        openList(picker);
+        return;
+      }
+
+      const options = [...list.querySelectorAll('[role="option"]')];
+      const i = options.indexOf(document.activeElement);
+      const next = event.key === 'ArrowDown'
+        ? options[Math.min(i + 1, options.length - 1)]
+        : options[Math.max(i - 1, 0)];
+      next?.focus();
+    }
+  });
+
+  // Tabbing out of the picker closes it.
+  document.addEventListener('focusout', (event) => {
+    const picker = event.target.closest?.(PICKER);
+    if (picker && event.relatedTarget && !picker.contains(event.relatedTarget)) {
+      closeList(picker);
+    }
+  });
+
+  // The list is position: fixed, so any scroll or resize would leave it misplaced.
+  window.addEventListener('resize', closeAll);
+  window.addEventListener('scroll', (event) => {
+    // Ignore scrolling inside the list itself.
+    if (event.target.closest?.('.persona-list')) return;
+    closeAll();
+  }, true);
+})();

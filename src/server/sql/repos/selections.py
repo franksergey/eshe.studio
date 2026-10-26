@@ -3,10 +3,15 @@ from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Literal, override
 
 from sqlalchemy import delete, select
+from sqlalchemy.orm import lazyload
 
 from server.domain.projects.schemas import Item, ItemType, ProjectPure
 from server.domain.selections.ports import AbstractSelectionsRepo
-from server.domain.selections.schemas import Selection, SelectionCreate
+from server.domain.selections.schemas import (
+    Selection,
+    SelectionCreate,
+    SelectionPure,
+)
 from server.sql.models import GroupDB, ItemDB, ItemSelectionDB, SelectionDB
 
 if TYPE_CHECKING:
@@ -44,6 +49,15 @@ class SelectionsRepo(AbstractSelectionsRepo):
             updated_at=obj.updated_at,
         )
 
+    @staticmethod
+    def _to_domain_schema_pure(obj: SelectionDB) -> SelectionPure:
+        return SelectionPure(
+            id=obj.id,
+            user_id=obj.user_id,
+            created_at=obj.created_at,
+            updated_at=obj.updated_at,
+        )
+
     @override
     async def get(self, id: int) -> Selection | None:
         stmt = select(SelectionDB).where(SelectionDB.id == id)
@@ -67,6 +81,21 @@ class SelectionsRepo(AbstractSelectionsRepo):
             return None
 
         return self._to_domain_schema(obj)
+
+    @override
+    async def get_for_project(
+        self, project_id: int
+    ) -> Sequence[SelectionPure]:
+        stmt = (
+            select(SelectionDB)
+            .options(lazyload(SelectionDB.items))
+            .where(SelectionDB.project_id == project_id)
+        )
+        selections = (await self.session.scalars(stmt)).all()
+
+        return [
+            self._to_domain_schema_pure(selection) for selection in selections
+        ]
 
     @override
     async def get_users(self, project_id: int) -> Sequence[UserID]:

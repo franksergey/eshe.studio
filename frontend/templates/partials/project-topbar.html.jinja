@@ -1,13 +1,25 @@
 {% extends 'partials/topbar.html.jinja' %}
 
 {% block topbar_additional %}
-<label>Посмотреть выбор:
+{% if project_users_selected %}
+<span class="persona-picker">
+  <span id="persona-label">Посмотреть выбор:</span>
   <span class="select-wrapper">
-    <select id="product-select-by" name="persona">
+    <button type="button" id="product-select-by" class="persona-toggle"
+            aria-haspopup="listbox" aria-expanded="false"
+            aria-labelledby="persona-label persona-current">
+      <span id="persona-current">{{ project_users_selected[0].full_name }}</span>
+    </button>
+    <ul class="persona-list" role="listbox" aria-labelledby="persona-label" hidden>
       {% for user in project_users_selected %}
-        <option value="{{ user.email }}">{{ user.full_name }}</option>
+        <li role="presentation">
+          <button type="button" role="option"
+                  data-email="{{ user.email }}"
+                  aria-selected="{{ 'true' if loop.first else 'false' }}">{{ user.full_name }}</button>
+        </li>
       {% endfor %}
-    </select>
+    </ul>
   </span>
-</label>
+</span>
+{% endif %}
 {% endblock %}
