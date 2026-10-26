@@ -35,6 +35,8 @@ if TYPE_CHECKING:
 
     from sqlalchemy.ext.asyncio import AsyncSession
 
+    from server.domain.users.schemas import UserID
+
 
 @dataclass(eq=False, slots=True)
 class ProjectsRepo(AbstractProjectsRepo):
@@ -266,7 +268,7 @@ class ProjectsRepo(AbstractProjectsRepo):
     # NOTE: Should it return new data of ItemDB?
     @override
     async def add_comment(
-        self, item_id: int, data: CommentCreate
+        self, item_id: int, user_id: UserID, data: CommentCreate
     ) -> Comment | None:
         stmt = (
             select(ItemDB)
@@ -278,9 +280,7 @@ class ProjectsRepo(AbstractProjectsRepo):
         if item is None:
             return None
 
-        obj = CommentDB(
-            item_id=item_id, text=data.text, author_name=data.author_name
-        )
+        obj = CommentDB(item_id=item_id, user_id=user_id, text=data.text)
         state = inspect(item)
 
         if "comments" not in state.unloaded:

@@ -215,8 +215,6 @@ class CommentBase(BaseModel):
     """Базовая модель комментария."""
 
     text: Annotated[str, Field(min_length=1, max_length=4096)]
-    user_id: UserID | None
-    author_name: str
 
 
 class CommentCreate(CommentBase):
@@ -227,6 +225,8 @@ class Comment(CommentBase):
     """Комментарий к элементу комплектации."""
 
     id: int
+    user_id: UserID | None
+    author_name: str
 
     created_at: AwareDatetime
 

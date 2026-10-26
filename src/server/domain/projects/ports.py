@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING, Protocol
 if TYPE_CHECKING:
     from server.domain.files.schemas import ImageRef
     from server.domain.projects.schemas import ItemID
+    from server.domain.users.schemas import UserID
 
     from .schemas import (
         Comment,
@@ -47,7 +48,7 @@ class AbstractProjectsRepo(Protocol):
         ...
 
     async def add_comment(
-        self, item_id: ItemID, data: CommentCreate
+        self, item_id: ItemID, user_id: UserID, data: CommentCreate
     ) -> Comment | None: ...
     async def get_item_image(self, item_id: ItemID) -> ImageRef | None: ...
     async def attach_image(

@@ -11,6 +11,7 @@ from .schemas import CommentsBulkRead
 
 if TYPE_CHECKING:
     from server.domain.files.schemas import ImageRef
+    from server.domain.users.schemas import UserRead
 
     from .ports import AbstractProjectsRepo
     from .schemas import (
@@ -80,8 +81,10 @@ class ProjectsService:
             items=items, item_ids_not_found=items_not_found
         )
 
-    async def add_comment(self, item_id: int, data: CommentCreate) -> Comment:
-        obj = await self.repo.add_comment(item_id, data)
+    async def add_comment(
+        self, item_id: int, user: UserRead, data: CommentCreate
+    ) -> Comment:
+        obj = await self.repo.add_comment(item_id, user.id, data)
 
         if obj is None:
             raise ItemNotFoundError

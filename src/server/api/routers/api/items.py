@@ -1,7 +1,10 @@
 from fastapi import APIRouter
 from pydantic import BaseModel
 
-from server.api.dependencies import ContainerDependency
+from server.api.dependencies import (
+    ContainerDependency,
+    CurrentVerifiedUserDependency,
+)
 from server.api.errors import ItemNotFoundError, error_handler
 from server.domain.projects.schemas import (
     Comment,
@@ -44,7 +47,10 @@ async def read_comment(
     status_code=201,
 )
 async def create_comment(
-    item_id: int, data: CommentCreate, container: ContainerDependency
+    item_id: int,
+    data: CommentCreate,
+    user: CurrentVerifiedUserDependency,
+    container: ContainerDependency,
 ) -> Comment:
     """Создать новый комментарий."""
-    return await container.projects.add_comment(item_id, data)
+    return await container.projects.add_comment(item_id, user, data)
