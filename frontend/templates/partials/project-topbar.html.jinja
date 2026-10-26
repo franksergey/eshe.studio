@@ -1,6 +1,7 @@
 {% extends 'partials/topbar.html.jinja' %}
 
 {% block topbar_additional %}
+{% if user.is_superuser %}
 {% if project_users_selected %}
 <span class="persona-picker">
   <span id="persona-label">Посмотреть выбор:</span>
@@ -21,5 +22,6 @@
     </ul>
   </span>
 </span>
+{% endif %}
 {% endif %}
 {% endblock %}

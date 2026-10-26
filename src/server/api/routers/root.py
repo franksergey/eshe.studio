@@ -42,8 +42,12 @@ async def read_project_page(
         if user is not None
         else None
     )
-    users_selected = await container.users.bulk_get_users(
-        await container.selections.get_users(id)
+    users_selected = (
+        await container.users.bulk_get_users(
+            await container.selections.get_users(id)
+        )
+        if user is not None and user.is_superuser
+        else None
     )
 
     return templates.TemplateResponse(
@@ -79,8 +83,12 @@ async def read_project_category_page(
     category = await container.projects.get_categories(
         id, group_id=categories[index - 1].id
     )
-    users_selected = await container.users.bulk_get_users(
-        await container.selections.get_users(id)
+    users_selected = (
+        await container.users.bulk_get_users(
+            await container.selections.get_users(id)
+        )
+        if user is not None and user.is_superuser
+        else None
     )
     items_selected = (
         await container.selections.get_by_user(id, user)
