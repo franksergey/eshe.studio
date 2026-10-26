@@ -4,6 +4,8 @@ from typing import Annotated, Literal
 
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, HttpUrl
 
+from server.domain.users.schemas import UserID
+
 # ========================
 # Aggregate Root: Projects
 # ========================
@@ -213,7 +215,8 @@ class CommentBase(BaseModel):
     """Базовая модель комментария."""
 
     text: Annotated[str, Field(min_length=1, max_length=4096)]
-    author_name: Annotated[str, Field(min_length=1)]
+    user_id: UserID | None
+    author_name: str
 
 
 class CommentCreate(CommentBase):
