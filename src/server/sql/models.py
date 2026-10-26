@@ -203,6 +203,9 @@ class ProjectDB(Base):
         lazy="selectin",
         order_by=GroupDB.ordinal_no,
     )
+    selections: Mapped[list[SelectionDB]] = relationship(
+        back_populates="project"
+    )
 
 
 # ============
@@ -223,8 +226,6 @@ class UserDB(SQLAlchemyBaseUserTableUUID, Base):
 # Selections Domain
 # =================
 
-type GroupsSnapshot = list[int | GroupsSnapshot]
-
 
 class SelectionDB(TimestampMixin, Base):
     """Заполненная форма с выбором карточек в архитектурном проекте."""
@@ -239,12 +240,7 @@ class SelectionDB(TimestampMixin, Base):
 
     # Relations
     user: Mapped[UserDB] = relationship(back_populates="selections")
-    groups: Mapped[list[GroupSnapshotDB]] = relationship(
-        cascade="all, delete, delete-orphan",
-        passive_deletes=True,
-        lazy="selectin",
-        order_by="GroupSnapshotDB.ordinal_no",
-    )
+    project: Mapped[ProjectDB] = relationship(back_populates="selections")
     items: Mapped[list[ItemSelectionDB]] = relationship(
         cascade="all, delete, delete-orphan",
         passive_deletes=True,
@@ -252,35 +248,10 @@ class SelectionDB(TimestampMixin, Base):
     )
 
 
-class GroupSnapshotDB(Base):
-    __tablename__ = "user_item_selection_group_snapshots"
-
-    id: Mapped[int] = mapped_column(IDENTITY, primary_key=True)
-    selection_id: Mapped[int] = mapped_column(
-        ForeignKey("user_item_selections.id", ondelete="CASCADE")
-    )
-    group_id: Mapped[int | None] = mapped_column(
-        ForeignKey(
-            "user_item_selection_group_snapshots.id", ondelete="CASCADE"
-        )
-    )
-    ordinal_no: Mapped[int]
-
-    name: Mapped[str] = mapped_column(String(256))
-
-    # Relations
-    subgroups: Mapped[list[GroupSnapshotDB]] = relationship(
-        cascade="all, delete, delete-orphan",
-        passive_deletes=True,
-        lazy="selectin",
-        order_by="GroupSnapshotDB.ordinal_no",
-    )
-
-
 class ItemSelectionDB(Base):
     """Выбор конкретной карточки в рамках формы."""
 
-    __tablename__ = "user_item_selection_item_snapshots"
+    __tablename__ = "user_item_selection_items"
 
     selection_id: Mapped[int] = mapped_column(
         ForeignKey("user_item_selections.id"), primary_key=True

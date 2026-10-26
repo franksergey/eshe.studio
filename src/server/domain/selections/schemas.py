@@ -1,9 +1,8 @@
 import uuid
-from typing import Annotated, Literal
 
-from pydantic import AwareDatetime, BaseModel, ConfigDict, Field
+from pydantic import AwareDatetime, BaseModel, ConfigDict
 
-from server.domain.projects.schemas import ItemBase, ItemID, ItemType
+from server.domain.projects.schemas import ItemID
 
 
 class SelectionCreate(BaseModel):
@@ -24,31 +23,3 @@ class SelectionPure(BaseModel):
 
 class Selection(SelectionPure):
     items: list[ItemID]
-
-
-class GroupSnapshot(BaseModel):
-    item_type: Literal[ItemType.GROUP] = ItemType.GROUP
-
-    name: Annotated[str, Field(min_length=1, max_length=256)]
-
-    items: list[
-        Annotated[
-            ItemSelection | GroupSnapshot, Field(discriminator="item_type")
-        ]
-    ]
-
-    model_config = ConfigDict(
-        use_enum_values=True, from_attributes=True, serialize_by_alias=True
-    )
-
-
-class ItemSelection(ItemBase, BaseModel):
-    item_type: Literal[ItemType.ITEM] = ItemType.ITEM
-
-    item_id: int | None
-
-    approved: bool
-
-    model_config = ConfigDict(
-        use_enum_values=True, from_attributes=True, serialize_by_alias=True
-    )
