@@ -4,11 +4,11 @@ from typing import TYPE_CHECKING
 from server.api.errors import SelectionNotFoundError
 
 if TYPE_CHECKING:
-    from server.domain.projects.schemas import Project
+    from server.domain.projects.schemas import ProjectPure
     from server.domain.users.schemas import UserRead
 
     from .ports import AbstractSelectionsRepo
-    from .schemas import Selection, SelectionCreate, SelectionPure
+    from .schemas import Selection, SelectionCreate
 
 
 @dataclass(eq=False, slots=True)
@@ -23,10 +23,12 @@ class SelectionsService:
 
         return obj
 
-    async def get_by_user(self, user: UserRead) -> list[SelectionPure]:
-        return await self.repo.get_by_user(user.id)
+    async def get_by_user(
+        self, project_id: int, user: UserRead
+    ) -> Selection | None:
+        return await self.repo.get_by_user(project_id, user.id)
 
     async def create(
-        self, project: Project, data: SelectionCreate, user: UserRead
+        self, project: ProjectPure, data: SelectionCreate, user: UserRead
     ) -> None:
         await self.repo.create(project, data, user.id)

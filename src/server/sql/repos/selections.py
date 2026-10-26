@@ -1,31 +1,16 @@
-from collections import defaultdict
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Literal, cast, override
+from typing import TYPE_CHECKING, Literal, override
 
-from pydantic import HttpUrl
 from sqlalchemy import select
 
-from server.domain.projects.schemas import (
-    CurrencyCode,
-    Group,
-    Item,
-    ItemType,
-    MoneyType,
-    Project,
-)
+from server.domain.projects.schemas import Item, ItemType, ProjectPure
 from server.domain.selections.ports import AbstractSelectionsRepo
-from server.domain.selections.schemas import (
-    GroupSnapshot,
-    ItemSelection,
-    Selection,
-    SelectionCreate,
-    SelectionPure,
-)
-from server.sql.models import GroupSnapshotDB, ItemSelectionDB, SelectionDB
+from server.domain.selections.schemas import Selection, SelectionCreate
+from server.sql.models import GroupDB, ItemDB, ItemSelectionDB, SelectionDB
 
 if TYPE_CHECKING:
     import uuid
-    from collections.abc import Iterator, Mapping, Sequence
+    from collections.abc import Sequence
 
     from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -48,61 +33,13 @@ class SelectionsRepo(AbstractSelectionsRepo):
     session: AsyncSession
 
     @staticmethod
-    def _validate_item(obj: ItemSelectionDB) -> ItemSelection:
-        if obj.price is None:
-            price = None
-        else:
-            price = MoneyType(
-                amount=obj.price,
-                currency=cast("CurrencyCode", obj.price_currency),
-            )
-
-        return ItemSelection(
-            item_id=obj.item_id,
-            name=obj.name,
-            count=obj.count,
-            approved=obj.approved,
-            link=HttpUrl(obj.link) if obj.link is not None else None,
-            tags=obj.tags,
-            price=price,
-        )
-
-    @classmethod
-    def _validate_group(
-        cls,
-        obj: GroupSnapshotDB,
-        groups_map: Mapping[int | None, Sequence[GroupSnapshotDB]],
-    ) -> GroupSnapshot:
-        items: list[GroupSnapshot | ItemSelection] = [
-            *(cls._validate_item(item) for item in obj.items),
-            *[
-                cls._validate_group(subgroup, groups_map)
-                for subgroup in groups_map[obj.id]
-            ],
-        ]
-        return GroupSnapshot(name=obj.name, items=items)
-
-    @classmethod
-    def _to_domain_schema(cls, obj: SelectionDB) -> Selection:
-        groups_map: dict[int | None, list[GroupSnapshotDB]] = defaultdict(list)
-
-        for group in obj.groups:
-            groups_map[group.group_id].append(group)
-
+    def _to_domain_schema(obj: SelectionDB) -> Selection:
         return Selection(
             id=obj.id,
             user_id=obj.user_id,
+            items=[item_ref.item_id for item_ref in obj.items],
             created_at=obj.created_at,
-            items=[
-                cls._validate_group(group, groups_map)
-                for group in groups_map[None]
-            ],
-        )
-
-    @staticmethod
-    def _to_domain_schema_pure(obj: SelectionDB) -> SelectionPure:
-        return SelectionPure(
-            id=obj.id, user_id=obj.user_id, created_at=obj.created_at
+            updated_at=obj.updated_at,
         )
 
     @override
@@ -116,118 +53,44 @@ class SelectionsRepo(AbstractSelectionsRepo):
         return self._to_domain_schema(obj)
 
     @override
-    async def get_by_user(self, user_id: uuid.UUID) -> list[SelectionPure]:
-        stmt = select(SelectionDB).where(SelectionDB.user_id == user_id)
-        objs = (await self.session.scalars(stmt)).all()
-
-        return [self._to_domain_schema_pure(obj) for obj in objs]
-
-    @staticmethod
-    def _item_to_snapshot(item: Item, ordinal_no: int) -> ItemSelectionDB:
-        return ItemSelectionDB(
-            name=item.name,
-            count=item.count,
-            approved=item.approved,
-            link=str(item.link) if item.link is not None else None,
-            price=item.price.amount if item.price is not None else None,
-            price_currency=item.price.currency
-            if item.price is not None
-            else None,
-            ordinal_no=ordinal_no,
-            item_id=item.id,
-            tags=item.tags,
+    async def get_by_user(
+        self, project_id: int, user_id: uuid.UUID
+    ) -> Selection | None:
+        stmt = select(SelectionDB).where(
+            SelectionDB.project_id == project_id,
+            SelectionDB.user_id == user_id,
         )
 
-    @classmethod
-    def _group_to_snapshot(
-        cls, selection_id: int, group: ProjectSnapshotGroup, ordinal_no: int
-    ) -> GroupSnapshotDB:
-        root = GroupSnapshotDB(
-            selection_id=selection_id, name=group.name, ordinal_no=ordinal_no
+        if (obj := await self.session.scalar(stmt)) is None:
+            return None
+
+        return self._to_domain_schema(obj)
+
+    @override
+    async def get_users(self, project_id: int) -> Sequence[uuid.UUID]:
+        stmt = select(SelectionDB.user_id).where(
+            SelectionDB.project_id == project_id
         )
-        stack: list[
-            tuple[
-                GroupSnapshotDB,
-                Iterator[tuple[int, Item | ProjectSnapshotGroup]],
-            ]
-        ] = [(root, enumerate(group.items, start=STATIC_ORDINALS_START))]
-
-        while stack:
-            obj, remaining = stack[-1]
-
-            for i, item in remaining:
-                if item.item_type == ItemType.ITEM:
-                    obj.items.append(cls._item_to_snapshot(item, i))
-                else:
-                    child = GroupSnapshotDB(
-                        selection_id=selection_id, name=item.name, ordinal_no=i
-                    )
-                    obj.subgroups.append(child)
-                    stack.append(
-                        (
-                            child,
-                            enumerate(item.items, start=STATIC_ORDINALS_START),
-                        )
-                    )
-                    break
-            else:
-                stack.pop()
-
-        return root
+        return (await self.session.scalars(stmt)).all()
 
     @override
     async def create(
-        self, project: Project, data: SelectionCreate, user_id: uuid.UUID
+        self, project: ProjectPure, data: SelectionCreate, user_id: uuid.UUID
     ) -> None:
-        ids = set(data.item_ids)
+        stmt = (
+            select(ItemDB.id)
+            .join(GroupDB, ItemDB.group_id == GroupDB.id)
+            .where(GroupDB.project_id == project.id)
+            .where(ItemDB.id.in_(data.item_ids))
+        )
+        item_ids = (await self.session.scalars(stmt)).all()
 
-        def process_group(group: Group) -> ProjectSnapshotGroup:
-            root = ProjectSnapshotGroup(
-                name=group.name, items=[], has_subitems=False
-            )
-            stack: list[
-                tuple[ProjectSnapshotGroup, Iterator[Item | Group]]
-            ] = [(root, iter(group.items))]
-
-            while stack:
-                snapshot, remaining = stack[-1]
-
-                for item in remaining:
-                    if item.item_type == ItemType.ITEM:
-                        if item.id not in ids:
-                            continue
-
-                        ids.remove(item.id)
-                        snapshot.items.append(item)
-                        snapshot.has_subitems = True
-                    else:
-                        # Descend into the subgroup; resume this frame later
-                        child = ProjectSnapshotGroup(
-                            name=item.name, items=[], has_subitems=False
-                        )
-                        stack.append((child, iter(item.items)))
-                        break
-                else:
-                    # This group is fully processed
-                    stack.pop()
-
-                    if stack and snapshot.has_subitems:
-                        parent = stack[-1][0]
-                        parent.items.append(snapshot)
-                        parent.has_subitems = True
-
-            return root
-
-        tree: list[ProjectSnapshotGroup] = [
-            process_group(group) for group in project.categories
-        ]
-        selection = SelectionDB(user_id=user_id, groups=[])
+        selection = SelectionDB(
+            project_id=project.id,
+            user_id=user_id,
+            items=[ItemSelectionDB(item_id=item_id) for item_id in item_ids],
+        )
         self.session.add(selection)
-        await self.session.flush((selection,))
-
-        for i, group in enumerate(tree, start=STATIC_ORDINALS_START):
-            selection.groups.append(
-                self._group_to_snapshot(selection.id, group, i)
-            )
+        self.session.add_all(selection.items)
 
         await self.session.flush()

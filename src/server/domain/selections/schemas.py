@@ -3,11 +3,11 @@ from typing import Annotated, Literal
 
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field
 
-from server.domain.projects.schemas import ItemBase, ItemType
+from server.domain.projects.schemas import ItemBase, ItemID, ItemType
 
 
 class SelectionCreate(BaseModel):
-    item_ids: list[int]
+    item_ids: list[ItemID]
 
     model_config = ConfigDict(from_attributes=True, serialize_by_alias=True)
 
@@ -17,12 +17,13 @@ class SelectionPure(BaseModel):
 
     user_id: uuid.UUID
     created_at: AwareDatetime
+    updated_at: AwareDatetime
 
     model_config = ConfigDict(from_attributes=True, serialize_by_alias=True)
 
 
 class Selection(SelectionPure):
-    items: list[GroupSnapshot]
+    items: list[ItemID]
 
 
 class GroupSnapshot(BaseModel):

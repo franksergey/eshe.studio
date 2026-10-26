@@ -226,12 +226,15 @@ class UserDB(SQLAlchemyBaseUserTableUUID, Base):
 type GroupsSnapshot = list[int | GroupsSnapshot]
 
 
-class SelectionDB(CreatedAtMixin, Base):
+class SelectionDB(TimestampMixin, Base):
     """Заполненная форма с выбором карточек в архитектурном проекте."""
 
     __tablename__ = "user_item_selections"
 
     id: Mapped[int] = mapped_column(IDENTITY, primary_key=True)
+    project_id: Mapped[int] = mapped_column(
+        ForeignKey("projects.id", ondelete="CASCADE")
+    )
     user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"))
 
     # Relations
@@ -241,6 +244,11 @@ class SelectionDB(CreatedAtMixin, Base):
         passive_deletes=True,
         lazy="selectin",
         order_by="GroupSnapshotDB.ordinal_no",
+    )
+    items: Mapped[list[ItemSelectionDB]] = relationship(
+        cascade="all, delete, delete-orphan",
+        passive_deletes=True,
+        lazy="selectin",
     )
 
 
@@ -261,12 +269,6 @@ class GroupSnapshotDB(Base):
     name: Mapped[str] = mapped_column(String(256))
 
     # Relations
-    items: Mapped[list[ItemSelectionDB]] = relationship(
-        cascade="all, delete, delete-orphan",
-        passive_deletes=True,
-        lazy="selectin",
-        order_by="ItemSelectionDB.ordinal_no",
-    )
     subgroups: Mapped[list[GroupSnapshotDB]] = relationship(
         cascade="all, delete, delete-orphan",
         passive_deletes=True,
@@ -275,20 +277,18 @@ class GroupSnapshotDB(Base):
     )
 
 
-class ItemSelectionDB(ItemTableBase, Base):
+class ItemSelectionDB(Base):
     """Выбор конкретной карточки в рамках формы."""
 
     __tablename__ = "user_item_selection_item_snapshots"
 
-    group_id: Mapped[int] = mapped_column(
-        ForeignKey("user_item_selection_group_snapshots.id"), primary_key=True
+    selection_id: Mapped[int] = mapped_column(
+        ForeignKey("user_item_selections.id"), primary_key=True
     )
-    ordinal_no: Mapped[int] = mapped_column(primary_key=True)
-    item_id: Mapped[int | None] = mapped_column(
-        ForeignKey("project_spec_items.id", ondelete="SET NULL")
+    item_id: Mapped[int] = mapped_column(
+        ForeignKey("project_spec_items.id", ondelete="CASCADE"),
+        primary_key=True,
     )
-
-    tags: Mapped[list[str]] = mapped_column(JsonType)
 
 
 # ============
