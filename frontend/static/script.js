@@ -8,6 +8,13 @@ if (navPagesSource) {
   });
 }
 
+// Project id is read once; null if the attribute is missing or not an integer.
+const PROJECT_ID = (() => {
+  const raw = document.querySelector('main[data-project-id]')?.dataset.projectId;
+  const id = Number.parseInt(raw, 10);
+  return Number.isFinite(id) ? id : null;
+})();
+
 document.addEventListener('click', (event) => {
   const button = event.target.closest('.add-wishlist');
   if (!button) return;
@@ -206,6 +213,71 @@ document.addEventListener('input', (event) => {
 
   autosizeTextarea(textarea);
 });
+
+// ==========================================
+// CART: confirm selection
+// ==========================================
+(() => {
+  // data-item-id of every card matching the selector, as unique integers.
+  function collectItemIds(selector) {
+    const ids = new Set();
+    document.querySelectorAll(selector).forEach((li) => {
+      const id = Number.parseInt(li.getAttribute('data-item-id'), 10);
+      if (Number.isFinite(id)) ids.add(id);
+    });
+    return [...ids];
+  }
+
+  async function errorMessage(response) {
+    try {
+      const data = await response.json();
+      if (typeof data.title === 'string' && data.title) return data.title;
+      if (typeof data.detail === 'string' && data.detail) return data.detail;
+    } catch (e) {
+      // Body is empty or not JSON, fall through.
+    }
+    return `Ошибка ${response.status}`;
+  }
+
+  document.addEventListener('click', async (event) => {
+    const button = event.target.closest('#cart-confirm-button');
+    if (!button || button.disabled) return;
+
+    if (PROJECT_ID === null) {
+      console.error('Cannot confirm selection: project id not found.');
+      return;
+    }
+
+    // Approved cards (product-done) never carry product-select and are
+    // not user-selectable, so they are left out of deselect_item_ids.
+    const payload = {
+      item_ids: collectItemIds('ul.product-grid > li.product-select[data-item-id]'),
+      deselect_item_ids: collectItemIds(
+        'ul.product-grid > li[data-item-id]:not(.product-select):not(.product-done)'
+      ),
+    };
+
+    button.disabled = true;
+    try {
+      const response = await fetch(`/api/projects/${PROJECT_ID}/select`, {
+        method: 'POST',
+        credentials: 'same-origin', // cookie-based auth
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      // 201 with no body on success: the UI is intentionally left untouched.
+      if (!response.ok) {
+        alert(`Не удалось подтвердить выбор: ${await errorMessage(response)}`);
+      }
+    } catch (error) {
+      console.error('Error confirming selection:', error);
+      alert('Ошибка сети при подтверждении выбора. Проверьте подключение.');
+    } finally {
+      button.disabled = false;
+    }
+  });
+})();
 
 // ==========================================
 // COMMENTS LOGIC (API INTEGRATION)
@@ -552,8 +624,7 @@ document.addEventListener('submit', async (event) => {
   }
 
   async function loadSelection(userEmail) {
-    const projectId = document.querySelector('main[data-project-id]')?.dataset.projectId;
-    if (!projectId || !userEmail) {
+    if (PROJECT_ID === null || !userEmail) {
       console.error('Cannot load selection: missing project id or user email.');
       return;
     }
@@ -563,7 +634,7 @@ document.addEventListener('submit', async (event) => {
     const controller = new AbortController();
     activeController = controller;
 
-    const url = `/api/admin/projects/${encodeURIComponent(projectId)}/selections`
+    const url = `/api/admin/projects/${PROJECT_ID}/selections`
       + `?user_email=${encodeURIComponent(userEmail)}`;
 
     try {
