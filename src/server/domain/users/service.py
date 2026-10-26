@@ -4,6 +4,8 @@ from typing import TYPE_CHECKING
 from server.api.errors import UserNotFoundError
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable, Sequence
+
     from server.domain.users.schemas import UserID
 
     from .ports import AbstractUsersRepo
@@ -29,6 +31,11 @@ class UsersService:
             raise UserNotFoundError
 
         return user
+
+    async def bulk_get_users(
+        self, user_ids: Iterable[UserID]
+    ) -> Sequence[UserRead]:
+        return await self.repo.bulk_get_users(user_ids)
 
     async def users_table_empty(self) -> bool:
         return await self.repo.users_table_empty()

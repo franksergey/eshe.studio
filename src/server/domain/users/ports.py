@@ -1,6 +1,8 @@
 from typing import TYPE_CHECKING, Protocol
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable, Sequence
+
     from server.domain.users.schemas import UserID
 
     from .schemas import UserCreate, UserRead, UserUpdate
@@ -9,6 +11,9 @@ if TYPE_CHECKING:
 class AbstractUsersRepo(Protocol):
     async def get(self, id: UserID) -> UserRead | None: ...
     async def get_by_email(self, user_email: str) -> UserRead | None: ...
+    async def bulk_get_users(
+        self, user_ids: Iterable[UserID]
+    ) -> Sequence[UserRead]: ...
     async def users_table_empty(self) -> bool: ...
     async def create(
         self, data: UserCreate, *, safe: bool = False
