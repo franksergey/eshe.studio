@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 from server.api.errors import UserNotFoundError
 
 if TYPE_CHECKING:
-    import uuid
+    from server.domain.users.schemas import UserID
 
     from .ports import AbstractUsersRepo
     from .schemas import UserCreate, UserRead, UserUpdate
@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 class UsersService:
     repo: AbstractUsersRepo
 
-    async def get(self, id: uuid.UUID) -> UserRead:
+    async def get(self, id: UserID) -> UserRead:
         user = await self.repo.get(id)
 
         if user is None:

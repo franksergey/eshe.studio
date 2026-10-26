@@ -25,8 +25,9 @@ from sqlalchemy.orm import (
 )
 
 from server.config import settings
-from server.domain.files.schemas import ContentType
+from server.domain.files.schemas import ContentType, ObjectKey
 from server.domain.projects.schemas import CurrencyCode
+from server.domain.users.schemas import UserID
 from server.sql.mixins import CreatedAtMixin, TimestampMixin
 
 
@@ -234,7 +235,7 @@ class ChoiceDB(CreatedAtMixin, Base):
     __tablename__ = "user_choices"
 
     id: Mapped[int] = mapped_column(IDENTITY, primary_key=True)
-    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"))
+    user_id: Mapped[UserID] = mapped_column(ForeignKey("users.id"))
 
     # Relations
     user: Mapped[UserDB] = relationship(back_populates="choices")
@@ -302,14 +303,16 @@ CONTENT_TYPE_ENUM = Enum(
     values_callable=lambda obj: [item.value for item in obj],  # pyright: ignore[reportUnknownLambdaType, reportUnknownMemberType, reportUnknownVariableType]
 )
 
+type BlobID = uuid.UUID
+
 
 class StorageObjectDB(TimestampMixin, Base):
     __tablename__ = "storage_objects"
 
-    id: Mapped[uuid.UUID] = mapped_column(
+    id: Mapped[ObjectKey] = mapped_column(
         GUID, primary_key=True, default=uuid.uuid4
     )
-    blob_id: Mapped[uuid.UUID] = mapped_column(GUID, default=uuid.uuid4)
+    blob_id: Mapped[BlobID] = mapped_column(GUID, default=uuid.uuid4)
 
     size: Mapped[int]
     sha256: Mapped[str] = mapped_column(String(64))
@@ -323,7 +326,7 @@ class ImageDB(Base):
     __tablename__ = "images"
 
     id: Mapped[int] = mapped_column(IDENTITY, primary_key=True)
-    object_id: Mapped[uuid.UUID] = mapped_column(
+    object_id: Mapped[ObjectKey] = mapped_column(
         ForeignKey("storage_objects.id", ondelete="CASCADE")
     )
 

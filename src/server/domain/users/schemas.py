@@ -2,8 +2,10 @@ import uuid
 
 from fastapi_users.schemas import BaseUser, BaseUserCreate, BaseUserUpdate
 
+type UserID = uuid.UUID
 
-class UserRead(BaseUser[uuid.UUID]):
+
+class UserRead(BaseUser[UserID]):
     @property
     def first_name(self) -> str:
         return self.email

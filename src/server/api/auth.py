@@ -1,5 +1,4 @@
 import logging
-import uuid
 from datetime import timedelta
 from typing import TYPE_CHECKING, override
 
@@ -11,6 +10,7 @@ from fastapi_users.authentication import (
 )
 
 from server.config import settings
+from server.domain.users.schemas import UserID
 from server.sql.models import UserDB
 
 if TYPE_CHECKING:
@@ -23,7 +23,7 @@ cookie_transport = CookieTransport(
 )
 
 
-def get_jwt_strategy() -> JWTStrategy[UserDB, uuid.UUID]:
+def get_jwt_strategy() -> JWTStrategy[UserDB, UserID]:
     return JWTStrategy(secret=settings.secret, lifetime_seconds=3600)
 
 
@@ -32,7 +32,7 @@ auth_backend = AuthenticationBackend(
 )
 
 
-class UserManager(UUIDIDMixin, BaseUserManager[UserDB, uuid.UUID]):
+class UserManager(UUIDIDMixin, BaseUserManager[UserDB, UserID]):
     reset_password_token_secret = settings.secret
     verification_token_secret = settings.secret
 

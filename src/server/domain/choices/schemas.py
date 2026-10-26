@@ -1,9 +1,9 @@
-import uuid
 from typing import Annotated, Literal
 
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field
 
 from server.domain.projects.schemas import ItemBase, ItemType
+from server.domain.users.schemas import UserID
 
 
 class ChoiceCreate(BaseModel):
@@ -15,7 +15,7 @@ class ChoiceCreate(BaseModel):
 class ChoicePure(BaseModel):
     id: int
 
-    user_id: uuid.UUID
+    user_id: UserID
     created_at: AwareDatetime
 
     model_config = ConfigDict(from_attributes=True, serialize_by_alias=True)

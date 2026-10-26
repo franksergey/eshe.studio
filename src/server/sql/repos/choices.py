@@ -24,10 +24,11 @@ from server.domain.projects.schemas import (
 from server.sql.models import ChoiceDB, GroupSnapshotDB, ItemChoiceDB
 
 if TYPE_CHECKING:
-    import uuid
     from collections.abc import Iterator, Mapping, Sequence
 
     from sqlalchemy.ext.asyncio import AsyncSession
+
+    from server.domain.users.schemas import UserID
 
 
 STATIC_ORDINALS_START: int = 0
@@ -116,7 +117,7 @@ class ChoicesRepo(AbstractChoicesRepo):
         return self._to_domain_schema(obj)
 
     @override
-    async def get_by_user(self, user_id: uuid.UUID) -> list[ChoicePure]:
+    async def get_by_user(self, user_id: UserID) -> list[ChoicePure]:
         stmt = select(ChoiceDB).where(ChoiceDB.user_id == user_id)
         objs = (await self.session.scalars(stmt)).all()
 
@@ -177,7 +178,7 @@ class ChoicesRepo(AbstractChoicesRepo):
 
     @override
     async def create(
-        self, project: Project, data: ChoiceCreate, user_id: uuid.UUID
+        self, project: Project, data: ChoiceCreate, user_id: UserID
     ) -> None:
         ids = set(data.item_ids)
 

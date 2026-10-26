@@ -1,4 +1,3 @@
-import uuid
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
@@ -8,7 +7,12 @@ from sqlalchemy import select
 
 from server.api.errors import UserAlreadyExistsError
 from server.domain.users.ports import AbstractUsersRepo
-from server.domain.users.schemas import UserCreate, UserRead, UserUpdate
+from server.domain.users.schemas import (
+    UserCreate,
+    UserID,
+    UserRead,
+    UserUpdate,
+)
 from server.sql.models import UserDB
 
 if TYPE_CHECKING:
@@ -17,7 +21,7 @@ if TYPE_CHECKING:
     from server.api.auth import UserManager
 
 
-class UserDatabase(SQLAlchemyUserDatabase[UserDB, uuid.UUID]):
+class UserDatabase(SQLAlchemyUserDatabase[UserDB, UserID]):
     async def users_table_empty(self) -> bool:
         stmt = select(select(self.user_table).exists())
         return not (await self.session.execute(stmt)).scalar_one()
@@ -39,7 +43,7 @@ class UsersRepo(AbstractUsersRepo):
             is_verified=user.is_verified,
         )
 
-    async def get(self, id: uuid.UUID) -> UserRead | None:
+    async def get(self, id: UserID) -> UserRead | None:
         user = await self.users_db.get(id)
 
         if user is None:

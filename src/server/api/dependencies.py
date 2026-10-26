@@ -1,4 +1,3 @@
-import uuid
 from collections.abc import AsyncGenerator, Awaitable, Callable
 from typing import Annotated, Any
 
@@ -6,7 +5,7 @@ from fastapi import Depends, Request
 from fastapi_users import BaseUserManager, FastAPIUsers
 
 from server.api.auth import auth_backend
-from server.domain.users.schemas import UserRead
+from server.domain.users.schemas import UserID, UserRead
 from server.sql.models import UserDB
 
 from .container import ContainerGetter, ServiceContainer
@@ -36,11 +35,11 @@ ContainerDependency = Annotated[ServiceContainer, Depends(get_container)]
 @dependency
 async def get_user_manager(
     container: ContainerDependency,
-) -> AsyncGenerator[BaseUserManager[UserDB, uuid.UUID]]:
+) -> AsyncGenerator[BaseUserManager[UserDB, UserID]]:
     yield container.user_manager
 
 
-fastapi_users = FastAPIUsers[UserDB, uuid.UUID](
+fastapi_users = FastAPIUsers[UserDB, UserID](
     # BUG: Swapped type params # pyrefly: ignore [bad-argument-type]
     get_user_manager,
     [auth_backend],
