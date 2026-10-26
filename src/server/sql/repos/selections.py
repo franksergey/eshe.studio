@@ -134,7 +134,11 @@ class SelectionsRepo(AbstractSelectionsRepo):
             self.session.add_all(selection.items)
         else:
             selected_ids = {item.item_id for item in selection.items}
-            to_delete = selected_ids - item_ids
+            to_delete = (
+                selected_ids - item_ids
+                if data.deselect_item_ids is None
+                else selected_ids & data.deselect_item_ids
+            )
 
             stmt = delete(ItemSelectionDB).where(
                 ItemSelectionDB.selection_id == selection.id,

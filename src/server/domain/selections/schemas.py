@@ -1,11 +1,12 @@
-from pydantic import AwareDatetime, BaseModel, ConfigDict
+from pydantic import AwareDatetime, BaseModel, ConfigDict, Field
 
 from server.domain.projects.schemas import ItemID
 from server.domain.users.schemas import UserID
 
 
 class SelectionCreate(BaseModel):
-    item_ids: list[ItemID]
+    item_ids: set[ItemID]
+    deselect_item_ids: set[ItemID] | None = Field(None)
 
     model_config = ConfigDict(from_attributes=True, serialize_by_alias=True)
 
