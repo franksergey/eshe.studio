@@ -132,11 +132,13 @@
         <nav>
           <div>
             <ul class="nav-section">
+            {% if category.has_groups %}
               {% for item in category.items %}
-                {% if item.item_type == "group" %}
-                  {{ nav_section(item) }}
-                {% endif %}
+                {{ nav_section(item) }}
               {% endfor %}
+            {% else %}
+              {{ nav_section(category) }}
+            {% endif %}
             </ul>
           </div>
           <!-- <h3>Мебель</h3> -->
@@ -144,11 +146,13 @@
         </nav>
 
         <article class="content"> <!-- Контент -->
-          {% for item in category.items %}
-            {% if item.item_type == "group" %}
+          {% if category.has_groups %}
+            {% for item in category.items %}
               {{ content_tree(item) }}
-            {% endif %}
-          {% endfor %}
+            {% endfor %}
+          {% else %}
+            {{ content_tree(category) }}
+          {% endif %}
         </article>
 
         <aside class="cart-panel"> <!-- Карзина -->
