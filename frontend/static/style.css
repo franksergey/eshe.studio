@@ -311,11 +311,10 @@ button {
     }
   }
 
-  & select {
-    appearance: none;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    border: none;
+  & .persona-toggle {
+    all: unset;
+    cursor: pointer;
+    box-sizing: border-box;
 
     font-size: 1em;
     font-weight: 300;
@@ -324,8 +323,58 @@ button {
     color: rgba(var(--text-color-inverse-RGB), 1);
     background-color: rgba(var(--link-color-RGB), 1);
 
-    & option {
+    &:focus-visible {
+      outline: 2px solid rgba(var(--text-color-RGB), 1);
+      outline-offset: 2px;
+    }
+  }
+
+  & .select-wrapper.is-open::after {
+    transform: translateY(-35%) rotate(180deg);
+  }
+
+  & .persona-list {
+    /* fixed: the header's overflow:hidden must not clip it; JS sets top/left/min-width */
+    position: fixed;
+    z-index: 20;
+    margin: 0;
+    padding: 0.3em;
+    list-style: none;
+    max-height: 60vh;
+    overflow-y: auto;
+    border-radius: 0.8em;
+
+    background-color: rgba(var(--background-color-RGB), 1);
+    box-shadow: 0 0 1em #0000001a;
+
+    &[hidden] {
+      display: none;
+    }
+
+    & li {
+      display: block;
+    }
+
+    & [role="option"] {
+      all: unset;
+      display: block;
+      box-sizing: border-box;
+      width: 100%;
+      cursor: pointer;
+      white-space: nowrap;
       font-weight: 300;
+      padding: 0.2em 0.8em;
+      border-radius: 0.6em;
+
+      &:hover,
+      &:focus-visible {
+        color: rgba(var(--text-color-inverse-RGB), 1);
+        background-color: rgba(var(--link-color-RGB), 1);
+      }
+
+      &[aria-selected="true"] {
+        font-weight: 600;
+      }
     }
   }
 

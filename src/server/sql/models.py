@@ -36,9 +36,7 @@ class Base(DeclarativeBase):
             "ix": "ix_%(table_name)s_%(column_0_label)s",
             "uq": "uq_%(table_name)s_%(column_0_name)s",
             "ck": "ck_%(table_name)s_%(constraint_name)s",
-            "fk": (
-                "fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s"
-            ),
+            "fk": ("fk_%(table_name)s_%(column_0_name)s"),
             "pk": "pk_%(table_name)s",
         }
     )
@@ -205,6 +203,9 @@ class ProjectDB(Base):
         lazy="selectin",
         order_by=GroupDB.ordinal_no,
     )
+    selections: Mapped[list[SelectionDB]] = relationship(
+        back_populates="project"
+    )
 
 
 # ============
@@ -229,79 +230,51 @@ class UserDB(Base):
     is_verified: Mapped[bool] = mapped_column(default=False)
 
     # Relations
-    choices: Mapped[list[ChoiceDB]] = relationship(
-        back_populates="user", order_by="ChoiceDB.created_at"
+    selections: Mapped[list[SelectionDB]] = relationship(
+        back_populates="user", order_by="SelectionDB.created_at"
     )
 
 
-# ==============
-# Choices Domain
-# ==============
-
-type GroupsSnapshot = list[int | GroupsSnapshot]
+# =================
+# Selections Domain
+# =================
 
 
-class ChoiceDB(CreatedAtMixin, Base):
+class SelectionDB(TimestampMixin, Base):
     """Заполненная форма с выбором карточек в архитектурном проекте."""
 
-    __tablename__ = "user_choices"
+    __tablename__ = "user_item_selections"
 
     id: Mapped[int] = mapped_column(IDENTITY, primary_key=True)
-    user_id: Mapped[UserID] = mapped_column(ForeignKey("users.id"))
+    project_id: Mapped[int] = mapped_column(
+        ForeignKey("projects.id", ondelete="CASCADE")
+    )
+    user_id: Mapped[UserID] = mapped_column(
+        ForeignKey("users.id"), unique=True
+    )
 
     # Relations
-    user: Mapped[UserDB] = relationship(back_populates="choices")
-    groups: Mapped[list[GroupSnapshotDB]] = relationship(
+    user: Mapped[UserDB] = relationship(back_populates="selections")
+    project: Mapped[ProjectDB] = relationship(back_populates="selections")
+    items: Mapped[list[ItemSelectionDB]] = relationship(
         cascade="all, delete, delete-orphan",
         passive_deletes=True,
         lazy="selectin",
-        order_by="GroupSnapshotDB.ordinal_no",
     )
 
 
-class GroupSnapshotDB(Base):
-    __tablename__ = "user_item_choice_groups"
-
-    id: Mapped[int] = mapped_column(IDENTITY, primary_key=True)
-    choice_id: Mapped[int] = mapped_column(
-        ForeignKey("user_choices.id", ondelete="CASCADE")
-    )
-    group_id: Mapped[int | None] = mapped_column(
-        ForeignKey("user_item_choice_groups.id", ondelete="CASCADE")
-    )
-    ordinal_no: Mapped[int]
-
-    name: Mapped[str] = mapped_column(String(256))
-
-    # Relations
-    items: Mapped[list[ItemChoiceDB]] = relationship(
-        cascade="all, delete, delete-orphan",
-        passive_deletes=True,
-        lazy="selectin",
-        order_by="ItemChoiceDB.ordinal_no",
-    )
-    subgroups: Mapped[list[GroupSnapshotDB]] = relationship(
-        cascade="all, delete, delete-orphan",
-        passive_deletes=True,
-        lazy="selectin",
-        order_by="GroupSnapshotDB.ordinal_no",
-    )
-
-
-class ItemChoiceDB(ItemTableBase, Base):
+class ItemSelectionDB(Base):
     """Выбор конкретной карточки в рамках формы."""
 
-    __tablename__ = "user_item_choices"
+    __tablename__ = "user_item_selection_items"
 
-    group_id: Mapped[int] = mapped_column(
-        ForeignKey("user_item_choice_groups.id"), primary_key=True
+    selection_id: Mapped[int] = mapped_column(
+        ForeignKey("user_item_selections.id"), primary_key=True
     )
-    ordinal_no: Mapped[int] = mapped_column(primary_key=True)
-    item_id: Mapped[int | None] = mapped_column(
-        ForeignKey("project_spec_items.id", ondelete="SET NULL")
+    item_id: Mapped[int] = mapped_column(
+        ForeignKey("project_spec_items.id", ondelete="CASCADE"),
+        primary_key=True,
     )
-
-    tags: Mapped[list[str]] = mapped_column(JsonType)
 
 
 # ============

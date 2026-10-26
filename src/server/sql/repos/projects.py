@@ -161,16 +161,10 @@ class ProjectsRepo(AbstractProjectsRepo):
 
     @override
     async def get_category(
-        self, project_id: int, index: int = 0
+        self, project_id: int, group_id: int
     ) -> GroupOnlyItems | None:
-        stmt = (
-            select(GroupDB)
-            .where(
-                GroupDB.project_id == project_id, GroupDB.group_id.is_(None)
-            )
-            .order_by(GroupDB.ordinal_no)
-            .limit(1)
-            .offset(index)
+        stmt = select(GroupDB).where(
+            GroupDB.project_id == project_id, GroupDB.id == group_id
         )
         obj = await self.session.scalar(stmt)
 

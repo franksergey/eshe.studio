@@ -3,6 +3,7 @@ from fastapi.responses import HTMLResponse
 
 from server.api.common import templates
 from server.api.dependencies import ContainerDependency, OptionalUserDependency
+from server.api.errors import GroupNotFoundError
 
 router = APIRouter(prefix="", tags=["Root Router"])
 
@@ -30,8 +31,24 @@ async def read_project_page(
     container: ContainerDependency,
 ) -> HTMLResponse:
     project = await container.projects.get_pure(id)
-    category = await container.projects.get_categories(id)
     categories = await container.projects.get_categories_pure(id)
+
+    if not categories:
+        raise GroupNotFoundError
+
+    category = await container.projects.get_categories(id, categories[0].id)
+    items_selected = (
+        await container.selections.get_by_user(id, user)
+        if user is not None
+        else None
+    )
+    users_selected = (
+        await container.users.bulk_get_users(
+            await container.selections.get_users(id)
+        )
+        if user is not None and user.is_superuser
+        else None
+    )
 
     return templates.TemplateResponse(
         request=request,
@@ -41,6 +58,10 @@ async def read_project_page(
             "user": user,
             "category": category,
             "categories": categories,
+            "project_users_selected": users_selected,
+            "items_selected": items_selected.items
+            if items_selected is not None
+            else None,
         },
     )
 
@@ -54,8 +75,26 @@ async def read_project_category_page(
     container: ContainerDependency,
 ) -> HTMLResponse:
     project = await container.projects.get_pure(id)
-    category = await container.projects.get_categories(id, index=index - 1)
     categories = await container.projects.get_categories_pure(id)
+
+    if index < 1 or len(categories) < index:
+        raise GroupNotFoundError
+
+    category = await container.projects.get_categories(
+        id, group_id=categories[index - 1].id
+    )
+    users_selected = (
+        await container.users.bulk_get_users(
+            await container.selections.get_users(id)
+        )
+        if user is not None and user.is_superuser
+        else None
+    )
+    items_selected = (
+        await container.selections.get_by_user(id, user)
+        if user is not None
+        else None
+    )
 
     return templates.TemplateResponse(
         request=request,
@@ -65,6 +104,10 @@ async def read_project_category_page(
             "user": user,
             "category": category,
             "categories": categories,
+            "project_users_selected": users_selected,
+            "items_selected": items_selected.items
+            if items_selected is not None
+            else None,
         },
     )
 

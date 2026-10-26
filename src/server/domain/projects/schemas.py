@@ -112,6 +112,8 @@ class Group(GroupOnlyItems):
 # Tree leaf: Item
 # ===============
 
+type ItemID = int
+
 
 class ItemBase(BaseModel):
     """Базовая модель для карточки."""
@@ -154,7 +156,7 @@ class ItemUpdate(BaseModel):
 class ItemPure(ItemBase):
     """Модель карточки без внешних связей."""
 
-    id: int
+    id: ItemID
 
     approved: bool
 
@@ -168,7 +170,7 @@ class Item(ItemPure):
 
 
 class ItemOnlyComments(BaseModel):
-    id: int
+    id: ItemID
     comments: list[Comment]
 
 

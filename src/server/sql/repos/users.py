@@ -16,6 +16,8 @@ from server.domain.users.schemas import (
 from server.sql.models import UserDB
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable, Sequence
+
     from fastapi import Request
     from fastapi_users.models import OAuthAccountProtocol
     from fastapi_users_db_sqlalchemy import SQLAlchemyBaseOAuthAccountTable
@@ -70,6 +72,14 @@ class UserDatabase(SQLAlchemyUserDatabase[UserRead, UserID]):
             return None
 
         return self._to_domain_schema(obj)
+
+    async def bulk_get_users(
+        self, user_ids: Iterable[UserID]
+    ) -> Sequence[UserRead]:
+        stmt = select(UserDB).where(UserDB.id.in_(user_ids))
+        users = (await self.session.scalars(stmt)).unique().all()
+
+        return [self._to_domain_schema(user) for user in users]
 
     @override
     async def get_by_oauth_account(
@@ -133,15 +143,25 @@ class UsersRepo(AbstractUsersRepo):
     user_manager: UserManager
     request: Request | None
 
+    @override
     async def get(self, id: UserID) -> UserRead | None:
         return await self.users_db.get(id)
 
+    @override
     async def get_by_email(self, user_email: str) -> UserRead | None:
         return await self.users_db.get_by_email(user_email)
 
+    @override
+    async def bulk_get_users(
+        self, user_ids: Iterable[UserID]
+    ) -> Sequence[UserRead]:
+        return await self.users_db.bulk_get_users(user_ids)
+
+    @override
     async def users_table_empty(self) -> bool:
         return await self.users_db.users_table_empty()
 
+    @override
     async def create(
         self, data: UserCreate, *, safe: bool = False
     ) -> UserRead:
@@ -153,6 +173,7 @@ class UsersRepo(AbstractUsersRepo):
         except exceptions.UserAlreadyExists as exc:
             raise UserAlreadyExistsError from exc
 
+    @override
     async def update(
         self, user_email: str, data: UserUpdate, *, safe: bool = False
     ) -> UserRead | None:
@@ -165,6 +186,7 @@ class UsersRepo(AbstractUsersRepo):
             data, user, safe=safe, request=self.request
         )
 
+    @override
     async def delete(self, user_email: str) -> UserRead | None:
         user = await self.users_db.get_by_email(user_email)
 

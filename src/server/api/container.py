@@ -7,15 +7,15 @@ from typing import TYPE_CHECKING, Protocol, Self, override
 from pydantic import HttpUrl
 from sqlalchemy.exc import DBAPIError
 
-from server.domain.choices.services import ChoicesService
 from server.domain.files.processor import ImagesProcessor
 from server.domain.files.service import FilesService, ImagesService
 from server.domain.projects.service import ProjectsService
+from server.domain.selections.services import SelectionsService
 from server.domain.users.service import UsersService
 from server.sql.repos import ProjectsRepo, UserDatabase, UsersRepo
-from server.sql.repos.choices import ChoicesRepo
 from server.sql.repos.files import LocalObjectsStorage
 from server.sql.repos.images import ImagesRepo
+from server.sql.repos.selections import SelectionsRepo
 
 from .auth import UserManager
 
@@ -52,7 +52,7 @@ class ServiceContainer(AbstractAsyncContextManager["ServiceContainer"]):
         self.temp_dir = temp_dir
 
         self._projects_service = None
-        self._choices_service = None
+        self._selections_service = None
         self._users_service = None
         self._files_service = None
         self._objects_storage = None
@@ -131,15 +131,15 @@ class ServiceContainer(AbstractAsyncContextManager["ServiceContainer"]):
 
         return self._projects_service
 
-    _choices_service: ChoicesService | None
+    _selections_service: SelectionsService | None
 
     @property
-    def choices(self) -> ChoicesService:
-        if self._choices_service is None:
-            repo = ChoicesRepo(self.session)
-            self._choices_service = ChoicesService(repo)
+    def selections(self) -> SelectionsService:
+        if self._selections_service is None:
+            repo = SelectionsRepo(self.session)
+            self._selections_service = SelectionsService(repo)
 
-        return self._choices_service
+        return self._selections_service
 
     _users_service: UsersService | None
 
