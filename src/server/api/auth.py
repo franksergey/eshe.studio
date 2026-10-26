@@ -15,15 +15,18 @@ from server.domain.users.schemas import UserID, UserRead
 if TYPE_CHECKING:
     from fastapi import Request
 
+AUTH_TOKEN_DURATION = round(timedelta(days=14).total_seconds())
+
 logger = logging.getLogger(__name__)
 cookie_transport = CookieTransport(
-    cookie_name="auth_token",
-    cookie_max_age=round(timedelta(days=14).total_seconds()),
+    cookie_name="auth_token", cookie_max_age=AUTH_TOKEN_DURATION
 )
 
 
 def get_jwt_strategy() -> JWTStrategy[UserRead, UserID]:
-    return JWTStrategy(secret=settings.secret, lifetime_seconds=3600)
+    return JWTStrategy(
+        secret=settings.secret, lifetime_seconds=AUTH_TOKEN_DURATION
+    )
 
 
 auth_backend = AuthenticationBackend(
