@@ -2,7 +2,6 @@ import uuid
 from decimal import Decimal
 from typing import ClassVar
 
-from fastapi_users.db import SQLAlchemyBaseUserTableUUID
 from fastapi_users_db_sqlalchemy.generics import GUID
 from sqlalchemy import (
     JSON,
@@ -213,8 +212,19 @@ class ProjectDB(Base):
 # ============
 
 
-class UserDB(SQLAlchemyBaseUserTableUUID, Base):
+class UserDB(Base):
     __tablename__ = "users"
+
+    id: Mapped[UserID] = mapped_column(
+        GUID, primary_key=True, default=uuid.uuid4
+    )
+    email: Mapped[str] = mapped_column(
+        String(length=320), unique=True, index=True
+    )
+    hashed_password: Mapped[str] = mapped_column(String(length=1024))
+    is_active: Mapped[bool] = mapped_column(default=True)
+    is_superuser: Mapped[bool] = mapped_column(default=False)
+    is_verified: Mapped[bool] = mapped_column(default=False)
 
     # Relations
     choices: Mapped[list[ChoiceDB]] = relationship(

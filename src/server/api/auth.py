@@ -10,8 +10,7 @@ from fastapi_users.authentication import (
 )
 
 from server.config import settings
-from server.domain.users.schemas import UserID
-from server.sql.models import UserDB
+from server.domain.users.schemas import UserID, UserRead
 
 if TYPE_CHECKING:
     from fastapi import Request
@@ -23,7 +22,7 @@ cookie_transport = CookieTransport(
 )
 
 
-def get_jwt_strategy() -> JWTStrategy[UserDB, UserID]:
+def get_jwt_strategy() -> JWTStrategy[UserRead, UserID]:
     return JWTStrategy(secret=settings.secret, lifetime_seconds=3600)
 
 
@@ -32,13 +31,13 @@ auth_backend = AuthenticationBackend(
 )
 
 
-class UserManager(UUIDIDMixin, BaseUserManager[UserDB, UserID]):
+class UserManager(UUIDIDMixin, BaseUserManager[UserRead, UserID]):
     reset_password_token_secret = settings.secret
     verification_token_secret = settings.secret
 
     @override
     async def on_after_register(
-        self, user: UserDB, request: Request | None = None
+        self, user: UserRead, request: Request | None = None
     ) -> None:
         logger.info(
             "User %r with email %r has been registered.", user.id, user.email
@@ -46,7 +45,7 @@ class UserManager(UUIDIDMixin, BaseUserManager[UserDB, UserID]):
 
     @override
     async def on_after_request_verify(
-        self, user: UserDB, token: str, request: Request | None = None
+        self, user: UserRead, token: str, request: Request | None = None
     ) -> None:
         logger.info(
             "Verification request for user %r with email %r."
@@ -58,7 +57,7 @@ class UserManager(UUIDIDMixin, BaseUserManager[UserDB, UserID]):
 
     @override
     async def on_after_forgot_password(
-        self, user: UserDB, token: str, request: Request | None = None
+        self, user: UserRead, token: str, request: Request | None = None
     ) -> None:
         logger.info(
             "User %r with email %r has forgotten their password. "
@@ -70,7 +69,7 @@ class UserManager(UUIDIDMixin, BaseUserManager[UserDB, UserID]):
 
     @override
     async def on_after_reset_password(
-        self, user: UserDB, request: Request | None = None
+        self, user: UserRead, request: Request | None = None
     ) -> None:
         logger.info(
             "User %r with email %r has successfully reset their password.",
