@@ -21,12 +21,21 @@ from server.domain.projects.schemas import (
     Project,
     ProjectPure,
 )
-from server.sql.models import CommentDB, GroupDB, ImageDB, ItemDB, ProjectDB
+from server.sql.models import (
+    CommentDB,
+    GroupDB,
+    ImageDB,
+    ItemDB,
+    ProjectDB,
+    UserDB,
+)
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterable
 
     from sqlalchemy.ext.asyncio import AsyncSession
+
+    from server.domain.users.schemas import UserID
 
 
 @dataclass(eq=False, slots=True)
@@ -35,12 +44,19 @@ class ProjectsRepo(AbstractProjectsRepo):
     get_image_url: Callable[[ImageRef], HttpUrl]
 
     @classmethod
-    def _validate_comment(cls, obj: CommentDB) -> Comment:
+    def _validate_comment(
+        cls, obj: CommentDB, author: UserDB | None
+    ) -> Comment:
         return Comment(
             id=obj.id,
             text=obj.text,
-            author_name=obj.author_name,
             created_at=obj.created_at,
+            user_id=obj.user_id,
+            author_name="Deleted User"
+            if author is None
+            else author.first_name
+            if author.last_name is None
+            else f"{author.first_name} {author.last_name}",
         )
 
     def _validate_item(self, obj: ItemDB) -> Item:
@@ -206,17 +222,21 @@ class ProjectsRepo(AbstractProjectsRepo):
 
     @override
     async def get_item_comments(self, item_id: int) -> list[Comment] | None:
-        stmt = (
-            select(ItemDB)
-            .options(load_only(ItemDB.id), selectinload(ItemDB.comments))
-            .where(ItemDB.id == item_id)
-        )
-        obj = await self.session.scalar(stmt)
+        stmt = select(exists(ItemDB).where(ItemDB.id == item_id))
 
-        if obj is None:
+        if not (await self.session.execute(stmt)).scalar_one():
             return None
 
-        return [self._validate_comment(comment) for comment in obj.comments]
+        stmt = (
+            select(CommentDB)
+            .options(selectinload(CommentDB.author))
+            .where(CommentDB.item_id == item_id)
+        )
+        objs = (await self.session.scalars(stmt)).unique().all()
+
+        return [
+            self._validate_comment(comment, comment.author) for comment in objs
+        ]
 
     @override
     async def bulk_get_item_comments(
@@ -225,7 +245,10 @@ class ProjectsRepo(AbstractProjectsRepo):
         ids = frozenset(item_ids)
         stmt = (
             select(ItemDB)
-            .options(load_only(ItemDB.id), selectinload(ItemDB.comments))
+            .options(
+                load_only(ItemDB.id),
+                selectinload(ItemDB.comments).selectinload(CommentDB.author),
+            )
             .where(ItemDB.id.in_(ids))
         )
         objs = (await self.session.scalars(stmt)).all()
@@ -234,7 +257,8 @@ class ProjectsRepo(AbstractProjectsRepo):
             obj.id: ItemOnlyComments(
                 id=obj.id,
                 comments=[
-                    self._validate_comment(comment) for comment in obj.comments
+                    self._validate_comment(comment, comment.author)
+                    for comment in obj.comments
                 ],
             )
             for obj in objs
@@ -244,7 +268,7 @@ class ProjectsRepo(AbstractProjectsRepo):
     # NOTE: Should it return new data of ItemDB?
     @override
     async def add_comment(
-        self, item_id: int, data: CommentCreate
+        self, item_id: int, user_id: UserID, data: CommentCreate
     ) -> Comment | None:
         stmt = (
             select(ItemDB)
@@ -256,9 +280,7 @@ class ProjectsRepo(AbstractProjectsRepo):
         if item is None:
             return None
 
-        obj = CommentDB(
-            item_id=item_id, text=data.text, author_name=data.author_name
-        )
+        obj = CommentDB(item_id=item_id, user_id=user_id, text=data.text)
         state = inspect(item)
 
         if "comments" not in state.unloaded:
@@ -268,7 +290,8 @@ class ProjectsRepo(AbstractProjectsRepo):
             self.session.add(obj)
             await self.session.flush((obj,))
 
-        return self._validate_comment(obj)
+        await self.session.refresh(obj, ("author",))
+        return self._validate_comment(obj, obj.author)
 
     async def get_item_image(self, item_id: int) -> ImageRef | None:
         stmt = (

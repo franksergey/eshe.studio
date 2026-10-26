@@ -75,12 +75,15 @@ class CommentDB(Base, CreatedAtMixin):
     item_id: Mapped[int] = mapped_column(
         ForeignKey("project_spec_items.id", ondelete="CASCADE")
     )
+    user_id: Mapped[UserID | None] = mapped_column(
+        ForeignKey("users.id", ondelete="SET NULL")
+    )
 
     text: Mapped[str] = mapped_column(String(4096))
-    author_name: Mapped[str] = mapped_column(String(128))
 
     # Relations
     item: Mapped[ItemDB] = relationship(back_populates="comments")
+    author: Mapped[UserDB] = relationship()
 
 
 PYDANTIC_MAX_URL_LENGTH = 2083

@@ -30,15 +30,17 @@
         </button>
         <div class="comments">
           <div class="comments-list"></div>
-          <form class="comments-form">
-            <button type="button" class="comments-toggle" aria-label="Комментарий">
-              <svg class="icon" aria-hidden="true"><use href="#icon-buttom-comments"></use></svg>
-            </button>
-            <textarea name="comment" placeholder="Комментарий" rows="1" autocomplete="off"></textarea>
-            <button type="submit" class="comments-send" aria-label="Отправить комментарий">
-              <svg class="icon" aria-hidden="true"><use href="#icon-send-comment"></use></svg>
-            </button>
-          </form>
+          {% if not user is none %}
+            <form class="comments-form">
+              <button type="button" class="comments-toggle" aria-label="Комментарий">
+                <svg class="icon" aria-hidden="true"><use href="#icon-buttom-comments"></use></svg>
+              </button>
+              <textarea name="comment" placeholder="Комментарий" rows="1" autocomplete="off"></textarea>
+              <button type="submit" class="comments-send" aria-label="Отправить комментарий">
+                <svg class="icon" aria-hidden="true"><use href="#icon-send-comment"></use></svg>
+              </button>
+            </form>
+          {% endif %}
         </div>
       </div>
 
