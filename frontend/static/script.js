@@ -283,32 +283,7 @@ document.addEventListener('input', (event) => {
 // COMMENTS LOGIC (API INTEGRATION)
 // ==========================================
 
-// 1. Author Name Management
-let currentAuthorName = null;
-
-try {
-  currentAuthorName = localStorage.getItem('author_name');
-} catch (e) {
-  // LocalStorage might be blocked by browser settings
-}
-
-function getAuthorName() {
-  if (currentAuthorName) return currentAuthorName;
-
-  const name = prompt("Пожалуйста, введите ваше имя для оставления комментариев:");
-  if (name && name.trim()) {
-    currentAuthorName = name.trim();
-    try {
-      localStorage.setItem('author_name', currentAuthorName);
-    } catch (e) {
-      console.warn("Не удалось сохранить имя в localStorage.");
-    }
-    return currentAuthorName;
-  }
-  return null;
-}
-
-// 2. Helper to create a comment DOM element
+// 1. Helper to create a comment DOM element
 function createCommentElement(text, authorName) {
   const comment = document.createElement('div');
   comment.className = 'comment';
@@ -318,7 +293,7 @@ function createCommentElement(text, authorName) {
   return comment;
 }
 
-// 3. Fetch comments on page load (single bulk request)
+// 2. Fetch comments on page load (single bulk request)
 async function loadComments(root = document) {
   const items = [...root.querySelectorAll('li[data-item-id]')];
   if (!items.length) return;
@@ -377,7 +352,7 @@ if (document.readyState === 'loading') {
   loadComments();
 }
 
-// 4. Handle Comment Submission
+// 3. Handle Comment Submission
 document.addEventListener('submit', async (event) => {
   const form = event.target.closest('.comments-form');
   if (!form) return;
@@ -395,12 +370,6 @@ document.addEventListener('submit', async (event) => {
 
   if (!text) return;
 
-  const authorName = getAuthorName();
-  if (!authorName) {
-    alert("Имя обязательно для отправки комментария.");
-    return;
-  }
-
   // Disable form while submitting
   const submitBtn = form.querySelector('.comments-send');
   textarea.disabled = true;
@@ -413,8 +382,7 @@ document.addEventListener('submit', async (event) => {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        text: text,
-        author_name: authorName
+        text: text
       })
     });
 
