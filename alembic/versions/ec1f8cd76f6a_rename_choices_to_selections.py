@@ -1,7 +1,7 @@
 """Rename choices to selections
 
 Revision ID: ec1f8cd76f6a
-Revises: 10d5c6c051f1
+Revises: 0bb96a74c5ed
 Create Date: 2026-10-24 14:56:58.937033
 
 """
@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 
 # revision identifiers, used by Alembic.
 revision: str = "ec1f8cd76f6a"
-down_revision: str | Sequence[str] | None = "10d5c6c051f1"
+down_revision: str | Sequence[str] | None = "0bb96a74c5ed"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 
