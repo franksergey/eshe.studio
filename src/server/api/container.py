@@ -12,7 +12,6 @@ from server.domain.files.service import FilesService, ImagesService
 from server.domain.projects.service import ProjectsService
 from server.domain.selections.services import SelectionsService
 from server.domain.users.service import UsersService
-from server.sql.models import UserDB
 from server.sql.repos import ProjectsRepo, UserDatabase, UsersRepo
 from server.sql.repos.files import LocalObjectsStorage
 from server.sql.repos.images import ImagesRepo
@@ -193,7 +192,7 @@ class ServiceContainer(AbstractAsyncContextManager["ServiceContainer"]):
     @property
     def user_db(self) -> UserDatabase:
         if self._user_db is None:
-            self._user_db = UserDatabase(self.session, UserDB)
+            self._user_db = UserDatabase(self.session)
 
         return self._user_db
 

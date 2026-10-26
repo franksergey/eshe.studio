@@ -1,10 +1,10 @@
 from typing import TYPE_CHECKING, Protocol
 
 if TYPE_CHECKING:
-    import uuid
     from collections.abc import Sequence
 
     from server.domain.projects.schemas import ProjectPure
+    from server.domain.users.schemas import UserID
 
     from .schemas import Selection, SelectionCreate
 
@@ -12,9 +12,9 @@ if TYPE_CHECKING:
 class AbstractSelectionsRepo(Protocol):
     async def get(self, id: int) -> Selection | None: ...
     async def get_by_user(
-        self, project_id: int, user_id: uuid.UUID
+        self, project_id: int, user_id: UserID
     ) -> Selection | None: ...
-    async def get_users(self, project_id: int) -> Sequence[uuid.UUID]: ...
+    async def get_users(self, project_id: int) -> Sequence[UserID]: ...
     async def create(
-        self, project: ProjectPure, data: SelectionCreate, user_id: uuid.UUID
+        self, project: ProjectPure, data: SelectionCreate, user_id: UserID
     ) -> None: ...

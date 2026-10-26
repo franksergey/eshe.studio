@@ -1,13 +1,13 @@
 from typing import TYPE_CHECKING, Protocol
 
 if TYPE_CHECKING:
-    import uuid
+    from server.domain.users.schemas import UserID
 
     from .schemas import UserCreate, UserRead, UserUpdate
 
 
 class AbstractUsersRepo(Protocol):
-    async def get(self, id: uuid.UUID) -> UserRead | None: ...
+    async def get(self, id: UserID) -> UserRead | None: ...
     async def get_by_email(self, user_email: str) -> UserRead | None: ...
     async def users_table_empty(self) -> bool: ...
     async def create(

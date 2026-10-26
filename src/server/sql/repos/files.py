@@ -10,7 +10,7 @@ from sqlalchemy import select
 
 from server.domain.files.ports import AbstractObjectStorage
 from server.domain.files.schemas import ObjectInfo
-from server.sql.models import StorageObjectDB
+from server.sql.models import BlobID, StorageObjectDB
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -77,9 +77,6 @@ def _publish_sync(tmp: Path, final: Path) -> None:
     final.parent.mkdir(parents=True, exist_ok=True)
     tmp.replace(final)
     _fsync_dir(final.parent)
-
-
-type BlobID = uuid.UUID
 
 
 @dataclass(eq=False, slots=True, frozen=True)

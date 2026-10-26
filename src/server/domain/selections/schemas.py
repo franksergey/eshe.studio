@@ -1,8 +1,7 @@
-import uuid
-
 from pydantic import AwareDatetime, BaseModel, ConfigDict
 
 from server.domain.projects.schemas import ItemID
+from server.domain.users.schemas import UserID
 
 
 class SelectionCreate(BaseModel):
@@ -14,7 +13,7 @@ class SelectionCreate(BaseModel):
 class SelectionPure(BaseModel):
     id: int
 
-    user_id: uuid.UUID
+    user_id: UserID
     created_at: AwareDatetime
     updated_at: AwareDatetime
 

@@ -9,10 +9,11 @@ from server.domain.selections.schemas import Selection, SelectionCreate
 from server.sql.models import GroupDB, ItemDB, ItemSelectionDB, SelectionDB
 
 if TYPE_CHECKING:
-    import uuid
     from collections.abc import Sequence
 
     from sqlalchemy.ext.asyncio import AsyncSession
+
+    from server.domain.users.schemas import UserID
 
 
 STATIC_ORDINALS_START: int = 0
@@ -54,7 +55,7 @@ class SelectionsRepo(AbstractSelectionsRepo):
 
     @override
     async def get_by_user(
-        self, project_id: int, user_id: uuid.UUID
+        self, project_id: int, user_id: UserID
     ) -> Selection | None:
         stmt = select(SelectionDB).where(
             SelectionDB.project_id == project_id,
@@ -67,7 +68,7 @@ class SelectionsRepo(AbstractSelectionsRepo):
         return self._to_domain_schema(obj)
 
     @override
-    async def get_users(self, project_id: int) -> Sequence[uuid.UUID]:
+    async def get_users(self, project_id: int) -> Sequence[UserID]:
         stmt = select(SelectionDB.user_id).where(
             SelectionDB.project_id == project_id
         )
@@ -75,7 +76,7 @@ class SelectionsRepo(AbstractSelectionsRepo):
 
     @override
     async def create(
-        self, project: ProjectPure, data: SelectionCreate, user_id: uuid.UUID
+        self, project: ProjectPure, data: SelectionCreate, user_id: UserID
     ) -> None:
         stmt = (
             select(ItemDB.id)

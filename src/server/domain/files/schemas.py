@@ -24,7 +24,7 @@ class ContentType(StrEnum):
 
 
 class ObjectInfo(BaseModel):
-    id: uuid.UUID
+    id: ObjectKey
 
     size: int
     sha256: str
