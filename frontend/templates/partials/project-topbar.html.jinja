@@ -1,0 +1,13 @@
+{% extends 'partials/topbar.html.jinja' %}
+
+{% block topbar_additional %}
+<label>Посмотреть выбор:
+  <span class="select-wrapper">
+    <select id="product-select-by" name="persona">
+      {% for user in project_users_selected %}
+        <option value="{{ user.email }}">{{ user.full_name }}</option>
+      {% endfor %}
+    </select>
+  </span>
+</label>
+{% endblock %}

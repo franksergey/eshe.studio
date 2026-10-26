@@ -37,6 +37,7 @@ async def read_project_page(
         raise GroupNotFoundError
 
     category = await container.projects.get_categories(id, categories[0].id)
+    users_selected = await container.selections.get_users(id)
 
     return templates.TemplateResponse(
         request=request,
@@ -46,6 +47,7 @@ async def read_project_page(
             "user": user,
             "category": category,
             "categories": categories,
+            "project_users_selected": users_selected,
         },
     )
 
@@ -67,6 +69,9 @@ async def read_project_category_page(
     category = await container.projects.get_categories(
         id, group_id=categories[index - 1].id
     )
+    users_selected = await container.users.bulk_get_users(
+        await container.selections.get_users(id)
+    )
 
     return templates.TemplateResponse(
         request=request,
@@ -76,6 +81,7 @@ async def read_project_category_page(
             "user": user,
             "category": category,
             "categories": categories,
+            "project_users_selected": users_selected,
         },
     )
 

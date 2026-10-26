@@ -6,23 +6,16 @@
   </div>
   {% if user is none %}
   <div>
+    {% block topbar_additional_logged_out %}{% endblock %}
     <button id="login-button" type="button">Войти</button>
   </div>
   {% else %}
 	<div>
 		<div class="admin-bar-menu">
       {% if user.is_superuser %}
-			<a href="{{ url_for('read_admin_page') }}"  class="no-collapse">Админпанель</a>
-      {# TODO: Use JavaScript to get the list of selections #}
-      <label>Посмотреть выбор:
-        <span class="select-wrapper">
-          <select id="product-select-by" name="persona">
-          <option value="anton">Антона</option>
-          <option value="sergey">Серёжи</option>
-          </select>
-        </span>
-      </label>
+        <a href="{{ url_for('read_admin_page') }}"  class="no-collapse">Админпанель</a>
       {% endif %}
+      {% block topbar_additional %}{% endblock %}
 			<p class="greet">Привет, {{ user.first_name }}</p>
 		</div>
 
