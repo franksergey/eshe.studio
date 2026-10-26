@@ -86,6 +86,8 @@ async def perform_checks() -> None:
             user_create = UserCreate(
                 email="admin@example.com",
                 password="admin",  # noqa: S106
+                first_name="Admin",
+                last_name=None,
                 is_active=True,
                 is_superuser=True,
                 is_verified=True,
