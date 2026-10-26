@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Literal, override
 
 from sqlalchemy import delete, select
@@ -118,5 +119,7 @@ class SelectionsRepo(AbstractSelectionsRepo):
                 item = ItemSelectionDB(selection_id=selection.id, item_id=id)
                 selection.items.append(item)
                 self.session.add(item)
+
+            selection.updated_at = datetime.now(tz=UTC)
 
         await self.session.flush()
