@@ -81,6 +81,10 @@ class UserDatabase(SQLAlchemyUserDatabase[UserRead, UserID]):
 
         return [self._to_domain_schema(user) for user in users]
 
+    async def list_user_ids(self) -> Sequence[UserID]:
+        stmt = select(UserDB.id)
+        return (await self.session.scalars(stmt)).unique().all()
+
     @override
     async def get_by_oauth_account(
         self, oauth: str, account_id: str
@@ -156,6 +160,10 @@ class UsersRepo(AbstractUsersRepo):
         self, user_ids: Iterable[UserID]
     ) -> Sequence[UserRead]:
         return await self.users_db.bulk_get_users(user_ids)
+
+    @override
+    async def list_user_ids(self) -> Sequence[UserID]:
+        return await self.users_db.list_user_ids()
 
     @override
     async def users_table_empty(self) -> bool:
