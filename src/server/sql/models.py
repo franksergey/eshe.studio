@@ -221,6 +221,8 @@ class UserDB(Base):
     email: Mapped[str] = mapped_column(
         String(length=320), unique=True, index=True
     )
+    first_name: Mapped[str] = mapped_column(String(length=64))
+    last_name: Mapped[str | None] = mapped_column(String(length=64))
     hashed_password: Mapped[str] = mapped_column(String(length=1024))
     is_active: Mapped[bool] = mapped_column(default=True)
     is_superuser: Mapped[bool] = mapped_column(default=False)
