@@ -84,14 +84,6 @@ document.addEventListener('click', (event) => {
     // «Привет, ...» должно быть первым пунктом в выпадашке, если оно там оказалось.
     const greet = overflowItems.querySelector('.greet');
     if (greet) overflowItems.insertBefore(greet, overflowItems.firstElementChild);
-
-    const hasOverflow = overflowItems.children.length > 0;
-    header.classList.toggle('has-overflow', hasOverflow);
-
-    if (!hasOverflow && header.classList.contains('menu-open')) {
-      header.classList.remove('menu-open');
-      header.querySelector('.burger-toggle')?.setAttribute('aria-expanded', 'false');
-    }
   }
 
   new ResizeObserver(update).observe(menu);

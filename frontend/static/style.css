@@ -240,7 +240,8 @@ button {
     width: 1.8em;
     height: 1.8em;
     flex-shrink: 0;
-    display: none;
+    /* Бургер есть только у авторизованных (см. topbar) — показываем всегда */
+    display: flex;
 
     & span {
       display: block;
@@ -248,14 +249,6 @@ button {
       border-radius: 1px;
       background-color: rgba(var(--text-color-RGB), 1);
     }
-
-    @media (max-width: 768px) {
-      display: flex;
-    }
-  }
-
-  &.has-overflow .burger-toggle {
-    display: flex;
   }
 
   & .admin-bar-overflow {
@@ -387,17 +380,6 @@ button {
 
   & a {
     text-decoration: none;
-  }
-  
-  & #login-button {
-    padding: 0.4em 1em;
-    border-radius: 0.5em;
-    color: rgba(var(--text-color-inverse-RGB), 1);
-    background-color: rgba(var(--link-color-RGB), 1);
-  }
-
-  & #login-button:hover {
-    background-color: rgba(var(--text-color-RGB), 1);
   }
 
   & svg, img {
@@ -552,7 +534,7 @@ main header {
       z-index: 10;
       width: 100%;
 
-      padding: 1em 2em;
+      padding: 0;
     }
   }
 }
