@@ -1015,9 +1015,54 @@ main header {
     padding: 0;
   }
 
+  /* Мобилка: корзина на весь экран (кнопка «Корзина», класс ставит script.js).
+     Списки идут одним потоком, скроллится вся панель, а не каждый список. */
+  &.cart-open {
+    @media (max-width: 768px) {
+      top: 0;
+      height: 100dvh;
+      overflow-y: auto;
+      /* Без боковых отступов у панели — иначе .cart-buttom сдвинется */
+      padding: 2em 0 0;
+      background-color: rgba(var(--background-color-RGB), 1);
+
+      /* flex-колонка + margin-top: auto у .cart-buttom держат его внизу
+         экрана, даже когда позиций мало */
+      display: flex;
+      flex-direction: column;
+
+      & .cart-items-approved,
+      & .cart-items-done {
+        display: block;
+        flex: none;
+        padding: 0 1em;
+        margin-bottom: 1.5em;
+      }
+
+      & .cart-items-approved ul,
+      & .cart-items-done ul {
+        overflow: visible;
+
+        &::after {
+          display: none;
+        }
+      }
+
+      & .cart-buttom {
+        margin-top: auto;
+        position: sticky;
+        bottom: 0;
+      }
+    }
+  }
+
   & h1 {
     font-size: 1.3em;
     padding-bottom: 0.3em;
+
+    @media (max-width: 768px) {
+      font-size: 1.7em;
+    }
   }
   
   & .cart-items-approved {
@@ -1094,6 +1139,10 @@ main header {
   & ul {
     font-size: 0.75em;  
     margin-top: 0.5em;
+
+    @media (max-width: 768px) {
+      font-size: 1.1em;
+    }
   }
   
   & li {
@@ -1139,7 +1188,8 @@ main header {
     }
   }
 
-  & .button-confirm {
+  & .button-confirm,
+  & .button-expand {
     font-weight: 300;
     font-size: 1.1em;
     letter-spacing: 0.013em;
@@ -1151,8 +1201,22 @@ main header {
     background-color: rgba(var(--link-color-RGB),1);
   }
 
-    & .button-confirm:hover {
+    & .button-confirm:hover,
+    & .button-expand:hover {
     background-color: rgba(var(--text-color-RGB),1);
+  }
+
+  /* На мобилке «Подтвердить выбор» и «Корзина» стоят в одну строку */
+  @media (max-width: 768px) {
+    & .button-confirm {
+      flex: 1 1 0;
+      min-width: 0;
+    }
+
+    & .button-expand {
+      flex: 0 0 auto;
+      width: auto;
+    }
   }
 
   & .cart-buttom {
@@ -1165,7 +1229,7 @@ main header {
     background-color: rgba(var(--background-color-RGB), 1);
 
     padding: 0.4em 0.4em 1.3em;
-    margin-bottom: -1em;
+    /* margin-bottom: -1em; */
 
     display: flex;
     flex-wrap: wrap;
@@ -1184,6 +1248,9 @@ main header {
       padding: 0.4em 0.8em;
       border-radius: 1em;
       background-color: rgba(var(--text-color-RGB), 1);
+      @media (max-width: 768px) {
+        font-size: 1em;
+      }
     }
 
     & span {
@@ -1208,9 +1275,24 @@ main header {
       background-color: rgba(var(--background-color-RGB), 1);
       font-weight: 400;
     }
+
+    /* Внешний вид — общий с .button-confirm, здесь только видимость */
+    & .button-expand {
+      display: none;
+
+      @media (max-width: 768px) {
+        display: block;
+      }
+    }
   }
 }
 
 .login {
 
+}
+/* Пока корзина открыта на весь экран, страница под ней не скроллится */
+@media (max-width: 768px) {
+  body:has(.cart-panel.cart-open) {
+    overflow: hidden;
+  }
 }

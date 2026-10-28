@@ -187,6 +187,30 @@ function renderCart() {
 
 renderCart();
 
+// Мобилка: кнопка «Корзина» разворачивает корзину на весь экран.
+function setCartOpen(panel, isOpen) {
+  panel.classList.toggle('cart-open', isOpen);
+  const toggle = panel.querySelector('.button-expand');
+  if (!toggle) return;
+  toggle.textContent = isOpen ? 'Назад' : 'Корзина';
+  toggle.setAttribute('aria-expanded', String(isOpen));
+}
+
+document.addEventListener('click', (event) => {
+  const panel = document.querySelector('.cart-panel');
+  if (!panel) return;
+
+  if (event.target.closest('.button-expand')) {
+    setCartOpen(panel, !panel.classList.contains('cart-open'));
+    return;
+  }
+
+  // Клик по позиции прокручивает к её карточке — закрываем, чтобы карточку было видно.
+  if (panel.classList.contains('cart-open') && event.target.closest('.cart-panel li a')) {
+    setCartOpen(panel, false);
+  }
+});
+
 document.addEventListener('click', (event) => {
   const toggle = event.target.closest('.comments-toggle');
   if (!toggle) return;
