@@ -126,11 +126,13 @@ class ItemBase(BaseModel):
     """Базовая модель для карточки."""
 
     name: Annotated[str, Field(min_length=1, max_length=1024)]
-    count: Annotated[int, Field(ge=1, le=256)]
-    price: MoneyType | None
+    count: int = Field(default=1, ge=1, le=256)
+    price: MoneyType | None = None
 
     link: HttpUrl | None = None
-    tags: Annotated[list[str], Field(max_length=16)]
+    tags: list[str] = Field(default_factory=list[str], max_length=16)
+
+    status: ItemStatus | None = None
 
     model_config = ConfigDict(
         use_enum_values=True, from_attributes=True, serialize_by_alias=True
@@ -148,12 +150,14 @@ class ItemPut(ItemBase):
 class ItemUpdate(BaseModel):
     """Модель для частичного обновления карточки."""
 
-    name: Annotated[str, Field(min_length=1, max_length=1024)] = ""
-    count: Annotated[int, Field(ge=1, le=256)] = 1
+    name: Annotated[str, Field(min_length=1, max_length=1024)] = "*"
+    count: int = Field(default=1, ge=1, le=256)
     price: MoneyType | None = None
 
     link: HttpUrl | None = None
-    tags: Annotated[list[str], Field(max_length=16)] = []
+    tags: list[str] = Field(default_factory=list[str], max_length=16)
+
+    status: ItemStatus | None = None
 
     model_config = ConfigDict(
         use_enum_values=True, from_attributes=True, serialize_by_alias=True
@@ -164,8 +168,6 @@ class ItemPure(ItemBase):
     """Модель карточки без внешних связей."""
 
     id: ItemID
-
-    status: ItemStatus | None
 
 
 class Item(ItemPure):
