@@ -117,6 +117,11 @@ class Group(GroupOnlyItems):
 type ItemID = int
 
 
+class ItemStatus(StrEnum):
+    APPROVED = "approved"
+    PAID = "paid"
+
+
 class ItemBase(BaseModel):
     """Базовая модель для карточки."""
 
@@ -160,7 +165,7 @@ class ItemPure(ItemBase):
 
     id: ItemID
 
-    approved: bool
+    status: ItemStatus | None
 
 
 class Item(ItemPure):

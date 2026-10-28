@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, cast, override
 
 from pydantic import HttpUrl
-from sqlalchemy import exists, inspect, select, update
+from sqlalchemy import exists, inspect, select
 from sqlalchemy.orm import lazyload, load_only, selectinload
 
 from server.api.errors import ItemNotFoundError
@@ -72,7 +72,7 @@ class ProjectsRepo(AbstractProjectsRepo):
             id=obj.id,
             name=obj.name,
             count=obj.count,
-            approved=obj.approved,
+            status=obj.status,
             link=HttpUrl(obj.link) if obj.link is not None else None,
             tags=[tag.tag for tag in obj.tags],
             price=price,
@@ -344,14 +344,3 @@ class ProjectsRepo(AbstractProjectsRepo):
         await self.session.flush((obj,))
 
         return old_image_id
-
-    @override
-    async def approve_item(
-        self, item_id: int, *, approved: bool = True
-    ) -> None:
-        stmt = (
-            update(ItemDB)
-            .where(ItemDB.id == item_id)
-            .values(approved=approved)
-        )
-        await self.session.execute(stmt)

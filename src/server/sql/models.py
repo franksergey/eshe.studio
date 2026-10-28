@@ -25,7 +25,7 @@ from sqlalchemy.orm import (
 
 from server.config import settings
 from server.domain.files.schemas import ContentType, ObjectKey
-from server.domain.projects.schemas import CurrencyCode
+from server.domain.projects.schemas import CurrencyCode, ItemStatus
 from server.domain.users.schemas import UserID
 from server.sql.mixins import CreatedAtMixin, TimestampMixin
 
@@ -88,13 +88,19 @@ class CommentDB(Base, CreatedAtMixin):
 
 PYDANTIC_MAX_URL_LENGTH = 2083
 CURRENCY_CODE_ENUM = Enum(CurrencyCode, name="currency_code_enum")
+ITEM_STATUS_ENUM = Enum(
+    ItemStatus,
+    name="item_status_enum",
+    # pyrefly: ignore[implicit-any-lambda]
+    values_callable=lambda obj: [item.value for item in obj],  # pyright: ignore[reportUnknownLambdaType, reportUnknownMemberType, reportUnknownVariableType]
+)
 
 
 @declarative_mixin
 class ItemTableBase:
     name: Mapped[str] = mapped_column(String(1024))
     count: Mapped[int] = mapped_column(SmallInteger)
-    approved: Mapped[bool] = mapped_column(default=False)
+    status: Mapped[ItemStatus | None] = mapped_column(ITEM_STATUS_ENUM)
 
     link: Mapped[str | None] = mapped_column(String(PYDANTIC_MAX_URL_LENGTH))
 
