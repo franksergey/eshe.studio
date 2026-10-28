@@ -1,6 +1,4 @@
-// .nav-pages-general — единственное место, где ссылки прописаны руками.
-// Все остальные .nav-pages (например, в выпадашке бургера) — пустые
-// заготовки, которые просто получают копию содержимого оттуда.
+// .nav-pages-general
 const navPagesSource = document.querySelector('.nav-pages.nav-pages-general');
 if (navPagesSource) {
   document.querySelectorAll('.nav-pages').forEach((nav) => {
@@ -96,6 +94,7 @@ document.addEventListener('click', (event) => {
 function renderCart() {
   const approvedList = document.querySelector('#cart-items-approved ul');
   const doneList = document.querySelector('#cart-items-done ul');
+  const paidTotalEl = document.querySelector('#sum-paid span');
   const approvedTotalEl = document.querySelector('#sum-approved span');
   const selectedTotalEl = document.querySelector('#sum-done span');
   const grandTotalEl = document.querySelector('#total span');
@@ -142,6 +141,12 @@ function renderCart() {
     return amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
   }
 
+  let paidTotal = 0;
+  document.querySelectorAll('.product-grid li.product-paid').forEach((card) => {
+    const data = cardData(card);
+    paidTotal += data.lineTotal;
+  });
+
   approvedList.innerHTML = '';
   let approvedTotal = 0;
   document.querySelectorAll('.product-grid li.product-done').forEach((card) => {
@@ -149,6 +154,11 @@ function renderCart() {
     approvedTotal += data.lineTotal;
 
     const li = document.createElement('li');
+
+    if (card.classList.contains("product-paid")) {
+      li.classList.add("product-paid");
+    }
+    
     li.innerHTML = `<a>${data.title}</a>${data.priceOuterHTML}`;
     li.querySelector('a').addEventListener('click', () => {
       card.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -180,9 +190,10 @@ function renderCart() {
     doneList.appendChild(li);
   });
 
+  paidTotalEl.textContent = formatAmount(paidTotal);
   approvedTotalEl.textContent = formatAmount(approvedTotal);
   selectedTotalEl.textContent = formatAmount(selectedTotal);
-  grandTotalEl.textContent = formatFullAmount(approvedTotal + selectedTotal);
+  grandTotalEl.textContent = formatFullAmount(approvedTotal - paidTotal + selectedTotal);
 }
 
 renderCart();
