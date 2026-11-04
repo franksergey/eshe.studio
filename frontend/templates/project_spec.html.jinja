@@ -45,7 +45,7 @@
       </div>
 
       <hgroup>
-        <a href="{{ item.link }}" target="_blank">{{ item.name }}</a>
+        <a href="{{ item.link }}" target="_blank">{{ item.name }} &#8599</a>
         <div class="price">
           {% if item.tags %}
             <p>{{ item.tags | join(" &middot; ") }}</p>
@@ -185,12 +185,18 @@
           </section>
 
             <section class="cart-buttom">
-              <p id="total">Итого: <span>0</span>&nbsp&#8381</p>
-              <p id="sum-approved"><span>0</span>&nbsp&#8381</p>
-              <p id="sum-done"><span>0</span>&nbsp&#8381</p>
-              <p id="sum-paid"><span>0</span>&nbsp&#8381</p>
-            <button id="cart-confirm-button" class="button-confirm">Подтвердить выбор</button>
+            <div>
+              <label for="sum-approved">выбрано
+              <p id="sum-approved"><span>0</span>&nbsp&#8381</p></label>
+              <label for="sum-done">утверждено
+              <p id="sum-done"><span>0</span>&nbsp&#8381</p></label>
+              <label for="sum-paid">оплачено
+              <p id="sum-paid"><span>0</span>&nbsp&#8381</p></label>
+            </div>
+            <div>
+            <button id="cart-confirm-button" class="button-confirm"><p id="total"><span>0</span>&nbsp&#8381</p>Подтвердить выбор</button>
             <button type="button" class="button-expand" aria-expanded="false">Корзина</button>
+            </div>
             </section>
         </aside>
       </article>
