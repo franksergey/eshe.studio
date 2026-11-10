@@ -20,7 +20,7 @@
   --hover-color-RGB: 0, 215, 100; 
   --background-color-RGB: 255, 255, 255; 
   --surface-color-RGB: 240, 240, 240; 
-  --product-done-color-RGB: 50, 160, 90;
+  --product-approved-color-RGB: 50, 160, 90;
   --product-hover-color-RGB: 220, 220, 225;
   --product-select-color-RGB: 139, 139, 139;
 }
@@ -800,17 +800,17 @@ main header {
     content: 'Убрать';
   }
 
-  & li.product-done .add-wishlist {
-    background: rgba(var(--product-done-color-RGB), 1);
+  & li.product-approved .add-wishlist {
+    background: rgba(var(--product-approved-color-RGB), 1);
     cursor: default;
     pointer-events: none;
   }
 
-  & li.product-done .add-wishlist svg {
+  & li.product-approved .add-wishlist svg {
     display: none;
   }
 
-  & li.product-done .add-wishlist::after {
+  & li.product-approved .add-wishlist::after {
     content: 'Утверждено';
     padding: 0 0.8em;
   }
@@ -953,8 +953,8 @@ main header {
     }
   }
 
-  & .product-done {
-    background-color: rgba(var(--product-done-color-RGB), 1);
+  & .product-approved {
+    background-color: rgba(var(--product-approved-color-RGB), 1);
     color: rgba(var(--text-color-inverse-RGB), 1);
 
     & a {
@@ -993,7 +993,7 @@ main header {
     }
   }
 
-  & li:not(.product-done, .product-select):hover {
+  & li:not(.product-approved, .product-select):hover {
     background-color: rgba(var(--product-hover-color-RGB), 0.4);
 
     transition: background-color 0s ease, text-decoration-color 0s ease;
@@ -1034,7 +1034,7 @@ main header {
       flex-direction: column;
 
       & .cart-items-approved,
-      & .cart-items-done {
+      & .cart-items-selected {
         display: block;
         flex: none;
         padding: 0 1em;
@@ -1042,7 +1042,7 @@ main header {
       }
 
       & .cart-items-approved ul,
-      & .cart-items-done ul {
+      & .cart-items-selected ul {
         overflow: visible;
 
         &::after {
@@ -1102,7 +1102,7 @@ main header {
     }
 
     & a {
-      color: rgba(var(--product-done-color-RGB), 1);
+      color: rgba(var(--product-approved-color-RGB), 1);
     }
     & a:hover {
       color: rgba(var(--link-color-RGB), 1);
@@ -1110,7 +1110,7 @@ main header {
 
   }
 
-  & .cart-items-done {
+  & .cart-items-selected {
     flex: 2 1 0;
     min-height: 0;
     display: flex;
@@ -1285,10 +1285,10 @@ main header {
     }
 
     & #sum-approved {
-      color: rgba(var(--product-done-color-RGB), 1);
+      color: rgba(var(--product-approved-color-RGB), 1);
     }
 
-    & #sum-done {
+    & #sum-selected {
       color: rgba(var(--link-color-RGB), 1);
     }
 

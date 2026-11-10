@@ -20,7 +20,7 @@
 {% elif group.has_items %}
   <ul class="product-grid">
   {% for item in group.items %}
-    <li data-item-id="{{ item.id }}" {% if item.status == 'approved' %}class="product-done"{% elif item.status == 'paid' %}class="product-done product-paid"{% elif items_selected and item.id in items_selected %}class="product-select"{% endif %}>
+    <li data-item-id="{{ item.id }}" {% if item.status == 'approved' %}class="product-approved"{% elif item.status == 'paid' %}class="product-approved product-paid"{% elif items_selected and item.id in items_selected %}class="product-select"{% endif %}>
       <div>
         {# Stub link #}
         {# TODO(@soucelover): Incorporate ObjectsStorage when it's implemented #}
@@ -160,27 +160,14 @@
         <aside class="cart-panel"> <!-- Карзина -->
           <section class="cart-items-approved" id="cart-items-approved">
             <h1>Утверждено</h1>
-            <ul>
-              <li>
-                <a>Трюмо винтаж Art-deco</a>
-                <p><span class="price">15.000 ₽</span> · 1 шт</p>
-              </li>
-            </ul>
+            <ul></ul>
             <!-- <div class="vertical-space S"></div> -->
           </section>
 
-          <section class="cart-items-done" id="cart-items-done">
+          <section class="cart-items-selected" id="cart-items-selected">
             <!-- <div class="vertical-space S"></div> -->
             <h1>Выбрано</h1>
-            <ul>
-              <li>
-                <div>
-                  <a>Винтажное трюмо, Чехословакия</a>
-                  <p><span class="price">40.000 ₽</span> · 1 шт</p>
-                </div>
-                <button>Убрать</button>
-              </li>
-            </ul>
+            <ul></ul>
             <!-- <div class="vertical-space M"></div>  -->
           </section>
 
@@ -188,8 +175,8 @@
             <div>
               <label for="sum-approved">утверждено
               <p id="sum-approved"><span>0</span>&nbsp&#8381</p></label>
-              <label for="sum-done">выбрано
-              <p id="sum-done"><span>0</span>&nbsp&#8381</p></label>
+              <label for="sum-selected">выбрано
+              <p id="sum-selected"><span>0</span>&nbsp&#8381</p></label>
               <label for="sum-paid">оплачено
               <p id="sum-paid"><span>0</span>&nbsp&#8381</p></label>
             </div>
