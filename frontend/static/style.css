@@ -22,7 +22,7 @@
   --surface-color-RGB: 240, 240, 240; 
   --product-approved-color-RGB: 50, 160, 90;
   --product-hover-color-RGB: 220, 220, 225;
-  --product-select-color-RGB: 139, 139, 139;
+  --product-selected-color-RGB: 139, 139, 139;
 }
 
 .vertical-space.S {
@@ -766,24 +766,24 @@ main header {
     }
   }
 
-  & li:not(.product-select) .add-wishlist:hover {
+  & li:not(.product-selected) .add-wishlist:hover {
     background: rgba(var(--background-color-RGB), 1);
     padding: 0 0.8em 0 0;
   }
   
-  & li:not(.product-select) .add-wishlist:hover::after {
+  & li:not(.product-selected) .add-wishlist:hover::after {
     content: 'Выбрать';
   }
   
-  & li.product-select .add-wishlist {
-    background: rgba(var(--product-select-color-RGB), 1);
+  & li.product-selected .add-wishlist {
+    background: rgba(var(--product-selected-color-RGB), 1);
   }
   
-  & li.product-select .add-wishlist svg {
+  & li.product-selected .add-wishlist svg {
     display: none;
   }
   
-  & li.product-select .add-wishlist::after {
+  & li.product-selected .add-wishlist::after {
     content: 'Выбрано';
     padding: 0 0.8em;
     border-radius: 2em;
@@ -796,7 +796,7 @@ main header {
     }
   }
 
-  & li.product-select .add-wishlist:hover::after {
+  & li.product-selected .add-wishlist:hover::after {
     content: 'Убрать';
   }
 
@@ -968,7 +968,7 @@ main header {
     }
   }
 
-  & .product-select{
+  & .product-selected{
     background-color: rgba(var(--link-color-RGB), 1);
     color: rgba(var(--text-color-inverse-RGB), 1);
 
@@ -983,7 +983,7 @@ main header {
     }
 
     /* & p {
-      background-color: rgba(var(--product-select-color-RGB), 1);
+      background-color: rgba(var(--product-selected-color-RGB), 1);
     } */
 
     & .comments-list {
@@ -993,7 +993,7 @@ main header {
     }
   }
 
-  & li:not(.product-approved, .product-select):hover {
+  & li:not(.product-approved, .product-selected):hover {
     background-color: rgba(var(--product-hover-color-RGB), 0.4);
 
     transition: background-color 0s ease, text-decoration-color 0s ease;

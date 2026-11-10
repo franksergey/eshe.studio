@@ -17,7 +17,7 @@ document.addEventListener('click', (event) => {
   const button = event.target.closest('.add-wishlist');
   if (!button) return;
 
-  button.closest('li')?.classList.toggle('product-select');
+  button.closest('li')?.classList.toggle('product-selected');
   renderCart();
 });
 
@@ -168,7 +168,7 @@ function renderCart() {
 
   selectedList.innerHTML = '';
   let selectedTotal = 0;
-  document.querySelectorAll('.product-grid li.product-select').forEach((card) => {
+  document.querySelectorAll('.product-grid li.product-selected').forEach((card) => {
     const data = cardData(card);
     selectedTotal += data.lineTotal;
 
@@ -184,7 +184,7 @@ function renderCart() {
       card.scrollIntoView({ behavior: 'smooth', block: 'center' });
     });
     li.querySelector('button').addEventListener('click', () => {
-      card.classList.remove('product-select');
+      card.classList.remove('product-selected');
       renderCart();
     });
     selectedList.appendChild(li);
@@ -275,12 +275,12 @@ document.addEventListener('input', (event) => {
       return;
     }
 
-    // Approved cards (product-approved) never carry product-select and are
+    // Approved cards (product-approved) never carry product-selected and are
     // not user-selectable, so they are left out of deselect_item_ids.
     const payload = {
-      item_ids: collectItemIds('ul.product-grid > li.product-select[data-item-id]'),
+      item_ids: collectItemIds('ul.product-grid > li.product-selected[data-item-id]'),
       deselect_item_ids: collectItemIds(
-        'ul.product-grid > li[data-item-id]:not(.product-select):not(.product-approved)'
+        'ul.product-grid > li[data-item-id]:not(.product-selected):not(.product-approved)'
       ),
     };
 
@@ -612,7 +612,7 @@ document.addEventListener('submit', async (event) => {
       if (li.classList.contains('product-approved')) return;
 
       const id = Number(li.getAttribute('data-item-id'));
-      li.classList.toggle('product-select', ids.has(id));
+      li.classList.toggle('product-selected', ids.has(id));
     });
 
     renderCart();
