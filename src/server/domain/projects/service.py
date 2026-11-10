@@ -28,6 +28,8 @@ if TYPE_CHECKING:
 class ProjectsService:
     repo: AbstractProjectsRepo
 
+    # Projects-related
+
     async def get(self, id: int) -> Project:
         obj = await self.repo.get(id)
 
@@ -50,6 +52,8 @@ class ProjectsService:
     async def get_all_pure(self) -> list[ProjectPure]:
         return await self.repo.get_all_pure()
 
+    # Groups-related
+
     async def get_categories(
         self, project_id: int, group_id: int
     ) -> GroupOnlyItems:
@@ -62,6 +66,8 @@ class ProjectsService:
 
     async def get_categories_pure(self, project_id: int) -> list[GroupPure]:
         return await self.repo.get_categories_pure(project_id)
+
+    # Items-related
 
     async def get_item_comments(self, item_id: int) -> list[Comment]:
         objs = await self.repo.get_item_comments(item_id)

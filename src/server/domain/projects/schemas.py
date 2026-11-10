@@ -12,7 +12,7 @@ from server.domain.users.schemas import UserID
 
 
 class ProjectBase(BaseModel):
-    """Базовая модель таблицы комплектации."""
+    """Базовая модель проекта."""
 
     name: Annotated[str, Field(min_length=1, max_length=256)]
 
@@ -20,15 +20,15 @@ class ProjectBase(BaseModel):
 
 
 class ProjectCreate(ProjectBase):
-    """Модель для создания спецификации."""
+    """Модель для создания проекта."""
 
 
 class ProjectPut(ProjectBase):
-    """Модель для полной замены объекта спецификации."""
+    """Модель для полной замены объекта проекта."""
 
 
 class ProjectUpdate(BaseModel):
-    """Модель для частичного обновления объекта спецификации."""
+    """Модель для частичного обновления объекта проекта."""
 
     name: Annotated[str, Field(min_length=1, max_length=256)] = ""
 
@@ -36,13 +36,13 @@ class ProjectUpdate(BaseModel):
 
 
 class ProjectPure(ProjectBase):
-    """Изолированная модель таблицы комплектации."""
+    """Изолированная модель проекта."""
 
     id: int
 
 
 class Project(ProjectPure):
-    """Таблица комплектации."""
+    """Проект с таблицей комплектации."""
 
     categories: Annotated[list[Group], Field(max_length=64)]
 
