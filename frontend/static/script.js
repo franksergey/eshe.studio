@@ -17,7 +17,7 @@ document.addEventListener('click', (event) => {
   const button = event.target.closest('.add-wishlist');
   if (!button) return;
 
-  button.closest('li')?.classList.toggle('product-select');
+  button.closest('li')?.classList.toggle('product-selected');
   renderCart();
 });
 
@@ -93,12 +93,12 @@ document.addEventListener('click', (event) => {
 
 function renderCart() {
   const approvedList = document.querySelector('#cart-items-approved ul');
-  const doneList = document.querySelector('#cart-items-done ul');
+  const selectedList = document.querySelector('#cart-items-selected ul');
   const paidTotalEl = document.querySelector('#sum-paid span');
   const approvedTotalEl = document.querySelector('#sum-approved span');
-  const selectedTotalEl = document.querySelector('#sum-done span');
+  const selectedTotalEl = document.querySelector('#sum-selected span');
   const grandTotalEl = document.querySelector('#total span');
-  if (!approvedList || !doneList || !approvedTotalEl || !selectedTotalEl || !grandTotalEl) return;
+  if (!approvedList || !selectedList || !approvedTotalEl || !selectedTotalEl || !grandTotalEl) return;
 
   function cardData(card) {
     const link = card.querySelector('hgroup a');
@@ -149,7 +149,7 @@ function renderCart() {
 
   approvedList.innerHTML = '';
   let approvedTotal = 0;
-  document.querySelectorAll('.product-grid li.product-done').forEach((card) => {
+  document.querySelectorAll('.product-grid li.product-approved').forEach((card) => {
     const data = cardData(card);
     approvedTotal += data.lineTotal;
 
@@ -166,9 +166,9 @@ function renderCart() {
     approvedList.appendChild(li);
   });
 
-  doneList.innerHTML = '';
+  selectedList.innerHTML = '';
   let selectedTotal = 0;
-  document.querySelectorAll('.product-grid li.product-select').forEach((card) => {
+  document.querySelectorAll('.product-grid li.product-selected').forEach((card) => {
     const data = cardData(card);
     selectedTotal += data.lineTotal;
 
@@ -184,10 +184,10 @@ function renderCart() {
       card.scrollIntoView({ behavior: 'smooth', block: 'center' });
     });
     li.querySelector('button').addEventListener('click', () => {
-      card.classList.remove('product-select');
+      card.classList.remove('product-selected');
       renderCart();
     });
-    doneList.appendChild(li);
+    selectedList.appendChild(li);
   });
 
   paidTotalEl.textContent = formatAmount(paidTotal);
@@ -275,12 +275,12 @@ document.addEventListener('input', (event) => {
       return;
     }
 
-    // Approved cards (product-done) never carry product-select and are
+    // Approved cards (product-approved) never carry product-selected and are
     // not user-selectable, so they are left out of deselect_item_ids.
     const payload = {
-      item_ids: collectItemIds('ul.product-grid > li.product-select[data-item-id]'),
+      item_ids: collectItemIds('ul.product-grid > li.product-selected[data-item-id]'),
       deselect_item_ids: collectItemIds(
-        'ul.product-grid > li[data-item-id]:not(.product-select):not(.product-done)'
+        'ul.product-grid > li[data-item-id]:not(.product-selected):not(.product-approved)'
       ),
     };
 
@@ -604,15 +604,15 @@ document.addEventListener('submit', async (event) => {
   const PICKER = '.persona-picker';
   let activeController = null;
 
-  // Full overwrite: cards with product-done are never touched.
+  // Full overwrite: cards with product-approved are never touched.
   function applySelection(itemIds) {
     const ids = new Set(itemIds.map(Number));
 
     document.querySelectorAll('ul.product-grid > li').forEach((li) => {
-      if (li.classList.contains('product-done')) return;
+      if (li.classList.contains('product-approved')) return;
 
       const id = Number(li.getAttribute('data-item-id'));
-      li.classList.toggle('product-select', ids.has(id));
+      li.classList.toggle('product-selected', ids.has(id));
     });
 
     renderCart();
