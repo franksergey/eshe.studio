@@ -112,7 +112,7 @@ class ItemTableBase:
     )
 
 
-class ItemDB(ItemTableBase, Base):
+class ItemDB(ItemTableBase, TimestampMixin, Base):
     """Вариант предмета в таблице комплектации."""
 
     __tablename__ = "project_spec_items"
@@ -150,7 +150,7 @@ class ItemDB(ItemTableBase, Base):
     )
 
 
-class GroupDB(Base):
+class GroupDB(TimestampMixin, Base):
     """Категория карточек в таблице комплектации."""
 
     __tablename__ = "project_spec_groups"
@@ -190,7 +190,7 @@ class GroupDB(Base):
     )
 
 
-class ProjectDB(Base):
+class ProjectDB(TimestampMixin, Base):
     """Архитектурный проект."""
 
     __tablename__ = "projects"
