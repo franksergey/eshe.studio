@@ -2,11 +2,12 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, cast, override
 
 from pydantic import HttpUrl
-from sqlalchemy import exists, inspect, select
+from sqlalchemy import exists, inspect, select, update
 from sqlalchemy.orm import lazyload, load_only, selectinload
 
 from server.api.errors import ItemNotFoundError
 from server.domain.files.schemas import ImageID, ImageRef
+from server.domain.projects.admin_schemas import AdminProject, AdminProjectPure
 from server.domain.projects.ports import AbstractProjectsRepo
 from server.domain.projects.schemas import (
     Comment,
@@ -38,6 +39,11 @@ if TYPE_CHECKING:
 
     from sqlalchemy.ext.asyncio import AsyncSession
 
+    from server.domain.projects.admin_schemas import (
+        ProjectCreate,
+        ProjectPut,
+        ProjectUpdate,
+    )
     from server.domain.users.schemas import UserID
 
 
@@ -45,6 +51,8 @@ if TYPE_CHECKING:
 class ProjectsRepo(AbstractProjectsRepo):
     session: AsyncSession
     get_image_url: Callable[[ImageRef], HttpUrl]
+
+    # Validation/conversion
 
     @classmethod
     def _validate_comment(
@@ -123,9 +131,29 @@ class ProjectsRepo(AbstractProjectsRepo):
             ],
         )
 
+    def _to_domain_schema_admin(self, obj: ProjectDB) -> AdminProject:
+        return AdminProject(
+            id=obj.id,
+            name=obj.name,
+            updated_at=obj.updated_at,
+            created_at=obj.created_at,
+            categories=[
+                self._validate_group(category) for category in obj.categories
+            ],
+        )
+
     @staticmethod
     def _to_domain_schema_pure(obj: ProjectDB) -> ProjectPure:
         return ProjectPure(id=obj.id, name=obj.name)
+
+    @staticmethod
+    def _to_domain_schema_pure_admin(obj: ProjectDB) -> AdminProjectPure:
+        return AdminProjectPure(
+            id=obj.id,
+            name=obj.name,
+            updated_at=obj.updated_at,
+            created_at=obj.created_at,
+        )
 
     @staticmethod
     def _image_to_domain_schema(image: ImageDB) -> ImageRef:
@@ -135,6 +163,8 @@ class ProjectsRepo(AbstractProjectsRepo):
             size=(image.width, image.height),
             quality=image.quality,
         )
+
+    # Projects-related methods
 
     @override
     async def get(self, id: ProjectID) -> Project | None:
@@ -178,6 +208,60 @@ class ProjectsRepo(AbstractProjectsRepo):
 
         return [self._to_domain_schema_pure(obj) for obj in objs]
 
+    async def create(self, data: ProjectCreate) -> AdminProjectPure:
+        obj = ProjectDB(name=data.name, categories=[])
+        self.session.add(obj)
+
+        await self.session.flush()
+        await self.session.refresh(obj, ("updated_at", "created_at"))
+
+        return self._to_domain_schema_pure_admin(obj)
+
+    async def update(
+        self, id: ProjectID, data: ProjectUpdate
+    ) -> AdminProjectPure | None:
+        update_dict = data.model_dump(exclude_defaults=True)
+        stmt = (
+            update(ProjectDB)
+            .where(ProjectDB.id == id)
+            .values(*update_dict)
+            .returning(ProjectDB)
+        )
+
+        if (obj := await self.session.scalar(stmt)) is None:
+            return None
+
+        return self._to_domain_schema_pure_admin(obj)
+
+    async def put(
+        self, id: ProjectID, data: ProjectPut
+    ) -> AdminProjectPure | None:
+        stmt = (
+            update(ProjectDB)
+            .where(ProjectDB.id == id)
+            .values(name=data.name)
+            .returning(ProjectDB)
+        )
+
+        if (obj := await self.session.scalar(stmt)) is None:
+            return None
+
+        return self._to_domain_schema_pure_admin(obj)
+
+    async def remove(self, id: ProjectID) -> AdminProject | None:
+        stmt = select(ProjectDB).where(ProjectDB.id == id)
+        obj = await self.session.scalar(stmt)
+
+        if obj is None:
+            return None
+
+        result = self._to_domain_schema_admin(obj)
+
+        await self.session.delete(obj)
+        return result
+
+    # Groups-related methods
+
     @override
     async def get_category(
         self, project_id: ProjectID, group_id: GroupID
@@ -214,6 +298,8 @@ class ProjectsRepo(AbstractProjectsRepo):
     async def check_item_exists(self, item_id: ItemID) -> bool:
         stmt = select(exists(ItemDB).where(ItemDB.id == item_id))
         return (await self.session.execute(stmt)).scalar_one()
+
+    # Items-related methods
 
     @override
     async def get_item(self, item_id: ItemID) -> Item | None:

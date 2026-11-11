@@ -11,6 +11,13 @@ from .schemas import CommentsBulkRead
 
 if TYPE_CHECKING:
     from server.domain.files.schemas import ImageID, ImageRef
+    from server.domain.projects.admin_schemas import (
+        AdminProject,
+        AdminProjectPure,
+        ProjectCreate,
+        ProjectPut,
+        ProjectUpdate,
+    )
     from server.domain.users.schemas import UserRead
 
     from .ports import AbstractProjectsRepo
@@ -115,3 +122,31 @@ class ProjectsService:
             raise ItemNotFoundError
 
         return id
+
+
+@dataclass(eq=False, slots=True)
+class AdminProjectService:
+    repo: AbstractProjectsRepo
+
+    async def create(self, data: ProjectCreate) -> AdminProjectPure:
+        return await self.repo.create(data)
+
+    async def update(
+        self, id: ProjectID, data: ProjectUpdate
+    ) -> AdminProjectPure:
+        if (obj := await self.repo.update(id, data)) is None:
+            raise ProjectNotFoundError
+
+        return obj
+
+    async def put(self, id: ProjectID, data: ProjectPut) -> ProjectPure:
+        if (obj := await self.repo.put(id, data)) is None:
+            raise ProjectNotFoundError
+
+        return obj
+
+    async def remove(self, id: ProjectID) -> AdminProject:
+        if (obj := await self.repo.remove(id)) is None:
+            raise ProjectNotFoundError
+
+        return obj

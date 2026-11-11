@@ -2,6 +2,13 @@ from typing import TYPE_CHECKING, Protocol
 
 if TYPE_CHECKING:
     from server.domain.files.schemas import ImageID, ImageRef
+    from server.domain.projects.admin_schemas import (
+        AdminProject,
+        AdminProjectPure,
+        ProjectCreate,
+        ProjectPut,
+        ProjectUpdate,
+    )
     from server.domain.users.schemas import UserID
 
     from .schemas import (
@@ -25,6 +32,14 @@ class AbstractProjectsRepo(Protocol):
     async def get_pure(self, id: ProjectID) -> ProjectPure | None: ...
     async def get_all(self) -> list[Project]: ...
     async def get_all_pure(self) -> list[ProjectPure]: ...
+    async def create(self, data: ProjectCreate) -> AdminProjectPure: ...
+    async def update(
+        self, id: ProjectID, data: ProjectUpdate
+    ) -> AdminProjectPure | None: ...
+    async def put(
+        self, id: ProjectID, data: ProjectPut
+    ) -> AdminProjectPure | None: ...
+    async def remove(self, id: ProjectID) -> AdminProject | None: ...
 
     # Groups-related
     async def get_category(

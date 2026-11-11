@@ -9,7 +9,7 @@ from sqlalchemy.exc import DBAPIError
 
 from server.domain.files.processor import ImagesProcessor
 from server.domain.files.service import FilesService, ImagesService
-from server.domain.projects.service import ProjectsService
+from server.domain.projects.services import ProjectsService
 from server.domain.selections.services import SelectionsService
 from server.domain.users.service import UsersService
 from server.sql.repos import ProjectsRepo, UserDatabase, UsersRepo
