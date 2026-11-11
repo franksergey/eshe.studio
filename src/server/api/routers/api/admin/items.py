@@ -5,6 +5,7 @@ from server.api.dependencies import (
     ContainerDependency,
     CurrentSuperuserDependency,
 )
+from server.domain.projects.schemas import ItemID
 
 router = APIRouter(prefix="/items")
 
@@ -15,7 +16,7 @@ ITEM_IMAGE_QUALITY = 80
 
 @router.post("/{item_id}/image")
 async def admin_upload_image(
-    item_id: int,
+    item_id: ItemID,
     image: UploadFile,
     user: CurrentSuperuserDependency,
     container: ContainerDependency,

@@ -11,6 +11,9 @@ from server.domain.users.schemas import UserID
 # ========================
 
 
+type ProjectID = int
+
+
 class ProjectBase(BaseModel):
     """Базовая модель проекта."""
 
@@ -19,26 +22,10 @@ class ProjectBase(BaseModel):
     model_config = ConfigDict(from_attributes=True, serialize_by_alias=True)
 
 
-class ProjectCreate(ProjectBase):
-    """Модель для создания проекта."""
-
-
-class ProjectPut(ProjectBase):
-    """Модель для полной замены объекта проекта."""
-
-
-class ProjectUpdate(BaseModel):
-    """Модель для частичного обновления объекта проекта."""
-
-    name: Annotated[str, Field(min_length=1, max_length=256)] = ""
-
-    model_config = ConfigDict(from_attributes=True, serialize_by_alias=True)
-
-
 class ProjectPure(ProjectBase):
     """Изолированная модель проекта."""
 
-    id: int
+    id: ProjectID
 
 
 class Project(ProjectPure):
@@ -57,6 +44,9 @@ class ItemType(StrEnum):
     GROUP = "group"
 
 
+type GroupID = int
+
+
 class GroupBase(BaseModel):
     """Базовая модель группы карточек."""
 
@@ -67,18 +57,10 @@ class GroupBase(BaseModel):
     )
 
 
-class GroupCreate(GroupBase):
-    """Модель для создания новой группы."""
-
-
-class GroupPut(GroupBase):
-    """Модель для полного обновления группы."""
-
-
 class GroupPure(GroupBase):
     """Модель для группы без внешних связей."""
 
-    id: int
+    id: GroupID
 
 
 class GroupOnlyItems(GroupPure):
@@ -126,31 +108,6 @@ class ItemBase(BaseModel):
     """Базовая модель для карточки."""
 
     name: Annotated[str, Field(min_length=1, max_length=1024)]
-    count: int = Field(default=1, ge=1, le=256)
-    price: MoneyType | None = None
-
-    link: HttpUrl | None = None
-    tags: list[str] = Field(default_factory=list[str], max_length=16)
-
-    status: ItemStatus | None = None
-
-    model_config = ConfigDict(
-        use_enum_values=True, from_attributes=True, serialize_by_alias=True
-    )
-
-
-class ItemCreate(ItemBase):
-    """Модель для создания карточки."""
-
-
-class ItemPut(ItemBase):
-    """Модель для полного обновления карточки."""
-
-
-class ItemUpdate(BaseModel):
-    """Модель для частичного обновления карточки."""
-
-    name: Annotated[str, Field(min_length=1, max_length=1024)] = "*"
     count: int = Field(default=1, ge=1, le=256)
     price: MoneyType | None = None
 
@@ -218,6 +175,9 @@ class MoneyType(BaseModel):
         )
 
 
+type CommentID = int
+
+
 class CommentBase(BaseModel):
     """Базовая модель комментария."""
 
@@ -231,7 +191,7 @@ class CommentCreate(CommentBase):
 class Comment(CommentBase):
     """Комментарий к элементу комплектации."""
 
-    id: int
+    id: CommentID
     user_id: UserID | None
     author_name: str
 
@@ -240,7 +200,7 @@ class Comment(CommentBase):
 
 class CommentsBulkRead(BaseModel):
     items: list[ItemOnlyComments]
-    item_ids_not_found: list[int]
+    item_ids_not_found: list[ItemID]
 
 
 ItemBase.model_rebuild()

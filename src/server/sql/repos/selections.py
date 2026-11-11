@@ -5,7 +5,12 @@ from typing import TYPE_CHECKING, Literal, override
 from sqlalchemy import delete, select
 from sqlalchemy.orm import lazyload
 
-from server.domain.projects.schemas import Item, ItemType, ProjectPure
+from server.domain.projects.schemas import (
+    Item,
+    ItemType,
+    ProjectID,
+    ProjectPure,
+)
 from server.domain.selections.ports import AbstractSelectionsRepo
 from server.domain.selections.schemas import (
     Selection,
@@ -70,7 +75,7 @@ class SelectionsRepo(AbstractSelectionsRepo):
 
     @override
     async def get_by_user(
-        self, project_id: int, user_id: UserID
+        self, project_id: ProjectID, user_id: UserID
     ) -> Selection | None:
         stmt = select(SelectionDB).where(
             SelectionDB.project_id == project_id,
@@ -84,7 +89,7 @@ class SelectionsRepo(AbstractSelectionsRepo):
 
     @override
     async def get_for_project(
-        self, project_id: int
+        self, project_id: ProjectID
     ) -> Sequence[SelectionPure]:
         stmt = (
             select(SelectionDB)
@@ -98,7 +103,7 @@ class SelectionsRepo(AbstractSelectionsRepo):
         ]
 
     @override
-    async def get_users(self, project_id: int) -> Sequence[UserID]:
+    async def get_users(self, project_id: ProjectID) -> Sequence[UserID]:
         stmt = select(SelectionDB.user_id).where(
             SelectionDB.project_id == project_id
         )

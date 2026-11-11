@@ -3,6 +3,8 @@ from typing import TYPE_CHECKING, BinaryIO, Protocol
 if TYPE_CHECKING:
     from pathlib import Path
 
+    from server.domain.files.schemas import ImageID
+
     from .schemas import ContentType, ImageRef, ObjectInfo, ObjectKey
 
 
@@ -30,7 +32,7 @@ class AbstractImagesRepo(Protocol):
     async def create(
         self, object_id: ObjectKey, size: tuple[int, int], quality: int
     ) -> ImageRef: ...
-    async def delete(self, id: int) -> ImageRef | None: ...
+    async def delete(self, id: ImageID) -> ImageRef | None: ...
 
 
 class AbstractImagesProcessor(Protocol):

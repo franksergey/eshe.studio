@@ -1,39 +1,41 @@
 from typing import TYPE_CHECKING, Protocol
 
 if TYPE_CHECKING:
-    from server.domain.files.schemas import ImageRef
-    from server.domain.projects.schemas import ItemID
+    from server.domain.files.schemas import ImageID, ImageRef
     from server.domain.users.schemas import UserID
 
     from .schemas import (
         Comment,
         CommentCreate,
+        GroupID,
         GroupOnlyItems,
         GroupPure,
         Item,
+        ItemID,
         ItemOnlyComments,
         Project,
+        ProjectID,
         ProjectPure,
     )
 
 
 class AbstractProjectsRepo(Protocol):
     # Projects-related
-    async def get(self, id: int) -> Project | None: ...
-    async def get_pure(self, id: int) -> ProjectPure | None: ...
+    async def get(self, id: ProjectID) -> Project | None: ...
+    async def get_pure(self, id: ProjectID) -> ProjectPure | None: ...
     async def get_all(self) -> list[Project]: ...
     async def get_all_pure(self) -> list[ProjectPure]: ...
 
     # Groups-related
     async def get_category(
-        self, project_id: int, group_id: int
+        self, project_id: GroupID, group_id: GroupID
     ) -> GroupOnlyItems | None: ...
     async def get_categories_pure(
-        self, project_id: int
+        self, project_id: ProjectID
     ) -> list[GroupPure]: ...
 
     # Items-related
-    async def check_item_exists(self, item_id: int) -> bool: ...
+    async def check_item_exists(self, item_id: ItemID) -> bool: ...
     async def get_item(self, item_id: ItemID) -> Item | None: ...
     async def get_item_comments(
         self, item_id: ItemID
@@ -57,6 +59,6 @@ class AbstractProjectsRepo(Protocol):
     ) -> Comment | None: ...
     async def get_item_image(self, item_id: ItemID) -> ImageRef | None: ...
     async def attach_image(
-        self, item_id: ItemID, image_id: int
-    ) -> int | None: ...
-    async def detach_image(self, item_id: ItemID) -> int | None: ...
+        self, item_id: ItemID, image_id: ImageID
+    ) -> ImageID | None: ...
+    async def detach_image(self, item_id: ItemID) -> ImageID | None: ...

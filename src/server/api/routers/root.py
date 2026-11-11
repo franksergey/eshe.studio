@@ -4,6 +4,7 @@ from fastapi.responses import HTMLResponse
 from server.api.common import templates
 from server.api.dependencies import ContainerDependency, OptionalUserDependency
 from server.api.errors import GroupNotFoundError
+from server.domain.projects.schemas import ProjectID
 
 router = APIRouter(prefix="", tags=["Root Router"])
 
@@ -26,7 +27,7 @@ async def read_root_page(
 @router.get("/project-{id}")
 async def read_project_page(
     request: Request,
-    id: int,
+    id: ProjectID,
     user: OptionalUserDependency,
     container: ContainerDependency,
 ) -> HTMLResponse:
@@ -69,7 +70,7 @@ async def read_project_page(
 @router.get("/project-{id}/{index}")
 async def read_project_category_page(
     request: Request,
-    id: int,
+    id: ProjectID,
     index: int,
     user: OptionalUserDependency,
     container: ContainerDependency,

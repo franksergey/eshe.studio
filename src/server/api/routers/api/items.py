@@ -10,13 +10,14 @@ from server.domain.projects.schemas import (
     Comment,
     CommentCreate,
     CommentsBulkRead,
+    ItemID,
 )
 
 router = APIRouter(prefix="/items", tags=["Specification Items"])
 
 
 class BulkReadCommentsRequest(BaseModel):
-    item_ids: list[int]
+    item_ids: list[ItemID]
 
 
 @router.post("/bulk-comments")
@@ -33,7 +34,7 @@ async def bulk_read_comments(
     },
 )
 async def read_comment(
-    item_id: int, container: ContainerDependency
+    item_id: ItemID, container: ContainerDependency
 ) -> list[Comment]:
     """Получить список комментариев."""
     return await container.projects.get_item_comments(item_id)
@@ -47,7 +48,7 @@ async def read_comment(
     status_code=201,
 )
 async def create_comment(
-    item_id: int,
+    item_id: ItemID,
     data: CommentCreate,
     user: CurrentVerifiedUserDependency,
     container: ContainerDependency,

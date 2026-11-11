@@ -8,6 +8,8 @@ from .schemas import ContentType
 if TYPE_CHECKING:
     from pathlib import Path
 
+    from server.domain.files.schemas import ImageID
+
     from .ports import (
         AbstractImagesProcessor,
         AbstractImagesRepo,
@@ -48,7 +50,7 @@ class ImagesService:
 
         return await self.images_repo.create(obj.id, size, quality)
 
-    async def delete(self, id: int) -> None:
+    async def delete(self, id: ImageID) -> None:
         if (deleted := await self.images_repo.delete(id)) is None:
             raise ImageNotFoundError
 
