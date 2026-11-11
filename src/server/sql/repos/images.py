@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 from sqlalchemy import delete
 
 from server.domain.files.ports import AbstractImagesRepo
-from server.domain.files.schemas import ImageRef
+from server.domain.files.schemas import ImageID, ImageRef
 from server.sql.models import ImageDB
 
 if TYPE_CHECKING:
@@ -38,7 +38,7 @@ class ImagesRepo(AbstractImagesRepo):
 
         return self._to_domain_schema(obj)
 
-    async def delete(self, id: int) -> ImageRef | None:
+    async def delete(self, id: ImageID) -> ImageRef | None:
         stmt = delete(ImageDB).where(ImageDB.id == id).returning(ImageDB)
 
         if (obj := await self.session.scalar(stmt)) is None:

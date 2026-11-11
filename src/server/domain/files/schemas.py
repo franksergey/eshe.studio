@@ -5,6 +5,7 @@ from typing import Annotated
 from pydantic import AwareDatetime, BaseModel, Field
 
 type ObjectKey = uuid.UUID
+type ImageID = int
 
 
 class ImageContentType(StrEnum):
@@ -38,7 +39,7 @@ class ObjectInfo(BaseModel):
 
 
 class ImageRef(BaseModel):
-    id: int
+    id: ImageID
     object_id: ObjectKey
 
     size: tuple[int, int]

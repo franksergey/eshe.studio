@@ -6,19 +6,22 @@ from sqlalchemy import exists, inspect, select
 from sqlalchemy.orm import lazyload, load_only, selectinload
 
 from server.api.errors import ItemNotFoundError
-from server.domain.files.schemas import ImageRef
+from server.domain.files.schemas import ImageID, ImageRef
 from server.domain.projects.ports import AbstractProjectsRepo
 from server.domain.projects.schemas import (
     Comment,
     CommentCreate,
     CurrencyCode,
     Group,
+    GroupID,
     GroupOnlyItems,
     GroupPure,
     Item,
+    ItemID,
     ItemOnlyComments,
     MoneyType,
     Project,
+    ProjectID,
     ProjectPure,
 )
 from server.sql.models import (
@@ -134,7 +137,7 @@ class ProjectsRepo(AbstractProjectsRepo):
         )
 
     @override
-    async def get(self, id: int) -> Project | None:
+    async def get(self, id: ProjectID) -> Project | None:
         stmt = select(ProjectDB).where(ProjectDB.id == id)
         obj = await self.session.scalar(stmt)
 
@@ -144,7 +147,7 @@ class ProjectsRepo(AbstractProjectsRepo):
         return self._to_domain_schema(obj)
 
     @override
-    async def get_pure(self, id: int) -> ProjectPure | None:
+    async def get_pure(self, id: ProjectID) -> ProjectPure | None:
         stmt = (
             select(ProjectDB)
             .where(ProjectDB.id == id)
@@ -177,7 +180,7 @@ class ProjectsRepo(AbstractProjectsRepo):
 
     @override
     async def get_category(
-        self, project_id: int, group_id: int
+        self, project_id: ProjectID, group_id: GroupID
     ) -> GroupOnlyItems | None:
         stmt = select(GroupDB).where(
             GroupDB.project_id == project_id, GroupDB.id == group_id
@@ -193,7 +196,9 @@ class ProjectsRepo(AbstractProjectsRepo):
             items=self._validate_group_items(obj.items, obj.subgroups),
         )
 
-    async def get_categories_pure(self, project_id: int) -> list[GroupPure]:
+    async def get_categories_pure(
+        self, project_id: ProjectID
+    ) -> list[GroupPure]:
         stmt = (
             select(GroupDB)
             .where(
@@ -206,12 +211,12 @@ class ProjectsRepo(AbstractProjectsRepo):
         return [self._validate_group_pure(group) for group in objs]
 
     @override
-    async def check_item_exists(self, item_id: int) -> bool:
+    async def check_item_exists(self, item_id: ItemID) -> bool:
         stmt = select(exists(ItemDB).where(ItemDB.id == item_id))
         return (await self.session.execute(stmt)).scalar_one()
 
     @override
-    async def get_item(self, item_id: int) -> Item | None:
+    async def get_item(self, item_id: ItemID) -> Item | None:
         stmt = select(ItemDB).where(ItemDB.id == item_id)
         obj = await self.session.scalar(stmt)
 
@@ -221,7 +226,7 @@ class ProjectsRepo(AbstractProjectsRepo):
         return self._validate_item(obj)
 
     @override
-    async def get_item_comments(self, item_id: int) -> list[Comment] | None:
+    async def get_item_comments(self, item_id: ItemID) -> list[Comment] | None:
         stmt = select(exists(ItemDB).where(ItemDB.id == item_id))
 
         if not (await self.session.execute(stmt)).scalar_one():
@@ -240,8 +245,8 @@ class ProjectsRepo(AbstractProjectsRepo):
 
     @override
     async def bulk_get_item_comments(
-        self, item_ids: list[int]
-    ) -> tuple[list[ItemOnlyComments], list[int]]:
+        self, item_ids: list[ItemID]
+    ) -> tuple[list[ItemOnlyComments], list[ItemID]]:
         ids = frozenset(item_ids)
         stmt = (
             select(ItemDB)
@@ -268,7 +273,7 @@ class ProjectsRepo(AbstractProjectsRepo):
     # NOTE: Should it return new data of ItemDB?
     @override
     async def add_comment(
-        self, item_id: int, user_id: UserID, data: CommentCreate
+        self, item_id: ItemID, user_id: UserID, data: CommentCreate
     ) -> Comment | None:
         stmt = (
             select(ItemDB)
@@ -293,7 +298,7 @@ class ProjectsRepo(AbstractProjectsRepo):
         await self.session.refresh(obj, ("author",))
         return self._validate_comment(obj, obj.author)
 
-    async def get_item_image(self, item_id: int) -> ImageRef | None:
+    async def get_item_image(self, item_id: ItemID) -> ImageRef | None:
         stmt = (
             select(ItemDB)
             .options(load_only(ItemDB.image))
@@ -311,7 +316,9 @@ class ProjectsRepo(AbstractProjectsRepo):
 
         return self._image_to_domain_schema(image)
 
-    async def attach_image(self, item_id: int, image_id: int) -> int | None:
+    async def attach_image(
+        self, item_id: ItemID, image_id: ImageID
+    ) -> ImageID | None:
         stmt = (
             select(ItemDB)
             .options(load_only(ItemDB.image_id))
@@ -328,7 +335,7 @@ class ProjectsRepo(AbstractProjectsRepo):
 
         return old_image_id
 
-    async def detach_image(self, item_id: int) -> int | None:
+    async def detach_image(self, item_id: ItemID) -> ImageID | None:
         stmt = (
             select(ItemDB)
             .options(load_only(ItemDB.image_id))

@@ -10,16 +10,19 @@ from server.api.errors import (
 from .schemas import CommentsBulkRead
 
 if TYPE_CHECKING:
-    from server.domain.files.schemas import ImageRef
+    from server.domain.files.schemas import ImageID, ImageRef
     from server.domain.users.schemas import UserRead
 
     from .ports import AbstractProjectsRepo
     from .schemas import (
         Comment,
         CommentCreate,
+        GroupID,
         GroupOnlyItems,
         GroupPure,
+        ItemID,
         Project,
+        ProjectID,
         ProjectPure,
     )
 
@@ -28,7 +31,7 @@ if TYPE_CHECKING:
 class ProjectsService:
     repo: AbstractProjectsRepo
 
-    async def get(self, id: int) -> Project:
+    async def get(self, id: ProjectID) -> Project:
         obj = await self.repo.get(id)
 
         if obj is None:
@@ -36,7 +39,7 @@ class ProjectsService:
 
         return obj
 
-    async def get_pure(self, id: int) -> ProjectPure:
+    async def get_pure(self, id: ProjectID) -> ProjectPure:
         obj = await self.repo.get_pure(id)
 
         if obj is None:
@@ -51,7 +54,7 @@ class ProjectsService:
         return await self.repo.get_all_pure()
 
     async def get_categories(
-        self, project_id: int, group_id: int
+        self, project_id: ProjectID, group_id: GroupID
     ) -> GroupOnlyItems:
         group = await self.repo.get_category(project_id, group_id)
 
@@ -60,10 +63,12 @@ class ProjectsService:
 
         return group
 
-    async def get_categories_pure(self, project_id: int) -> list[GroupPure]:
+    async def get_categories_pure(
+        self, project_id: ProjectID
+    ) -> list[GroupPure]:
         return await self.repo.get_categories_pure(project_id)
 
-    async def get_item_comments(self, item_id: int) -> list[Comment]:
+    async def get_item_comments(self, item_id: ItemID) -> list[Comment]:
         objs = await self.repo.get_item_comments(item_id)
 
         if objs is None:
@@ -72,7 +77,7 @@ class ProjectsService:
         return objs
 
     async def bulk_get_item_comments(
-        self, item_ids: list[int]
+        self, item_ids: list[ItemID]
     ) -> CommentsBulkRead:
         items, items_not_found = await self.repo.bulk_get_item_comments(
             item_ids
@@ -82,7 +87,7 @@ class ProjectsService:
         )
 
     async def add_comment(
-        self, item_id: int, user: UserRead, data: CommentCreate
+        self, item_id: ItemID, user: UserRead, data: CommentCreate
     ) -> Comment:
         obj = await self.repo.add_comment(item_id, user.id, data)
 
@@ -91,13 +96,15 @@ class ProjectsService:
 
         return obj
 
-    async def get_item_image(self, item_id: int) -> ImageRef | None:
+    async def get_item_image(self, item_id: ItemID) -> ImageRef | None:
         return await self.repo.get_item_image(item_id)
 
-    async def attach_image(self, item_id: int, image_id: int) -> int | None:
+    async def attach_image(
+        self, item_id: ItemID, image_id: ImageID
+    ) -> ImageID | None:
         return await self.repo.attach_image(item_id, image_id)
 
-    async def detach_image(self, item_id: int) -> int:
+    async def detach_image(self, item_id: ItemID) -> ImageID:
         if (id := await self.repo.detach_image(item_id)) is None:
             raise ItemNotFoundError
 

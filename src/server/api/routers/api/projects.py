@@ -5,7 +5,7 @@ from server.api.dependencies import (
     CurrentVerifiedUserDependency,
 )
 from server.api.errors import ProjectNotFoundError, error_handler
-from server.domain.projects.schemas import Project, ProjectPure
+from server.domain.projects.schemas import Project, ProjectID, ProjectPure
 from server.domain.selections.schemas import SelectionCreate
 
 router = APIRouter(prefix="/projects", tags=["Arhitectural Projects"])
@@ -25,7 +25,9 @@ async def read_projects(container: ContainerDependency) -> list[ProjectPure]:
         )
     },
 )
-async def read_project(id: int, container: ContainerDependency) -> ProjectPure:
+async def read_project(
+    id: ProjectID, container: ContainerDependency
+) -> ProjectPure:
     """Получить данные об архитектурном проекте."""
     return await container.projects.get_pure(id)
 
@@ -39,7 +41,7 @@ async def read_project(id: int, container: ContainerDependency) -> ProjectPure:
     },
 )
 async def read_project_specification(
-    id: int, container: ContainerDependency
+    id: ProjectID, container: ContainerDependency
 ) -> Project:
     """Получить таблицу комплектации архитектурного проекта."""
     return await container.projects.get(id)
@@ -55,7 +57,7 @@ async def read_project_specification(
     },
 )
 async def select_project_specification_items(
-    id: int,
+    id: ProjectID,
     data: SelectionCreate,
     user: CurrentVerifiedUserDependency,
     container: ContainerDependency,

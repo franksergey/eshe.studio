@@ -11,6 +11,9 @@ from server.domain.users.schemas import UserID
 # ========================
 
 
+type ProjectID = int
+
+
 class ProjectBase(BaseModel):
     """Базовая модель таблицы комплектации."""
 
@@ -22,7 +25,7 @@ class ProjectBase(BaseModel):
 class ProjectPure(ProjectBase):
     """Изолированная модель таблицы комплектации."""
 
-    id: int
+    id: ProjectID
 
 
 class Project(ProjectPure):
@@ -41,6 +44,9 @@ class ItemType(StrEnum):
     GROUP = "group"
 
 
+type GroupID = int
+
+
 class GroupBase(BaseModel):
     """Базовая модель группы карточек."""
 
@@ -54,7 +60,7 @@ class GroupBase(BaseModel):
 class GroupPure(GroupBase):
     """Модель для группы без внешних связей."""
 
-    id: int
+    id: GroupID
 
 
 class GroupOnlyItems(GroupPure):
@@ -169,6 +175,9 @@ class MoneyType(BaseModel):
         )
 
 
+type CommentID = int
+
+
 class CommentBase(BaseModel):
     """Базовая модель комментария."""
 
@@ -182,7 +191,7 @@ class CommentCreate(CommentBase):
 class Comment(CommentBase):
     """Комментарий к элементу комплектации."""
 
-    id: int
+    id: CommentID
     user_id: UserID | None
     author_name: str
 
@@ -191,7 +200,7 @@ class Comment(CommentBase):
 
 class CommentsBulkRead(BaseModel):
     items: list[ItemOnlyComments]
-    item_ids_not_found: list[int]
+    item_ids_not_found: list[ItemID]
 
 
 ItemBase.model_rebuild()
