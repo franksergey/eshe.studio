@@ -15,17 +15,17 @@ from sqlalchemy import (
     String,
 )
 from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.orm import (
-    DeclarativeBase,
-    Mapped,
-    declarative_mixin,
-    mapped_column,
-    relationship,
-)
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 from server.config import settings
-from server.domain.files.schemas import ContentType, ObjectKey
-from server.domain.projects.schemas import CurrencyCode, ItemStatus
+from server.domain.files.schemas import ContentType, ImageID, ObjectKey
+from server.domain.projects.schemas import (
+    CurrencyCode,
+    GroupID,
+    ItemID,
+    ItemStatus,
+    ProjectID,
+)
 from server.domain.users.schemas import UserID
 from server.sql.mixins import CreatedAtMixin, TimestampMixin
 
@@ -96,8 +96,18 @@ ITEM_STATUS_ENUM = Enum(
 )
 
 
-@declarative_mixin
-class ItemTableBase:
+class ItemDB(TimestampMixin, Base):
+    """Вариант предмета в таблице комплектации."""
+
+    __tablename__ = "project_spec_items"
+
+    id: Mapped[ItemID] = mapped_column(IDENTITY, primary_key=True)
+    group_id: Mapped[GroupID] = mapped_column(
+        ForeignKey("project_spec_groups.id", ondelete="CASCADE")
+    )
+    image_id: Mapped[ImageID | None] = mapped_column(ForeignKey("images.id"))
+    ordinal_no: Mapped[int] = mapped_column()
+
     name: Mapped[str] = mapped_column(String(1024))
     count: Mapped[int] = mapped_column(SmallInteger)
     status: Mapped[ItemStatus | None] = mapped_column(ITEM_STATUS_ENUM)
@@ -110,19 +120,6 @@ class ItemTableBase:
     price_currency: Mapped[CurrencyCode | None] = mapped_column(
         CURRENCY_CODE_ENUM
     )
-
-
-class ItemDB(ItemTableBase, Base):
-    """Вариант предмета в таблице комплектации."""
-
-    __tablename__ = "project_spec_items"
-
-    id: Mapped[int] = mapped_column(IDENTITY, primary_key=True)
-    group_id: Mapped[int] = mapped_column(
-        ForeignKey("project_spec_groups.id", ondelete="CASCADE")
-    )
-    image_id: Mapped[int | None] = mapped_column(ForeignKey("images.id"))
-    ordinal_no: Mapped[int] = mapped_column()
 
     # Relations
     tags: Mapped[list[SpecificationTagDB]] = relationship(
@@ -150,16 +147,16 @@ class ItemDB(ItemTableBase, Base):
     )
 
 
-class GroupDB(Base):
+class GroupDB(TimestampMixin, Base):
     """Категория карточек в таблице комплектации."""
 
     __tablename__ = "project_spec_groups"
 
-    id: Mapped[int] = mapped_column(IDENTITY, primary_key=True)
-    project_id: Mapped[int] = mapped_column(
+    id: Mapped[GroupID] = mapped_column(IDENTITY, primary_key=True)
+    project_id: Mapped[ProjectID] = mapped_column(
         ForeignKey("projects.id", ondelete="CASCADE")
     )
-    group_id: Mapped[int | None] = mapped_column(
+    group_id: Mapped[GroupID | None] = mapped_column(
         ForeignKey("project_spec_groups.id", ondelete="CASCADE")
     )
 
@@ -190,12 +187,12 @@ class GroupDB(Base):
     )
 
 
-class ProjectDB(Base):
+class ProjectDB(TimestampMixin, Base):
     """Архитектурный проект."""
 
     __tablename__ = "projects"
 
-    id: Mapped[int] = mapped_column(IDENTITY, primary_key=True)
+    id: Mapped[ProjectID] = mapped_column(IDENTITY, primary_key=True)
 
     # Or location?
     name: Mapped[str] = mapped_column(String(256))
@@ -319,7 +316,7 @@ class StorageObjectDB(TimestampMixin, Base):
 class ImageDB(Base):
     __tablename__ = "images"
 
-    id: Mapped[int] = mapped_column(IDENTITY, primary_key=True)
+    id: Mapped[ImageID] = mapped_column(IDENTITY, primary_key=True)
     object_id: Mapped[ObjectKey] = mapped_column(
         ForeignKey("storage_objects.id", ondelete="CASCADE")
     )

@@ -8,6 +8,7 @@ from server.api.dependencies import (
     ContainerDependency,
     CurrentSuperuserDependency,
 )
+from server.domain.projects.schemas import ProjectID
 from server.domain.selections.schemas import Selection, SelectionPure
 
 router = APIRouter(prefix="/projects")
@@ -15,7 +16,7 @@ router = APIRouter(prefix="/projects")
 
 @router.get("/{project_id}/selections")
 async def admin_read_selection(
-    project_id: int,
+    project_id: ProjectID,
     user: CurrentSuperuserDependency,
     container: ContainerDependency,
     user_email: Annotated[EmailStr | None, Query()] = None,
