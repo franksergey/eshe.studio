@@ -13,10 +13,12 @@ from server.api.errors import (
 from server.domain.files.schemas import ImageID, ImageRef
 from server.domain.projects.admin_schemas import (
     AdminGroupPure,
+    AdminItemPure,
     AdminProject,
     AdminProjectPure,
     GroupCreate,
     GroupPut,
+    ItemCreate,
 )
 from server.domain.projects.ports import AbstractProjectsRepo
 from server.domain.projects.schemas import (
@@ -128,13 +130,9 @@ class ProjectsRepo(AbstractProjectsRepo):
             items=self._validate_group_items(obj.items, obj.subgroups),
         )
 
-    def _validate_group_pure_admin(self, obj: GroupDB) -> AdminGroupPure:
-        return AdminGroupPure(
-            id=obj.id,
-            name=obj.name,
-            updated_at=obj.updated_at,
-            created_at=obj.created_at,
-        )
+    @staticmethod
+    def _validate_group_pure_admin(obj: GroupDB) -> AdminGroupPure:
+        return AdminGroupPure.model_validate(obj)
 
     @classmethod
     def _validate_group_pure(cls, obj: GroupDB) -> GroupPure:
@@ -162,16 +160,11 @@ class ProjectsRepo(AbstractProjectsRepo):
 
     @staticmethod
     def _to_domain_schema_pure(obj: ProjectDB) -> ProjectPure:
-        return ProjectPure(id=obj.id, name=obj.name)
+        return ProjectPure.model_validate(obj)
 
     @staticmethod
     def _to_domain_schema_pure_admin(obj: ProjectDB) -> AdminProjectPure:
-        return AdminProjectPure(
-            id=obj.id,
-            name=obj.name,
-            updated_at=obj.updated_at,
-            created_at=obj.created_at,
-        )
+        return AdminProjectPure.model_validate(obj)
 
     @staticmethod
     def _image_to_domain_schema(image: ImageDB) -> ImageRef:
@@ -327,7 +320,7 @@ class ProjectsRepo(AbstractProjectsRepo):
         return (await self.session.execute(stmt)).scalar_one()
 
     @override
-    async def get_largest_group_ordinal_no(
+    async def get_largest_group_ordinal(
         self, project_id: ProjectID, group_id: GroupID | None
     ) -> int | None:
         stmt = (
@@ -340,10 +333,7 @@ class ProjectsRepo(AbstractProjectsRepo):
         )
         return await self.session.scalar(stmt)
 
-    @override
-    async def create_group(
-        self, data: GroupCreate, ordinal_no: int
-    ) -> AdminGroupPure:
+    async def _check_group_foreign_keys(self, data: GroupCreate) -> None:
         if not await self.exists(data.project_id):
             msg = f"Parent project with id {data.project_id} does not exist"
             raise ProjectNotFoundError(msg)
@@ -353,6 +343,12 @@ class ProjectsRepo(AbstractProjectsRepo):
         ):
             msg = f"Parent group with id {data.group_id} does not exist"
             raise GroupNotFoundError(msg)
+
+    @override
+    async def create_group(
+        self, data: GroupCreate, ordinal_no: int
+    ) -> AdminGroupPure:
+        await self._check_group_foreign_keys(data)
 
         obj = GroupDB(
             project_id=data.project_id,
@@ -373,6 +369,8 @@ class ProjectsRepo(AbstractProjectsRepo):
     async def put_group(
         self, id: GroupID, data: GroupPut
     ) -> AdminGroupPure | None:
+        await self._check_group_foreign_keys(data)
+
         put_dict = data.model_dump()
         stmt = (
             update(GroupDB)
@@ -408,6 +406,76 @@ class ProjectsRepo(AbstractProjectsRepo):
             return None
 
         return self._validate_item(obj)
+
+    @override
+    async def get_largest_item_ordinal(self, group_id: GroupID) -> int | None:
+        stmt = (
+            select(ItemDB.ordinal_no)
+            .where(ItemDB.group_id == group_id)
+            .order_by(ItemDB.ordinal_no.desc())
+            .limit(1)
+        )
+        return await self.session.scalar(stmt)
+
+    async def _check_item_foreign_keys(self, data: ItemCreate) -> None:
+        if data.group_id is not None and not await self.group_exists(
+            data.group_id
+        ):
+            msg = f"Parent group with id {data.group_id} does not exist"
+            raise GroupNotFoundError(msg)
+
+    @override
+    async def create_item(
+        self, data: ItemCreate, ordinal_no: int
+    ) -> AdminItemPure:
+        await self._check_item_foreign_keys(data)
+
+        obj = ItemDB(
+            group_id=data.group_id,
+            ordinal_no=ordinal_no,
+            name=data.name,
+            count=data.count,
+            status=data.status,
+            link=data.link,
+            price=data.price.amount if data.price is not None else None,
+            price_currency=data.price.currency
+            if data.price is not None
+            else None,
+            tags=[Specification],
+            comments=[],
+            image=None,
+        )
+        self.session.add(obj)
+
+        await self.session.flush()
+        await self.session.refresh(obj, ("updated_at", "created_at"))
+
+        return self._validate_item_pure_admin(obj)
+
+    @override
+    async def put_group(
+        self, id: GroupID, data: GroupPut
+    ) -> AdminGroupPure | None:
+        await self._check_group_foreign_keys(data)
+
+        put_dict = data.model_dump()
+        stmt = (
+            update(GroupDB)
+            .where(GroupDB.id == id)
+            .values(**put_dict)
+            .returning(GroupDB)
+        )
+
+        if (obj := await self.session.scalar(stmt)) is None:
+            return None
+
+        return self._validate_group_pure_admin(obj)
+
+    @override
+    async def remove_group(self, id: GroupID) -> bool:
+        stmt = delete(GroupDB).where(GroupDB.id == id).returning(GroupDB.id)
+        result = await self.session.scalar(stmt)
+        return result is not None
 
     @override
     async def get_item_comments(self, item_id: ItemID) -> list[Comment] | None:

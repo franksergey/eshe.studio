@@ -2,6 +2,11 @@ from typing import TYPE_CHECKING, Protocol
 
 if TYPE_CHECKING:
     from server.domain.files.schemas import ImageID, ImageRef
+    from server.domain.projects.admin_schemas import (
+        AdminItemPure,
+        ItemCreate,
+        ItemPut,
+    )
     from server.domain.users.schemas import UserID
 
     from .admin_schemas import (
@@ -51,7 +56,7 @@ class AbstractProjectsRepo(Protocol):
     async def get_categories_pure(
         self, project_id: ProjectID
     ) -> list[GroupPure]: ...
-    async def get_largest_group_ordinal_no(
+    async def get_largest_group_ordinal(
         self, project_id: ProjectID, group_id: GroupID | None
     ) -> int | None: ...
     async def create_group(
@@ -65,6 +70,16 @@ class AbstractProjectsRepo(Protocol):
     # Items-related
     async def check_item_exists(self, item_id: ItemID) -> bool: ...
     async def get_item(self, item_id: ItemID) -> Item | None: ...
+    async def get_largest_item_ordinal(
+        self, group_id: GroupID
+    ) -> int | None: ...
+    async def create_item(
+        self, data: ItemCreate, ordinal_no: int
+    ) -> AdminItemPure: ...
+    async def put_item(
+        self, id: ItemID, data: ItemPut
+    ) -> AdminItemPure | None: ...
+    async def remove_item(self, id: ItemID) -> bool: ...
     async def get_item_comments(
         self, item_id: ItemID
     ) -> list[Comment] | None: ...

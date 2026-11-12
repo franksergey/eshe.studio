@@ -1,13 +1,11 @@
 from typing import TYPE_CHECKING, Annotated
 
-from pydantic import BaseModel, ConfigDict, Field, HttpUrl
+from pydantic import BaseModel, ConfigDict, Field
 
 from server.domain.projects.schemas import (
     GroupBase,
     GroupID,
     ItemBase,
-    ItemStatus,
-    MoneyType,
     ProjectID,
 )
 
@@ -91,25 +89,8 @@ class ItemCreate(ItemBase):
     group_id: int
 
 
-class ItemPut(ItemBase):
+class ItemPut(ItemCreate):
     """Модель для полного обновления карточки."""
-
-
-class ItemUpdate(BaseModel):
-    """Модель для частичного обновления карточки."""
-
-    name: Annotated[str, Field(min_length=1, max_length=1024)] = "*"
-    count: int = Field(default=1, ge=1, le=256)
-    price: MoneyType | None = None
-
-    link: HttpUrl | None = None
-    tags: list[str] = Field(default_factory=list[str], max_length=16)
-
-    status: ItemStatus | None = None
-
-    model_config = ConfigDict(
-        use_enum_values=True, from_attributes=True, serialize_by_alias=True
-    )
 
 
 class AdminItemPure(ItemPure):
