@@ -1,6 +1,8 @@
 from typing import TYPE_CHECKING, Protocol
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from server.domain.files.schemas import ImageID, ImageRef
     from server.domain.users.schemas import UserID
 
@@ -36,7 +38,7 @@ class AbstractProjectsRepo(Protocol):
     async def get_all(self) -> list[Project]: ...
     async def get_all_pure(self) -> list[ProjectPure]: ...
     async def create(self, data: ProjectCreate) -> AdminProjectPure: ...
-    async def update(
+    async def update_project(
         self, id: ProjectID, data: ProjectUpdate
     ) -> AdminProjectPure | None: ...
     async def put(
@@ -51,7 +53,7 @@ class AbstractProjectsRepo(Protocol):
     async def get_categories_pure(
         self, project_id: ProjectID
     ) -> list[GroupPure]: ...
-    async def get_largest_group_ordinal_no(
+    async def get_largest_group_ordinal(
         self, project_id: ProjectID, group_id: GroupID | None
     ) -> int | None: ...
     async def create_group(
@@ -61,6 +63,12 @@ class AbstractProjectsRepo(Protocol):
         self, id: GroupID, data: GroupPut
     ) -> AdminGroupPure | None: ...
     async def remove_group(self, id: GroupID) -> bool: ...
+    async def get_groups_order(
+        self, project_id: ProjectID, group_id: GroupID | None
+    ) -> Sequence[tuple[GroupID, int]]: ...
+    async def reorder_groups(
+        self, new_ordinals: Sequence[tuple[GroupID, int]]
+    ) -> None: ...
 
     # Items-related
     async def check_item_exists(self, item_id: ItemID) -> bool: ...
