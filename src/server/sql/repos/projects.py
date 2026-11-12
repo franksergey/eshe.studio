@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, cast, override
 
 from pydantic import HttpUrl
-from sqlalchemy import delete, exists, inspect, select, update
+from sqlalchemy import bindparam, delete, exists, inspect, select, update
 from sqlalchemy.orm import lazyload, load_only, selectinload
 
 from server.api.errors import (
@@ -45,7 +45,7 @@ from server.sql.models import (
 )
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Iterable
+    from collections.abc import Callable, Iterable, Sequence
 
     from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -241,7 +241,7 @@ class ProjectsRepo(AbstractProjectsRepo):
         return self._to_domain_schema_pure_admin(obj)
 
     @override
-    async def update(
+    async def update_project(
         self, id: ProjectID, data: ProjectUpdate
     ) -> AdminProjectPure | None:
         update_dict = data.model_dump(exclude_defaults=True)
@@ -327,7 +327,7 @@ class ProjectsRepo(AbstractProjectsRepo):
         return (await self.session.execute(stmt)).scalar_one()
 
     @override
-    async def get_largest_group_ordinal_no(
+    async def get_largest_group_ordinal(
         self, project_id: ProjectID, group_id: GroupID | None
     ) -> int | None:
         stmt = (
@@ -391,6 +391,40 @@ class ProjectsRepo(AbstractProjectsRepo):
         stmt = delete(GroupDB).where(GroupDB.id == id).returning(GroupDB.id)
         result = await self.session.scalar(stmt)
         return result is not None
+
+    @override
+    async def get_groups_order(
+        self, project_id: ProjectID, group_id: GroupID | None
+    ) -> Sequence[tuple[GroupID, int]]:
+        stmt = (
+            select(GroupDB.id, GroupDB.ordinal_no)
+            .where(
+                GroupDB.project_id == project_id, GroupDB.group_id == group_id
+            )
+            .order_by(GroupDB.ordinal_no)
+        )
+        return (await self.session.execute(stmt)).tuples().all()
+
+    REORDER_GROUPS_STMT = (
+        update(GroupDB)
+        .where(GroupDB.id == bindparam("b_id"))
+        .values(ordinal_no=bindparam("b_ordinal_no"))
+    )
+
+    @override
+    async def reorder_groups(
+        self, new_ordinals: Sequence[tuple[GroupID, int]]
+    ) -> None:
+        if not new_ordinals:
+            return
+
+        await self.session.execute(
+            self.REORDER_GROUPS_STMT,
+            [
+                {"b_id": id, "b_ordinal_no": ordinal}
+                for id, ordinal in new_ordinals
+            ],
+        )
 
     # Items-related methods
 
