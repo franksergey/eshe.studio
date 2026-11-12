@@ -12,6 +12,14 @@
             "subProcess": true,
         },
         {
+            "name": "Запуск с интерактивным дебаггингом",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "server",
+            "subProcess": true,
+            "args": ["--interactive-debug"]
+        },
+        {
             "name": "Docker: Дебаггинг сервера",
             "type": "debugpy",
             "request": "attach",
