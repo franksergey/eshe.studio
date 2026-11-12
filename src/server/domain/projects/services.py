@@ -11,6 +11,11 @@ from .schemas import CommentsBulkRead
 
 if TYPE_CHECKING:
     from server.domain.files.schemas import ImageID, ImageRef
+    from server.domain.projects.admin_schemas import (
+        AdminItemPure,
+        ItemCreate,
+        ItemPut,
+    )
     from server.domain.users.schemas import UserRead
 
     from .admin_schemas import (
@@ -171,14 +176,14 @@ class AdminProjectService:
 
     async def create_group(self, data: GroupCreate) -> AdminGroupPure:
         next_ordinal_no = self._get_next_ordinal_no(
-            await self.repo.get_largest_group_ordinal_no(
+            await self.repo.get_largest_group_ordinal(
                 data.project_id, data.group_id
             )
         )
 
         return await self.repo.create_group(data, next_ordinal_no)
 
-    async def put_group(self, id: GroupID, data: GroupPut) -> GroupPure:
+    async def put_group(self, id: GroupID, data: GroupPut) -> AdminGroupPure:
         if (obj := await self.repo.put_group(id, data)) is None:
             return await self.create_group(data)
 
@@ -189,3 +194,24 @@ class AdminProjectService:
 
         if not result:
             raise GroupNotFoundError
+
+    # Items-related methods
+
+    async def create_item(self, data: ItemCreate) -> AdminItemPure:
+        next_ordinal_no = self._get_next_ordinal_no(
+            await self.repo.get_largest_item_ordinal(data.group_id)
+        )
+
+        return await self.repo.create_item(data, next_ordinal_no)
+
+    async def put_item(self, id: ItemID, data: ItemPut) -> AdminItemPure:
+        if (obj := await self.repo.put_item(id, data)) is None:
+            return await self.create_item(data)
+
+        return obj
+
+    async def remove_item(self, id: ItemID) -> None:
+        result = await self.repo.remove_item(id)
+
+        if not result:
+            raise ItemNotFoundError
