@@ -57,9 +57,6 @@ if TYPE_CHECKING:
     from server.domain.users.schemas import UserID
 
 
-ORDINAL_NO_STEP = 10_000
-
-
 @dataclass(eq=False, slots=True)
 class ProjectsRepo(AbstractProjectsRepo):
     session: AsyncSession
@@ -279,7 +276,7 @@ class ProjectsRepo(AbstractProjectsRepo):
 
     @override
     async def remove(self, id: ProjectID) -> AdminProject | None:
-        stmt = select(ProjectDB).where(ProjectDB.id == id)
+        stmt = select(ProjectDB).where(ProjectDB.id == id).with_for_update()
         obj = await self.session.scalar(stmt)
 
         if obj is None:
@@ -329,9 +326,10 @@ class ProjectsRepo(AbstractProjectsRepo):
         stmt = select(exists(GroupDB).where(GroupDB.id == group_id))
         return (await self.session.execute(stmt)).scalar_one()
 
-    async def _get_next_ordinal_no(
+    @override
+    async def get_largest_group_ordinal_no(
         self, project_id: ProjectID, group_id: GroupID | None
-    ) -> int:
+    ) -> int | None:
         stmt = (
             select(GroupDB.ordinal_no)
             .where(
@@ -340,15 +338,12 @@ class ProjectsRepo(AbstractProjectsRepo):
             .order_by(GroupDB.ordinal_no.desc())
             .limit(1)
         )
-        last_ordinal_no = await self.session.scalar(stmt)
-
-        if last_ordinal_no is None:
-            return 0
-
-        return last_ordinal_no + ORDINAL_NO_STEP
+        return await self.session.scalar(stmt)
 
     @override
-    async def create_group(self, data: GroupCreate) -> AdminGroupPure:
+    async def create_group(
+        self, data: GroupCreate, ordinal_no: int
+    ) -> AdminGroupPure:
         if not await self.exists(data.project_id):
             msg = f"Parent project with id {data.project_id} does not exist"
             raise ProjectNotFoundError(msg)
@@ -362,9 +357,7 @@ class ProjectsRepo(AbstractProjectsRepo):
         obj = GroupDB(
             project_id=data.project_id,
             group_id=data.group_id,
-            ordinal_no=await self._get_next_ordinal_no(
-                data.project_id, data.group_id
-            ),
+            ordinal_no=ordinal_no,
             name=data.name,
             items=[],
             subgroups=[],
@@ -389,7 +382,7 @@ class ProjectsRepo(AbstractProjectsRepo):
         )
 
         if (obj := await self.session.scalar(stmt)) is None:
-            return await self.create_group(data)
+            return None
 
         return self._validate_group_pure_admin(obj)
 
@@ -470,6 +463,7 @@ class ProjectsRepo(AbstractProjectsRepo):
             select(ItemDB)
             .where(ItemDB.id == item_id)
             .options(load_only(ItemDB.id))
+            .with_for_update()
         )
         item = await self.session.scalar(stmt)
 
@@ -516,6 +510,7 @@ class ProjectsRepo(AbstractProjectsRepo):
             select(ItemDB)
             .options(load_only(ItemDB.image_id))
             .where(ItemDB.id == item_id)
+            .with_for_update()
         )
         obj = await self.session.scalar(stmt)
 
@@ -534,6 +529,7 @@ class ProjectsRepo(AbstractProjectsRepo):
             select(ItemDB)
             .options(load_only(ItemDB.image_id))
             .where(ItemDB.id == item_id)
+            .with_for_update()
         )
         obj = await self.session.scalar(stmt)
 

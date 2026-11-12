@@ -127,6 +127,9 @@ class ProjectsService:
         return id
 
 
+ORDINAL_NO_STEP = 10_000
+
+
 @dataclass(eq=False, slots=True)
 class AdminProjectService:
     repo: AbstractProjectsRepo
@@ -158,15 +161,31 @@ class AdminProjectService:
 
     # Groups-related methods
 
+    @staticmethod
+    def _get_next_ordinal_no(largest_ordinal_no: int | None) -> int:
+        return (
+            largest_ordinal_no + ORDINAL_NO_STEP
+            if largest_ordinal_no is not None
+            else 0
+        )
+
     async def create_group(self, data: GroupCreate) -> AdminGroupPure:
-        return await self.repo.create_group(data)
+        next_ordinal_no = self._get_next_ordinal_no(
+            await self.repo.get_largest_group_ordinal_no(
+                data.project_id, data.group_id
+            )
+        )
+
+        return await self.repo.create_group(data, next_ordinal_no)
 
     async def put_group(self, id: GroupID, data: GroupPut) -> GroupPure:
         if (obj := await self.repo.put_group(id, data)) is None:
-            raise GroupNotFoundError
+            return await self.create_group(data)
 
         return obj
 
     async def remove_group(self, id: GroupID) -> None:
-        if not await self.repo.remove_group(id):
+        result = await self.repo.remove_group(id)
+
+        if not result:
             raise GroupNotFoundError
