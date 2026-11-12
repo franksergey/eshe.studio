@@ -4,9 +4,11 @@ from pydantic import BaseModel, ConfigDict, Field, HttpUrl
 
 from server.domain.projects.schemas import (
     GroupBase,
+    GroupID,
     ItemBase,
     ItemStatus,
     MoneyType,
+    ProjectID,
 )
 
 from .schemas import (
@@ -60,8 +62,12 @@ class AdminProject(AdminProjectPure, Project):
 class GroupCreate(GroupBase):
     """Модель для создания новой группы."""
 
+    project_id: ProjectID
 
-class GroupPut(GroupBase):
+    group_id: GroupID | None = None
+
+
+class GroupPut(GroupCreate):
     """Модель для полного обновления группы."""
 
 
@@ -81,6 +87,8 @@ class AdminGroup(AdminGroupPure, Group):
 
 class ItemCreate(ItemBase):
     """Модель для создания карточки."""
+
+    group_id: int
 
 
 class ItemPut(ItemBase):

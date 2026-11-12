@@ -2,15 +2,18 @@ from typing import TYPE_CHECKING, Protocol
 
 if TYPE_CHECKING:
     from server.domain.files.schemas import ImageID, ImageRef
-    from server.domain.projects.admin_schemas import (
+    from server.domain.users.schemas import UserID
+
+    from .admin_schemas import (
+        AdminGroupPure,
         AdminProject,
         AdminProjectPure,
+        GroupCreate,
+        GroupPut,
         ProjectCreate,
         ProjectPut,
         ProjectUpdate,
     )
-    from server.domain.users.schemas import UserID
-
     from .schemas import (
         Comment,
         CommentCreate,
@@ -48,6 +51,11 @@ class AbstractProjectsRepo(Protocol):
     async def get_categories_pure(
         self, project_id: ProjectID
     ) -> list[GroupPure]: ...
+    async def create_group(self, data: GroupCreate) -> AdminGroupPure: ...
+    async def put_group(
+        self, id: GroupID, data: GroupPut
+    ) -> AdminGroupPure | None: ...
+    async def remove_group(self, id: GroupID) -> bool: ...
 
     # Items-related
     async def check_item_exists(self, item_id: ItemID) -> bool: ...
@@ -67,7 +75,6 @@ class AbstractProjectsRepo(Protocol):
             A list of items with comments and a list of item ids that
                 weren't found.
         """
-        ...
 
     async def add_comment(
         self, item_id: ItemID, user_id: UserID, data: CommentCreate

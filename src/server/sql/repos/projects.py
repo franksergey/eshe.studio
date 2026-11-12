@@ -2,12 +2,22 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, cast, override
 
 from pydantic import HttpUrl
-from sqlalchemy import exists, inspect, select, update
+from sqlalchemy import delete, exists, inspect, select, update
 from sqlalchemy.orm import lazyload, load_only, selectinload
 
-from server.api.errors import ItemNotFoundError
+from server.api.errors import (
+    GroupNotFoundError,
+    ItemNotFoundError,
+    ProjectNotFoundError,
+)
 from server.domain.files.schemas import ImageID, ImageRef
-from server.domain.projects.admin_schemas import AdminProject, AdminProjectPure
+from server.domain.projects.admin_schemas import (
+    AdminGroupPure,
+    AdminProject,
+    AdminProjectPure,
+    GroupCreate,
+    GroupPut,
+)
 from server.domain.projects.ports import AbstractProjectsRepo
 from server.domain.projects.schemas import (
     Comment,
@@ -45,6 +55,9 @@ if TYPE_CHECKING:
         ProjectUpdate,
     )
     from server.domain.users.schemas import UserID
+
+
+ORDINAL_NO_STEP = 10_000
 
 
 @dataclass(eq=False, slots=True)
@@ -116,6 +129,14 @@ class ProjectsRepo(AbstractProjectsRepo):
             id=obj.id,
             name=obj.name,
             items=self._validate_group_items(obj.items, obj.subgroups),
+        )
+
+    def _validate_group_pure_admin(self, obj: GroupDB) -> AdminGroupPure:
+        return AdminGroupPure(
+            id=obj.id,
+            name=obj.name,
+            updated_at=obj.updated_at,
+            created_at=obj.created_at,
         )
 
     @classmethod
@@ -208,6 +229,11 @@ class ProjectsRepo(AbstractProjectsRepo):
 
         return [self._to_domain_schema_pure(obj) for obj in objs]
 
+    async def exists(self, project_id: ProjectID) -> bool:
+        stmt = select(exists(ProjectDB).where(ProjectDB.id == project_id))
+        return (await self.session.execute(stmt)).scalar_one()
+
+    @override
     async def create(self, data: ProjectCreate) -> AdminProjectPure:
         obj = ProjectDB(name=data.name, categories=[])
         self.session.add(obj)
@@ -217,6 +243,7 @@ class ProjectsRepo(AbstractProjectsRepo):
 
         return self._to_domain_schema_pure_admin(obj)
 
+    @override
     async def update(
         self, id: ProjectID, data: ProjectUpdate
     ) -> AdminProjectPure | None:
@@ -233,13 +260,15 @@ class ProjectsRepo(AbstractProjectsRepo):
 
         return self._to_domain_schema_pure_admin(obj)
 
+    @override
     async def put(
         self, id: ProjectID, data: ProjectPut
     ) -> AdminProjectPure | None:
+        put_dict = data.model_dump()
         stmt = (
             update(ProjectDB)
             .where(ProjectDB.id == id)
-            .values(name=data.name)
+            .values(**put_dict)
             .returning(ProjectDB)
         )
 
@@ -248,6 +277,7 @@ class ProjectsRepo(AbstractProjectsRepo):
 
         return self._to_domain_schema_pure_admin(obj)
 
+    @override
     async def remove(self, id: ProjectID) -> AdminProject | None:
         stmt = select(ProjectDB).where(ProjectDB.id == id)
         obj = await self.session.scalar(stmt)
@@ -280,6 +310,7 @@ class ProjectsRepo(AbstractProjectsRepo):
             items=self._validate_group_items(obj.items, obj.subgroups),
         )
 
+    @override
     async def get_categories_pure(
         self, project_id: ProjectID
     ) -> list[GroupPure]:
@@ -294,12 +325,86 @@ class ProjectsRepo(AbstractProjectsRepo):
         objs = await self.session.scalars(stmt)
         return [self._validate_group_pure(group) for group in objs]
 
+    async def group_exists(self, group_id: GroupID) -> bool:
+        stmt = select(exists(GroupDB).where(GroupDB.id == group_id))
+        return (await self.session.execute(stmt)).scalar_one()
+
+    async def _get_next_ordinal_no(
+        self, project_id: ProjectID, group_id: GroupID | None
+    ) -> int:
+        stmt = (
+            select(GroupDB.ordinal_no)
+            .where(
+                GroupDB.project_id == project_id, GroupDB.group_id == group_id
+            )
+            .order_by(GroupDB.ordinal_no.desc())
+            .limit(1)
+        )
+        last_ordinal_no = await self.session.scalar(stmt)
+
+        if last_ordinal_no is None:
+            return 0
+
+        return last_ordinal_no + ORDINAL_NO_STEP
+
+    @override
+    async def create_group(self, data: GroupCreate) -> AdminGroupPure:
+        if not await self.exists(data.project_id):
+            msg = f"Parent project with id {data.project_id} does not exist"
+            raise ProjectNotFoundError(msg)
+
+        if data.group_id is not None and not await self.group_exists(
+            data.group_id
+        ):
+            msg = f"Parent group with id {data.group_id} does not exist"
+            raise GroupNotFoundError(msg)
+
+        obj = GroupDB(
+            project_id=data.project_id,
+            group_id=data.group_id,
+            ordinal_no=await self._get_next_ordinal_no(
+                data.project_id, data.group_id
+            ),
+            name=data.name,
+            items=[],
+            subgroups=[],
+        )
+        self.session.add(obj)
+
+        await self.session.flush()
+        await self.session.refresh(obj, ("updated_at", "created_at"))
+
+        return self._validate_group_pure_admin(obj)
+
+    @override
+    async def put_group(
+        self, id: GroupID, data: GroupPut
+    ) -> AdminGroupPure | None:
+        put_dict = data.model_dump()
+        stmt = (
+            update(GroupDB)
+            .where(GroupDB.id == id)
+            .values(**put_dict)
+            .returning(GroupDB)
+        )
+
+        if (obj := await self.session.scalar(stmt)) is None:
+            return await self.create_group(data)
+
+        return self._validate_group_pure_admin(obj)
+
+    @override
+    async def remove_group(self, id: GroupID) -> bool:
+        stmt = delete(GroupDB).where(GroupDB.id == id).returning(GroupDB.id)
+        result = await self.session.scalar(stmt)
+        return result is not None
+
+    # Items-related methods
+
     @override
     async def check_item_exists(self, item_id: ItemID) -> bool:
         stmt = select(exists(ItemDB).where(ItemDB.id == item_id))
         return (await self.session.execute(stmt)).scalar_one()
-
-    # Items-related methods
 
     @override
     async def get_item(self, item_id: ItemID) -> Item | None:
@@ -384,6 +489,7 @@ class ProjectsRepo(AbstractProjectsRepo):
         await self.session.refresh(obj, ("author",))
         return self._validate_comment(obj, obj.author)
 
+    @override
     async def get_item_image(self, item_id: ItemID) -> ImageRef | None:
         stmt = (
             select(ItemDB)
@@ -402,6 +508,7 @@ class ProjectsRepo(AbstractProjectsRepo):
 
         return self._image_to_domain_schema(image)
 
+    @override
     async def attach_image(
         self, item_id: ItemID, image_id: ImageID
     ) -> ImageID | None:
@@ -421,6 +528,7 @@ class ProjectsRepo(AbstractProjectsRepo):
 
         return old_image_id
 
+    @override
     async def detach_image(self, item_id: ItemID) -> ImageID | None:
         stmt = (
             select(ItemDB)

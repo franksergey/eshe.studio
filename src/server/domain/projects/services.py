@@ -11,15 +11,18 @@ from .schemas import CommentsBulkRead
 
 if TYPE_CHECKING:
     from server.domain.files.schemas import ImageID, ImageRef
-    from server.domain.projects.admin_schemas import (
+    from server.domain.users.schemas import UserRead
+
+    from .admin_schemas import (
+        AdminGroupPure,
         AdminProject,
         AdminProjectPure,
+        GroupCreate,
+        GroupPut,
         ProjectCreate,
         ProjectPut,
         ProjectUpdate,
     )
-    from server.domain.users.schemas import UserRead
-
     from .ports import AbstractProjectsRepo
     from .schemas import (
         Comment,
@@ -128,6 +131,8 @@ class ProjectsService:
 class AdminProjectService:
     repo: AbstractProjectsRepo
 
+    # Projects-related methods
+
     async def create(self, data: ProjectCreate) -> AdminProjectPure:
         return await self.repo.create(data)
 
@@ -150,3 +155,18 @@ class AdminProjectService:
             raise ProjectNotFoundError
 
         return obj
+
+    # Groups-related methods
+
+    async def create_group(self, data: GroupCreate) -> AdminGroupPure:
+        return await self.repo.create_group(data)
+
+    async def put_group(self, id: GroupID, data: GroupPut) -> GroupPure:
+        if (obj := await self.repo.put_group(id, data)) is None:
+            raise GroupNotFoundError
+
+        return obj
+
+    async def remove_group(self, id: GroupID) -> None:
+        if not await self.repo.remove_group(id):
+            raise GroupNotFoundError
