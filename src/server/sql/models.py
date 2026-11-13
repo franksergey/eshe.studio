@@ -64,6 +64,9 @@ class SpecificationTagDB(Base):
 
     tag: Mapped[str] = mapped_column(String(255))
 
+    def __str__(self) -> str:
+        return self.tag
+
     # Relations
     item: Mapped[ItemDB] = relationship(back_populates="tags")
 

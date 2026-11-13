@@ -1,6 +1,7 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, override
 
+from pydantic import TypeAdapter
 from sqlalchemy import delete, exists, inspect, select, update
 from sqlalchemy.orm import lazyload, load_only, selectinload
 
@@ -21,7 +22,6 @@ from server.domain.projects.ports import AbstractProjectsRepo
 from server.domain.projects.schemas import (
     Comment,
     CommentCreate,
-    Group,
     GroupID,
     GroupOnlyItems,
     GroupPure,
@@ -35,7 +35,7 @@ from server.domain.projects.schemas import (
 from server.sql.models import CommentDB, GroupDB, ItemDB, ProjectDB, UserDB
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Iterable
+    from collections.abc import Callable
 
     from pydantic import HttpUrl
     from sqlalchemy.ext.asyncio import AsyncSession
@@ -49,15 +49,19 @@ if TYPE_CHECKING:
     from server.domain.users.schemas import UserID
 
 
-@dataclass(eq=False, slots=True)
+@dataclass(eq=False, slots=True, frozen=True)
 class ProjectsRepo(AbstractProjectsRepo):
     session: AsyncSession
     get_image_url: Callable[[ImageRef], HttpUrl]
 
-    # Validation/conversion
+    _validation_context: dict[str, object] = field(init=False)
 
-    def _validation_context(self) -> dict[str, object]:
-        return {"get_image_url": self.get_image_url}
+    def __post_init__(self) -> None:
+        object.__setattr__(
+            self, "_validation_context", {"get_image_url": self.get_image_url}
+        )
+
+    # Validation/conversion
 
     @classmethod
     def _validate_comment(
@@ -75,71 +79,6 @@ class ProjectsRepo(AbstractProjectsRepo):
             else f"{author.first_name} {author.last_name}",
         )
 
-    def _validate_item(self, obj: ItemDB) -> Item:
-        return Item.model_validate(obj, context=self._validation_context())
-
-    def _validate_group_items(
-        self, items: Iterable[ItemDB], subgroups: Iterable[GroupDB]
-    ) -> list[Item] | list[Group]:
-        if items and subgroups:
-            msg = "Group in database cannot contain both subgroups and items"
-            raise ValueError(msg)
-
-        if items:
-            return [self._validate_item(item) for item in items]
-
-        if subgroups:
-            return [self._validate_group(subgroup) for subgroup in subgroups]
-
-        return []
-
-    def _validate_group(self, obj: GroupDB) -> Group:
-        if obj.items and obj.subgroups:
-            msg = "Group in database cannot contain both subgroups and items"
-            raise ValueError(msg)
-
-        return Group(
-            id=obj.id,
-            name=obj.name,
-            items=self._validate_group_items(obj.items, obj.subgroups),
-        )
-
-    @staticmethod
-    def _validate_group_pure_admin(obj: GroupDB) -> AdminGroupPure:
-        return AdminGroupPure.model_validate(obj)
-
-    @classmethod
-    def _validate_group_pure(cls, obj: GroupDB) -> GroupPure:
-        return GroupPure(id=obj.id, name=obj.name)
-
-    def _to_domain_schema(self, obj: ProjectDB) -> Project:
-        return Project(
-            id=obj.id,
-            name=obj.name,
-            categories=[
-                self._validate_group(category) for category in obj.categories
-            ],
-        )
-
-    def _to_domain_schema_admin(self, obj: ProjectDB) -> AdminProject:
-        return AdminProject(
-            id=obj.id,
-            name=obj.name,
-            updated_at=obj.updated_at,
-            created_at=obj.created_at,
-            categories=[
-                self._validate_group(category) for category in obj.categories
-            ],
-        )
-
-    @staticmethod
-    def _to_domain_schema_pure(obj: ProjectDB) -> ProjectPure:
-        return ProjectPure.model_validate(obj)
-
-    @staticmethod
-    def _to_domain_schema_pure_admin(obj: ProjectDB) -> AdminProjectPure:
-        return AdminProjectPure.model_validate(obj)
-
     # Projects-related methods
 
     @override
@@ -150,7 +89,7 @@ class ProjectsRepo(AbstractProjectsRepo):
         if obj is None:
             return None
 
-        return self._to_domain_schema(obj)
+        return Project.model_validate(obj, context=self._validation_context)
 
     @override
     async def get_pure(self, id: ProjectID) -> ProjectPure | None:
@@ -164,15 +103,18 @@ class ProjectsRepo(AbstractProjectsRepo):
         if obj is None:
             return None
 
-        return self._to_domain_schema_pure(obj)
+        return ProjectPure.model_validate(obj)
 
     GET_ALL_STMT = select(ProjectDB)
+    ProjectList = TypeAdapter(list[Project])
 
     @override
     async def get_all(self) -> list[Project]:
         objs = (await self.session.scalars(self.GET_ALL_STMT)).all()
 
-        return [self._to_domain_schema(obj) for obj in objs]
+        return self.ProjectList.validate_python(
+            objs, context=self._validation_context
+        )
 
     GET_ALL_PURE_STMT = select(ProjectDB).options(
         lazyload(ProjectDB.categories)
@@ -182,7 +124,7 @@ class ProjectsRepo(AbstractProjectsRepo):
     async def get_all_pure(self) -> list[ProjectPure]:
         objs = (await self.session.scalars(self.GET_ALL_PURE_STMT)).all()
 
-        return [self._to_domain_schema_pure(obj) for obj in objs]
+        return [ProjectPure.model_validate(obj) for obj in objs]
 
     async def exists(self, project_id: ProjectID) -> bool:
         stmt = select(exists(ProjectDB).where(ProjectDB.id == project_id))
@@ -196,7 +138,7 @@ class ProjectsRepo(AbstractProjectsRepo):
         await self.session.flush()
         await self.session.refresh(obj, ("updated_at", "created_at"))
 
-        return self._to_domain_schema_pure_admin(obj)
+        return AdminProjectPure.model_validate(obj)
 
     @override
     async def update(
@@ -213,7 +155,7 @@ class ProjectsRepo(AbstractProjectsRepo):
         if (obj := await self.session.scalar(stmt)) is None:
             return None
 
-        return self._to_domain_schema_pure_admin(obj)
+        return AdminProjectPure.model_validate(obj)
 
     @override
     async def put(
@@ -230,7 +172,7 @@ class ProjectsRepo(AbstractProjectsRepo):
         if (obj := await self.session.scalar(stmt)) is None:
             return None
 
-        return self._to_domain_schema_pure_admin(obj)
+        return AdminProjectPure.model_validate(obj)
 
     @override
     async def remove(self, id: ProjectID) -> AdminProject | None:
@@ -240,7 +182,9 @@ class ProjectsRepo(AbstractProjectsRepo):
         if obj is None:
             return None
 
-        result = self._to_domain_schema_admin(obj)
+        result = AdminProject.model_validate(
+            obj, context=self._validation_context
+        )
 
         await self.session.delete(obj)
         return result
@@ -259,10 +203,8 @@ class ProjectsRepo(AbstractProjectsRepo):
         if obj is None:
             return obj
 
-        return GroupOnlyItems(
-            id=obj.id,
-            name=obj.name,
-            items=self._validate_group_items(obj.items, obj.subgroups),
+        return GroupOnlyItems.model_validate(
+            obj, context=self._validation_context
         )
 
     @override
@@ -278,7 +220,7 @@ class ProjectsRepo(AbstractProjectsRepo):
             .options(lazyload(GroupDB.items), lazyload(GroupDB.subgroups))
         )
         objs = await self.session.scalars(stmt)
-        return [self._validate_group_pure(group) for group in objs]
+        return [GroupPure.model_validate(group) for group in objs]
 
     async def group_exists(self, group_id: GroupID) -> bool:
         stmt = select(exists(GroupDB).where(GroupDB.id == group_id))
@@ -325,7 +267,7 @@ class ProjectsRepo(AbstractProjectsRepo):
         await self.session.flush()
         await self.session.refresh(obj, ("updated_at", "created_at"))
 
-        return self._validate_group_pure_admin(obj)
+        return AdminGroupPure.model_validate(obj)
 
     @override
     async def put_group(
@@ -342,7 +284,7 @@ class ProjectsRepo(AbstractProjectsRepo):
         if (obj := await self.session.scalar(stmt)) is None:
             return None
 
-        return self._validate_group_pure_admin(obj)
+        return AdminGroupPure.model_validate(obj)
 
     @override
     async def remove_group(self, id: GroupID) -> bool:
@@ -365,7 +307,7 @@ class ProjectsRepo(AbstractProjectsRepo):
         if obj is None:
             return None
 
-        return self._validate_item(obj)
+        return Item.model_validate(obj, context=self._validation_context)
 
     @override
     async def get_item_comments(self, item_id: ItemID) -> list[Comment] | None:

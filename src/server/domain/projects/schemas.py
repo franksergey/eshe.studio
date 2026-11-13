@@ -96,6 +96,29 @@ class GroupOnlyItems(GroupPure):
 
         return isinstance(self.items[0], Group)
 
+    @model_validator(mode="before")
+    @classmethod
+    def _validate_items(cls, v: object) -> object:
+        error_msg = "'items' must be a list of items or groups."
+
+        if isinstance(v, dict) and "items" in v and "subgroups" in v:
+            items: Any = v["items"]
+
+            if not isinstance(items, list):
+                raise ValueError(error_msg)
+
+            items.extend(v["subgroups"])
+
+        elif hasattr(v, "items") and hasattr(v, "subgroups"):
+            items: Any = v.items
+
+            if not isinstance(items, list):
+                raise ValueError(error_msg)
+
+            items.extend(v.subgroups)
+
+        return v
+
 
 class Group(GroupOnlyItems):
     """Группа карточек в таблице комплектации.
@@ -133,8 +156,8 @@ class ItemBase(BaseModel):
         )
 
         if isinstance(v, dict) and "price" in v and "price_currency" in v:
-            price: Any = v.get("price")
-            price_currency: Any = v.get("price_currency")
+            price: Any = v["price"]
+            price_currency: Any = v["price_currency"]
 
             if (price is None) != (price_currency is None):
                 raise ValueError(error_msg)
@@ -166,7 +189,7 @@ class ItemBase(BaseModel):
         error_msg = "'tags' must be a list of strings."
 
         if isinstance(v, dict) and "tags" in v:
-            tags: Any = v.get("tags")
+            tags: Any = v["tags"]
 
             if not isinstance(tags, Sequence):
                 raise ValueError(error_msg)
@@ -207,6 +230,8 @@ class Item(ItemPure):
     @field_validator("image", mode="before")
     @classmethod
     def _validate_image(cls, v: object, info: ValidationInfo) -> object:
+        # NOTE: None of the pure models require the context with get_image_url
+        # Only those enclosing the Item model do
         if not (info.context and "get_image_url" in info.context):
             return v
 
