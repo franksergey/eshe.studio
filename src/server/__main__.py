@@ -1,12 +1,17 @@
 """Entry point for the application."""
 
+import argparse
 import asyncio
 import logging
 import sys
+from typing import Never
+from urllib.parse import urlparse
 
 import uvicorn
 from alembic.config import Config
+from fastapi import FastAPI, Request
 
+from server.api.app import get_temp_dir, setup_app
 from server.api.container import ServiceContainer
 from server.domain.users.schemas import UserCreate
 from server.sql.database import Database, DatabaseChecker
@@ -97,12 +102,63 @@ async def perform_checks() -> None:
     logger.info("Initial health check has been finished")
 
 
+def get_dummy_request(
+    app: FastAPI, base_url: str = "https://example.com", root_path: str = ""
+) -> Request:
+    parsed = urlparse(base_url)
+    scheme = parsed.scheme or "http"
+    host = parsed.hostname or "localhost"
+    port = parsed.port or (443 if scheme == "https" else 80)
+
+    scope: dict[str, object] = {
+        "type": "http",
+        "app": app,
+        "scheme": scheme,
+        "server": (host, port),
+        "root_path": root_path,
+        "headers": [],
+    }
+    return Request(scope)
+
+
+async def interactive_debug_mode() -> Never:
+    app = setup_app()
+    request = get_dummy_request(app)
+    asyncio.new_event_loop = create_asyncio_event_loop
+
+    async with (
+        Database(
+            db_url=settings.db.database_url, echo=settings.db.ECHO
+        ) as database,
+        get_temp_dir() as temp_dir,
+    ):
+        while True:
+            async with ServiceContainer(
+                database.get_session, settings.STORAGEDIR, temp_dir, request
+            ) as container:
+                _ = container
+                breakpoint()  # noqa: T100
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--interactive-debug", action="store_true")
+
+    return parser.parse_args()
+
+
 def main() -> None:
     """Entry point of the whole FastAPI backend."""
     setup_logging()
     logger.info("Backend version: %s", version)
 
+    args = parse_args()
+
     with asyncio.Runner(loop_factory=create_asyncio_event_loop) as runner:
+        if args.interactive_debug:
+            runner.run(interactive_debug_mode())
+            return
+
         runner.run(perform_checks())
 
     launch_server()
