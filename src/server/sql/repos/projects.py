@@ -240,10 +240,7 @@ class ProjectsRepo(AbstractProjectsRepo):
         )
         return await self.session.scalar(stmt)
 
-    @override
-    async def create_group(
-        self, data: GroupCreate, ordinal_no: int
-    ) -> AdminGroupPure:
+    async def _check_group_foreign_keys(self, data: GroupCreate) -> None:
         if not await self.exists(data.project_id):
             msg = f"Parent project with id {data.project_id} does not exist"
             raise ProjectNotFoundError(msg)
@@ -253,6 +250,12 @@ class ProjectsRepo(AbstractProjectsRepo):
         ):
             msg = f"Parent group with id {data.group_id} does not exist"
             raise GroupNotFoundError(msg)
+
+    @override
+    async def create_group(
+        self, data: GroupCreate, ordinal_no: int
+    ) -> AdminGroupPure:
+        await self._check_group_foreign_keys(data)
 
         obj = GroupDB(
             project_id=data.project_id,
@@ -273,6 +276,8 @@ class ProjectsRepo(AbstractProjectsRepo):
     async def put_group(
         self, id: GroupID, data: GroupPut
     ) -> AdminGroupPure | None:
+        await self._check_group_foreign_keys(data)
+
         put_dict = data.model_dump()
         stmt = (
             update(GroupDB)
