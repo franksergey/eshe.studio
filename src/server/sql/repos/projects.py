@@ -1,7 +1,6 @@
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, cast, override
+from typing import TYPE_CHECKING, override
 
-from pydantic import HttpUrl
 from sqlalchemy import delete, exists, inspect, select, update
 from sqlalchemy.orm import lazyload, load_only, selectinload
 
@@ -10,7 +9,7 @@ from server.api.errors import (
     ItemNotFoundError,
     ProjectNotFoundError,
 )
-from server.domain.files.schemas import ImageID, ImageRef
+from server.domain.files.schemas import ImageRef
 from server.domain.projects.admin_schemas import (
     AdminGroupPure,
     AdminProject,
@@ -22,7 +21,6 @@ from server.domain.projects.ports import AbstractProjectsRepo
 from server.domain.projects.schemas import (
     Comment,
     CommentCreate,
-    CurrencyCode,
     Group,
     GroupID,
     GroupOnlyItems,
@@ -30,25 +28,19 @@ from server.domain.projects.schemas import (
     Item,
     ItemID,
     ItemOnlyComments,
-    MoneyType,
     Project,
     ProjectID,
     ProjectPure,
 )
-from server.sql.models import (
-    CommentDB,
-    GroupDB,
-    ImageDB,
-    ItemDB,
-    ProjectDB,
-    UserDB,
-)
+from server.sql.models import CommentDB, GroupDB, ItemDB, ProjectDB, UserDB
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterable
 
+    from pydantic import HttpUrl
     from sqlalchemy.ext.asyncio import AsyncSession
 
+    from server.domain.files.schemas import ImageID
     from server.domain.projects.admin_schemas import (
         ProjectCreate,
         ProjectPut,
@@ -63,6 +55,9 @@ class ProjectsRepo(AbstractProjectsRepo):
     get_image_url: Callable[[ImageRef], HttpUrl]
 
     # Validation/conversion
+
+    def _validation_context(self) -> dict[str, object]:
+        return {"get_image_url": self.get_image_url}
 
     @classmethod
     def _validate_comment(
@@ -81,26 +76,7 @@ class ProjectsRepo(AbstractProjectsRepo):
         )
 
     def _validate_item(self, obj: ItemDB) -> Item:
-        if obj.price is None:
-            price = None
-        else:
-            price = MoneyType(
-                amount=obj.price,
-                currency=cast("CurrencyCode", obj.price_currency),
-            )
-
-        return Item(
-            id=obj.id,
-            name=obj.name,
-            count=obj.count,
-            status=obj.status,
-            link=HttpUrl(obj.link) if obj.link is not None else None,
-            tags=[tag.tag for tag in obj.tags],
-            price=price,
-            image=self.get_image_url(self._image_to_domain_schema(obj.image))
-            if obj.image is not None
-            else None,
-        )
+        return Item.model_validate(obj, context=self._validation_context())
 
     def _validate_group_items(
         self, items: Iterable[ItemDB], subgroups: Iterable[GroupDB]
@@ -128,13 +104,9 @@ class ProjectsRepo(AbstractProjectsRepo):
             items=self._validate_group_items(obj.items, obj.subgroups),
         )
 
-    def _validate_group_pure_admin(self, obj: GroupDB) -> AdminGroupPure:
-        return AdminGroupPure(
-            id=obj.id,
-            name=obj.name,
-            updated_at=obj.updated_at,
-            created_at=obj.created_at,
-        )
+    @staticmethod
+    def _validate_group_pure_admin(obj: GroupDB) -> AdminGroupPure:
+        return AdminGroupPure.model_validate(obj)
 
     @classmethod
     def _validate_group_pure(cls, obj: GroupDB) -> GroupPure:
@@ -162,25 +134,11 @@ class ProjectsRepo(AbstractProjectsRepo):
 
     @staticmethod
     def _to_domain_schema_pure(obj: ProjectDB) -> ProjectPure:
-        return ProjectPure(id=obj.id, name=obj.name)
+        return ProjectPure.model_validate(obj)
 
     @staticmethod
     def _to_domain_schema_pure_admin(obj: ProjectDB) -> AdminProjectPure:
-        return AdminProjectPure(
-            id=obj.id,
-            name=obj.name,
-            updated_at=obj.updated_at,
-            created_at=obj.created_at,
-        )
-
-    @staticmethod
-    def _image_to_domain_schema(image: ImageDB) -> ImageRef:
-        return ImageRef(
-            id=image.id,
-            object_id=image.object_id,
-            size=(image.width, image.height),
-            quality=image.quality,
-        )
+        return AdminProjectPure.model_validate(obj)
 
     # Projects-related methods
 
@@ -500,7 +458,7 @@ class ProjectsRepo(AbstractProjectsRepo):
         if image is None:
             return None
 
-        return self._image_to_domain_schema(image)
+        return ImageRef.model_validate(image)
 
     @override
     async def attach_image(

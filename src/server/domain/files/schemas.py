@@ -2,7 +2,7 @@ import uuid
 from enum import StrEnum
 from typing import Annotated
 
-from pydantic import AwareDatetime, BaseModel, Field
+from pydantic import AwareDatetime, BaseModel, Field, model_validator
 
 type ObjectKey = uuid.UUID
 type ImageID = int
@@ -44,3 +44,15 @@ class ImageRef(BaseModel):
 
     size: tuple[int, int]
     quality: int
+
+    @model_validator(mode="before")
+    @classmethod
+    def _validate_size(cls, v: object) -> object:
+        if isinstance(v, dict) and "width" in v and "height" in v:
+            v["size"] = (v.pop("width"), v.pop("height"))
+
+        elif hasattr(v, "width") and hasattr(v, "height"):
+            # pyrefly: ignore[missing-attribute]
+            v.size = (v.width, v.height)
+
+        return v
